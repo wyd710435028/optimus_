@@ -1,0 +1,50 @@
+{
+	//树形结构
+	treeData:[
+	],
+	//病历下的所有标签
+	labelsInRecord:[],
+	//病历下的文书列表
+	docList: [
+		//文书的fileId
+		fileId: "",
+		//文书emr号
+		docType: "",
+		//病历下指定文书的标签
+		LabelList: [
+			{
+				labelContent: "",
+				labelColor: ""
+			}
+		],
+		//文书下包含的节点
+		nodeList: [
+			{
+				nodeName: "",
+				//节点的内容
+				nodeContent: "",
+				entityNum: "",
+				eventNum: "",
+				spanNum: "",
+				//节点下包含的实体
+				entityList:[
+					{
+						name: "",
+						start: "",
+						end: "",
+						label: "",
+						text: ""
+					}
+				]
+				eventLabelList: [],
+				spanList: []
+			}
+		],
+		//临时医嘱
+		statOrderList: [],
+		statOrderType: [],
+		//长期医嘱
+		standingOrderList: [],
+		standingOrderType: []
+	]
+}
