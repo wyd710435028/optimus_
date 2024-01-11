@@ -18,14 +18,12 @@
               <el-row>
                 <el-col :span="4"><strong style="color: indianred">{{item.nodeName}}</strong></el-col>
                 <el-col :span="20">
-                  <div v-if="item.entityNum==0">
-                    <label>{{item.nodeContent}}</label>
-                  </div>
-                  <div v-if="item.entityNum>0">
-<!--                    <div id="elseHigh" ref="elseHigh"></div>-->
-<!--                    {{addHightLight(item.entityHightLighted)}}-->
+<!--                  <div v-if="item.entityNum==0">-->
+<!--                    <label>{{item.nodeContent}}</label>-->
+<!--                  </div>-->
+<!--                  <div v-if="item.entityNum>0">-->
                     <label v-html=item.entityHightLighted></label>
-                  </div>
+<!--                  </div>-->
                   <el-row>
                     <el-table
                         :data="tableData"
@@ -102,7 +100,7 @@
         <el-aside class="layout_col">
 <!--          <span>entity标签列表</span>-->
           <div v-for="entityTag in allEntityLabelList" :key="entityTag">
-            <el-tag v-if="entityTag.labelType=='entity'" :color="entityTag.labelColor" style="margin-top: 5px" @click="clickTag(entityTag.labelContent)"><label style="color:#303133">{{entityTag.labelContent}}</label></el-tag>
+            <el-tag v-if="entityTag.labelType=='entity'" :color="entityTag.labelColor" style="margin-top: 5px" @click="clickTag(entityTag.labelContent,entityTag.labelColor)"><label style="color:#303133">{{entityTag.labelContent}}</label></el-tag>
           </div>
         </el-aside>
       </el-col>
@@ -113,9 +111,10 @@
   </el-container>
 </template>
 <script>
-import {getUnderstandResult} from "../apis/get"
-import {getNodeByFileId} from "../apis/post"
+import {getUnderstandResult} from "../apis/get";
+import {getNodeByFileId} from "../apis/post";
 import {transLabelList} from "../apis/post";
+import {getNodeByFileIdWithHighLight} from "../apis/post";
 
 export default {
   data() {
@@ -197,8 +196,9 @@ export default {
       hightLight:'',
       docDetail:{},
       entityLabelList:[],
-      spanLabelList:[]
-
+      spanLabelList:[],
+      docType:'',
+      fileId:''
     }
   },
   methods: {
@@ -239,8 +239,10 @@ export default {
         // alert(admissionId);
         // alert(stage);
         let fId = data.fileId;
+        this.fileId = fId;
         // alert(fId);
         let docType = data.docType;
+        this.docType = docType;
         // alert(docType);
         let _this = this;
         console.log("----------总的结果----------");
@@ -264,7 +266,6 @@ export default {
             _this.nodeList = response.data.data.nodeList;
             _this.allEntityLabelList = response.data.data.labelList;
           }
-
         })
       } else {
         return;
@@ -344,8 +345,35 @@ export default {
         next(false);
       }
     },
-    clickTag(labelContent){
-      alert(labelContent);
+
+    /**
+     * 点击标签触发的事件
+     * @param labelContent
+     */
+    clickTag(labelContent,labelColor) {
+      let _this = this;
+      let docType = _this.docType;
+      let fileId = _this.fileId;
+      getNodeByFileIdWithHighLight(fileId,labelContent,labelColor,JSON.stringify(_this.nodeMap)).then(function (response) {
+        if (docType=='EMR110001'){
+          //长期医嘱
+          _this.showContent = 'standingOrder';
+          _this.standingOrderTableData = response.data.data.standingOrderList;
+          _this.projectType = response.data.data.projectCategoriesList;
+          _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+        }else if (docType=='EMR110002'){
+          //临时医嘱
+          _this.showContent = 'statOrder';
+          _this.statOrderTableData = response.data.data.statOrderList;
+          _this.projectType = response.data.data.projectCategoriesList;
+          _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+        }else {
+          //正常文书
+          _this.showContent = 'normal';
+          _this.nodeList = response.data.data.nodeList;
+          _this.allEntityLabelList = response.data.data.labelList;
+        }
+      })
     },
     returnIndex(){
       this.$router.push('/');

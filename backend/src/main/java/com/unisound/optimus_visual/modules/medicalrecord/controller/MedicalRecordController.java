@@ -104,6 +104,12 @@ public class MedicalRecordController {
         return new CommonResult(result);
     }
 
+    @RequestMapping("getNodeByFileIdWithHighLight")
+    public CommonResult getNodeByFileIdWithHighLight(@RequestBody String param){
+        Map<String,Object> result = medicalRecordService.getNodeByFileIdWithHighLight(param);
+        return new CommonResult(result);
+    }
+
     /**
      * 根据单个标签高亮一段文本
      * @param param

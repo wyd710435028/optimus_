@@ -457,6 +457,125 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         return result;
     }
 
+    @Override
+    public Map<String,Object> getNodeByFileIdWithHighLight(String understandResultJson) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        List<ShowNodeModel> nodeModelList = new ArrayList<>();
+        List<StatOrderModel> statOrderModelList = new ArrayList<>();
+        List<StandingOrderModel> standingOrderModelList = new ArrayList<>();
+        List<ShowLabelModel> labelModelList = new ArrayList<>();
+        if (Objects.nonNull(understandResultJson)){
+            JSONObject jsonObject = JSON.parseObject(understandResultJson);
+            if (Objects.nonNull(jsonObject)){
+                String fileId = jsonObject.getString("fileId");
+                String labelContent = jsonObject.getString("labelContent");
+                String labelColor = jsonObject.getString("labelColor");
+
+                String nodeListStr = jsonObject.getString("nodeList");
+                List<ShowDocModel> docModelList = JSON.parseObject(nodeListStr, new TypeReference<List<ShowDocModel>>() {
+                });
+                if (!CollectionUtils.isEmpty(docModelList)){
+                    for (ShowDocModel docModel:docModelList){
+                        if (fileId.equals(docModel.getFileId())){
+                            if (docModel.getDocType().equals("EMR110001")){
+                                //长期医嘱
+                                if (!CollectionUtils.isEmpty(docModel.getStandingOrderList())){
+                                    standingOrderModelList.addAll(docModel.getStandingOrderList());
+                                }
+                            } else if (docModel.getDocType().equals("EMR110002")){
+                                //临时医嘱
+                                if (!CollectionUtils.isEmpty(docModel.getStatOrderList())){
+                                    statOrderModelList.addAll(docModel.getStatOrderList());
+                                }
+                            }else {
+                                nodeModelList =  docModel.getNodeList();
+                                List<ShowLabelModel> hightLabelList = new ArrayList<>();
+                                ShowLabelModel hightLabel = new ShowLabelModel(labelContent,labelColor,null);
+                                hightLabelList.add(hightLabel);
+                                labelModelList = docModel.getLabelList();
+                                //做高亮处理
+                                //doc下的节点列表
+                                for (ShowNodeModel nodeModel:nodeModelList){
+                                    nodeModel.setFileId(fileId);
+                                    List<EntityOrSpanModel> entityList = nodeModel.getEntityList();
+                                    String nodeContent = nodeModel.getNodeContent();
+                                    //entity高亮
+                                    String entityHighted = highLightText(nodeContent,entityList,hightLabelList);
+                                    nodeModel.setEntityHightLighted(entityHighted);
+                                    //span高亮
+                                    List<EntityOrSpanModel> spanList = nodeModel.getSpanList();
+                                    String spanHighted = highLightText(nodeContent, spanList, labelModelList);
+                                    nodeModel.setSpanHightLighted(spanHighted);
+                                    //事件处理
+                                    List<EventModel> eventList = nodeModel.getEventList();
+                                    nodeModel.setEventHightLighted(nodeContent);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        List<Map<String,String>> yzsProjectTypeList = new ArrayList<>();
+        List<Map<String,String>> projectCategoriesList = new ArrayList<>();
+        List<String> yzsProjectTypes = new ArrayList<>();
+        List<String> projectCategories = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(statOrderModelList)){
+            //临时医嘱
+            for (StatOrderModel statOrderModel:statOrderModelList){
+                if (StringUtils.isNotBlank(statOrderModel.getYzsProjectType())){
+                    if (!yzsProjectTypes.contains(statOrderModel.getYzsProjectType())){
+                        yzsProjectTypes.add(statOrderModel.getYzsProjectType());
+                    }
+                }
+                if (StringUtils.isNotBlank(statOrderModel.getProjectCategories())){
+                    if (!projectCategories.contains(statOrderModel.getProjectCategories())){
+                        projectCategories.add(statOrderModel.getProjectCategories());
+                    }
+                }
+            }
+        } else if (!CollectionUtils.isEmpty(standingOrderModelList)){
+            //长期医嘱
+            for (StandingOrderModel standingOrderModel:standingOrderModelList){
+                if (StringUtils.isNotBlank(standingOrderModel.getYzsProjectType())){
+                    if (!yzsProjectTypes.contains(standingOrderModel.getYzsProjectType())){
+                        yzsProjectTypes.add(standingOrderModel.getYzsProjectType());
+                    }
+                }
+                if (StringUtils.isNotBlank(standingOrderModel.getProjectCategories())){
+                    if (!projectCategories.contains(standingOrderModel.getProjectCategories())){
+                        projectCategories.add(standingOrderModel.getProjectCategories());
+                    }
+                }
+            }
+        }
+
+        if (!CollectionUtils.isEmpty(yzsProjectTypes)){
+            for (String yzs:yzsProjectTypes){
+                Map<String,String> yzsMap = new LinkedHashMap<>();
+                yzsMap.put("text",yzs);
+                yzsMap.put("value",yzs);
+                yzsProjectTypeList.add(yzsMap);
+            }
+        }
+        if (!CollectionUtils.isEmpty(projectCategories)){
+            for (String pro:projectCategories){
+                Map<String,String> map = new LinkedHashMap<>();
+                map.put("text",pro);
+                map.put("value",pro);
+                projectCategoriesList.add(map);
+            }
+        }
+
+        result.put("nodeList",nodeModelList);
+        result.put("labelList",labelModelList);
+        result.put("statOrderList",statOrderModelList);
+        result.put("standingOrderList",standingOrderModelList);
+        result.put("yzsProjectTypeList",yzsProjectTypeList);
+        result.put("projectCategoriesList",projectCategoriesList);
+        return result;
+    }
+
     /**
      * 查询某一病历下的指定文书列表
      * @param hospitalId 医院id
@@ -858,7 +977,6 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 String text = paramsJson.getString("text");
                 String labelColor = paramsJson.getString("labelColor");
                 JSONArray jsonArray = JSON.parseArray(entityOrSpanListStr);
-                System.out.println(jsonArray);
                 List<EntityOrSpanModel> entityOrSpanModels = JSONArray.parseArray(jsonArray.toJSONString(), EntityOrSpanModel.class);
                 List<EntityOrSpanModel> toDealList = new ArrayList<>();
                 ShowLabelModel showLabelModel = new ShowLabelModel(labelContent,labelColor,null);

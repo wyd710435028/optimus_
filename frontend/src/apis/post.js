@@ -10,6 +10,16 @@ export function getNodeByFileId(fileId,nodeMap,allEntityLabelList){
     })
 }
 
+export function getNodeByFileIdWithHighLight(fileId,labelContent,labelColor,nodeMap){
+    return service.post('/medicalrecord/getNodeByFileIdWithHighLight', {
+        headers: { 'Content-Type': 'application/json' },
+        fileId: fileId,
+        labelContent: labelContent,
+        labelColor: labelColor,
+        nodeList: nodeMap
+    })
+}
+
 export function transLabelList(allEntityLabelList){
     return service.post('/medicalrecord/transLabelList', {
         headers: { 'Content-Type': 'application/json' },

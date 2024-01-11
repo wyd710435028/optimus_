@@ -19,6 +19,8 @@ public interface MedicalRecordService {
 
     Map<String,Object> getNodeByFileId(String fileId);
 
+    Map<String,Object> getNodeByFileIdWithHighLight(String params);
+
     PageInfo<ShowDocModel> docQueryList(String hospitalId, String admissionId,String stage, String docName, String emrNo,String tags,Integer pageSize, Integer pageNum);
 
     Map<String, Object> getDocContentDetail(String hospitalId, String admissionId, String stage, String fileId);

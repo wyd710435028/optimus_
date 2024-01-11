@@ -71,7 +71,6 @@ public class Highlighter {
                 }
             }
         }
-        System.out.println(res);
         return res;
     }
 }
