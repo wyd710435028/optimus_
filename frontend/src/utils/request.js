@@ -1,4 +1,5 @@
 import axios from 'axios'
+import {ElMessage} from 'element-plus'
 
 // 创建axios实例
 // eslint-disable-next-line no-unused-vars
@@ -23,14 +24,32 @@ axios.interceptors.request.use(
 )
 
 // 响应拦截器
-axios.interceptors.response.use(
-    function (config) {
-        // 对响应数据做点什么
-        return config
-    },
-    function (error) {
-        // 对响应错误做点什么
-        return Promise.reject(error)
+// axios.interceptors.response.use(
+//     function (config) {
+//         // 对响应数据做点什么
+//         return config
+//     },
+//     function (error) {
+//         // 对响应错误做点什么
+//         return Promise.reject(error)
+//     }
+// )
+
+// 响应拦截器
+service.interceptors.response.use(
+    response => {
+        /**
+         * code为非200是报错
+         */
+        if (response.data.code !== '200') {
+            ElMessage({
+                showClose: true,
+                message: response.data.msg,
+                type: 'error',
+                duration: 3 * 1000
+            })
+        }
+        return response
     }
 )
 

@@ -3,5 +3,10 @@ module.exports = defineConfig({
   transpileDependencies: true,
   lintOnSave:false,
   outputDir:'dist',
-  publicPath:'./'
+  publicPath:'./',
+  devServer: {
+    client: {
+      overlay: false
+    }
+  }
 })
