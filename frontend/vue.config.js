@@ -7,6 +7,14 @@ module.exports = defineConfig({
   devServer: {
     client: {
       overlay: false
+    },
+    proxy:{
+      "/reUnderstand":{
+        target:"http://10.128.3.237:8851",
+        pathRewrite:{
+          "^/reUnderstand":""
+        }
+      }
     }
   }
 })

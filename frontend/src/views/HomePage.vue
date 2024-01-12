@@ -52,7 +52,7 @@
               label="操作">
             <template v-slot="scope">
               <el-row>
-                <el-button @click="reUnderstand(scope.row.admissionId)" type="danger">重新理解</el-button>
+                <el-button @click="reUnderstand(scope.row)" type="danger" :loading="isSending">{{reUnderstandButtonName}}</el-button>
                 <el-button @click="docUnderstandResult(scope.row)" type="success">病历详情</el-button>
                 <el-button @click="docQuery(scope.row)" type="warning">文书查询</el-button>
               </el-row>
@@ -79,6 +79,9 @@
 <script>
   import {getRecordList} from "../apis/get";
   import {getHospitalDropDown} from "../apis/get"
+  import axios from "axios";
+  import {reactive} from "vue";
+  import {ElMessage} from "element-plus";
   // import {} from "../apis/post";
   export default {
     data() {
@@ -91,7 +94,10 @@
           currentPage: null,
           pageSize: null,
           total: null
-        }
+        },
+        isSending:false,
+        reUnderstandButtonName:'重新理解',
+        understandStatus:''
       }
     },
     methods:{
@@ -116,8 +122,39 @@
         })
       },
       reUnderstand(row) {
-        alert(row);
+        // alert(row);
         console.log(row);
+        let hospitalId = row.hospitalId;
+        let admissionId = row.admissionId;
+        let hospitalName = row.hospitalName;
+        let srtage = row.stage;
+        var _this = this;
+        _this.isSending = true;
+        _this.reUnderstandButtonName = '理解中';
+        //发送请求
+        // alert('http://10.128.3.237:8851/optimus/test/understand/patient/'+hospitalId+'/'+admissionId+'?esRead=false&esWrite=true&scene='+srtage);
+        axios.get('/reUnderstand/optimus/test/understand/patient/'+hospitalId+'/'+admissionId+'?esRead=false&esWrite=true&scene='+srtage).then(function(response){
+          console.log(response);
+          _this.understandStatus=response.status;
+          // alert(_this.understandStatus);
+          if (_this.understandStatus=='200'){
+            _this.reUnderstandButtonName = '重新理解';
+            _this.isSending = false;
+            ElMessage({
+              showClose: true,
+              message: '【'+hospitalId+'】'+hospitalName+'医院,'+',流水号【'+admissionId+'】理解成功!',
+              type: 'success',
+              duration: 3 * 1000
+            })
+          }else {
+            ElMessage({
+              showClose: true,
+              message: '【'+hospitalId+'】'+hospitalName+'医院,'+',流水号【'+admissionId+'】理解失败,请联系Optimus管理员!',
+              type: 'error',
+              duration: 3 * 1000
+            })
+          }
+        });
       },
       //跳转到文书列表MedicalDocList页面
       docUnderstandResult(row){
