@@ -689,7 +689,6 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     @Override
     public Map<String, Object> getDocContentDetail(String hospitalId, String admissionId, String stage, String fileId) {
         Map<String,Object> result = new LinkedHashMap<>();
-        //todo 查询文书内容逻辑
         if (StringUtils.isBlank(fileId)){
             return result;
         }
@@ -702,9 +701,113 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                         //判断是普通文书还是医嘱
                         String docType = doc.get("docType") == null ? "" : doc.get("docType").toString();
                         if(emrNoConstant.standingOrderEmrNo.equals(docType)){
-                            //长期医嘱
+                            //todo 长期医嘱
+                            Map<String,Map<String,Map<String,Object>>> formatedDocMap = this.formatDocList(allDocsInOneRecord);
+                            List<ShowLabelModel> unifyLabels = this.generateUnifyLabel(formatedDocMap);
+                            List<ShowDocModel> resultDocList = this.convertDocMapToModelList(formatedDocMap,unifyLabels);
+                            //处理医嘱
+                            if (!CollectionUtils.isEmpty(resultDocList)){
+                                resultDocList = formateOrder(resultDocList);
+                            }
+                            List<StandingOrderModel> standingOrderModelList = new ArrayList<>();
+                            for (ShowDocModel docModel:resultDocList){
+                                if (docModel.getDocType().equalsIgnoreCase(emrNoConstant.standingOrderEmrNo)){
+                                    standingOrderModelList.addAll(docModel.getStandingOrderList());
+                                }
+                            }
+                            List<Map<String,String>> yzsProjectTypeList = new ArrayList<>();
+                            List<Map<String,String>> projectCategoriesList = new ArrayList<>();
+                            List<String> yzsProjectTypes = new ArrayList<>();
+                            List<String> projectCategories = new ArrayList<>();
+                            if (!CollectionUtils.isEmpty(standingOrderModelList)){
+                                //临时医嘱
+                                for (StandingOrderModel standingOrderModel:standingOrderModelList){
+                                    if (StringUtils.isNotBlank(standingOrderModel.getYzsProjectType())){
+                                        if (!yzsProjectTypes.contains(standingOrderModel.getYzsProjectType())){
+                                            yzsProjectTypes.add(standingOrderModel.getYzsProjectType());
+                                        }
+                                    }
+                                    if (StringUtils.isNotBlank(standingOrderModel.getProjectCategories())){
+                                        if (!projectCategories.contains(standingOrderModel.getProjectCategories())){
+                                            projectCategories.add(standingOrderModel.getProjectCategories());
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!CollectionUtils.isEmpty(yzsProjectTypes)){
+                                for (String yzs:yzsProjectTypes){
+                                    Map<String,String> yzsMap = new LinkedHashMap<>();
+                                    yzsMap.put("text",yzs);
+                                    yzsMap.put("value",yzs);
+                                    yzsProjectTypeList.add(yzsMap);
+                                }
+                            }
+                            if (!CollectionUtils.isEmpty(projectCategories)){
+                                for (String pro:projectCategories){
+                                    Map<String,String> map = new LinkedHashMap<>();
+                                    map.put("text",pro);
+                                    map.put("value",pro);
+                                    projectCategoriesList.add(map);
+                                }
+                            }
+                            result.put("standingOrderList",standingOrderModelList);
+                            result.put("yzsProjectTypeList",yzsProjectTypeList);
+                            result.put("projectCategoriesList",projectCategoriesList);
                         } else if (emrNoConstant.statOrderEmrNo.equals(docType)){
-                            //临时医嘱
+                            //todo 临时医嘱
+                            Map<String,Map<String,Map<String,Object>>> formatedDocMap = this.formatDocList(allDocsInOneRecord);
+                            List<ShowLabelModel> unifyLabels = this.generateUnifyLabel(formatedDocMap);
+                            List<ShowDocModel> resultDocList = this.convertDocMapToModelList(formatedDocMap,unifyLabels);
+                            //处理医嘱
+                            if (!CollectionUtils.isEmpty(resultDocList)){
+                                resultDocList = formateOrder(resultDocList);
+                            }
+                            List<StatOrderModel> statOrderList = new ArrayList<>();
+                            for (ShowDocModel docModel:resultDocList){
+                                if (docModel.getDocType().equalsIgnoreCase(emrNoConstant.statOrderEmrNo)){
+                                    statOrderList.addAll(docModel.getStatOrderList());
+                                }
+                            }
+                            List<Map<String,String>> yzsProjectTypeList = new ArrayList<>();
+                            List<Map<String,String>> projectCategoriesList = new ArrayList<>();
+                            List<String> yzsProjectTypes = new ArrayList<>();
+                            List<String> projectCategories = new ArrayList<>();
+                            if (!CollectionUtils.isEmpty(statOrderList)){
+                                //临时医嘱
+                                for (StatOrderModel statOrderModel:statOrderList){
+                                    if (StringUtils.isNotBlank(statOrderModel.getYzsProjectType())){
+                                        if (!yzsProjectTypes.contains(statOrderModel.getYzsProjectType())){
+                                            yzsProjectTypes.add(statOrderModel.getYzsProjectType());
+                                        }
+                                    }
+                                    if (StringUtils.isNotBlank(statOrderModel.getProjectCategories())){
+                                        if (!projectCategories.contains(statOrderModel.getProjectCategories())){
+                                            projectCategories.add(statOrderModel.getProjectCategories());
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!CollectionUtils.isEmpty(yzsProjectTypes)){
+                                for (String yzs:yzsProjectTypes){
+                                    Map<String,String> yzsMap = new LinkedHashMap<>();
+                                    yzsMap.put("text",yzs);
+                                    yzsMap.put("value",yzs);
+                                    yzsProjectTypeList.add(yzsMap);
+                                }
+                            }
+                            if (!CollectionUtils.isEmpty(projectCategories)){
+                                for (String pro:projectCategories){
+                                    Map<String,String> map = new LinkedHashMap<>();
+                                    map.put("text",pro);
+                                    map.put("value",pro);
+                                    projectCategoriesList.add(map);
+                                }
+                            }
+                            result.put("statOrderList",statOrderList);
+                            result.put("yzsProjectTypeList",yzsProjectTypeList);
+                            result.put("projectCategoriesList",projectCategoriesList);
                         } else {
                             //普通文书
                             //获取文书下的所有节点

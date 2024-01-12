@@ -116,7 +116,18 @@ export default {
       let hospitalId = this.$route.params.hospitalId;
       let admissionId = this.$route.params.admissionId;
       let stage = this.$route.params.stage;
-      this.$router.push('/DocContentDetail/'+hospitalId+'/'+admissionId+'/'+stage+'/'+row.fileId);
+      let emrNo = row.docType;
+      let showContent = '';
+      if (emrNo=='EMR110001'){
+        showContent = 'standingOrder';
+      }else if (emrNo =='EMR110002'){
+        showContent = 'statOrder';
+      }else {
+        showContent = 'normal';
+      }
+      // alert(emrNo);
+      // alert(showContent);
+      this.$router.push('/DocContentDetail/'+hospitalId+'/'+admissionId+'/'+stage+'/'+row.fileId+'/'+showContent);
       // alert(row.fileId);
       // alert(hospitalId);
       // alert(admissionId);
