@@ -53,12 +53,14 @@
           </div>
           <div v-if="showContent=='statOrder'">
             <el-row>
-              <el-text class="mx-1" type="warning" size="large" tag="ins">临时医嘱</el-text>
+              <el-text style="color: #529b2e;font-weight: bold" class="mx-1" size="large" tag="ins">临时医嘱</el-text>
             </el-row>
             <el-row>
               <el-table
                   :data="statOrderTableData"
                   border
+                  stripe
+                  :header-cell-style="{background:'#eef1f6',color:'#606266'}"
                   style="width: 100%;margin:10px">
                 <el-table-column fixed prop="day" label="日期"></el-table-column>
                 <el-table-column prop="time" label="时间"></el-table-column>
@@ -73,12 +75,14 @@
           </div>
           <div v-if="showContent=='standingOrder'">
             <el-row>
-              <el-text class="mx-1" type="warning" size="large" tag="ins">长期医嘱</el-text>
+              <el-text style="color: #529b2e;font-weight: bold" class="mx-1" type="warning" size="large" tag="ins">长期医嘱</el-text>
             </el-row>
             <el-row>
               <el-table
                   :data="standingOrderTableData"
                   border
+                  stripe
+                  :header-cell-style="{background:'#eef1f6',color:'#606266'}"
                   style="width: 100%;margin:10px;">
                 <el-table-column fixed prop="openingTime" label="开立时间"></el-table-column>
                 <el-table-column prop="startTime" label="开始时间"></el-table-column>

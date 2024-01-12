@@ -47,7 +47,7 @@ const routes = [
     props:true
   },
   {
-    path: '/DocContentDetail/:hospitalId/:admissionId/:stage/:fileId',
+    path: '/DocContentDetail/:hospitalId/:admissionId/:stage/:fileId/:showContent',
     name: 'DocContentDetail',
     component: DocContentDetail,
     props:true
