@@ -8,7 +8,9 @@ import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import zhLocale from 'element-plus/es/locale/lang/zh-cn';
 //引入axious
-// import axios from 'axios';
+import axios from 'axios';
+import service from "@/utils/request";
+import Vue from 'vue';
 
 // 解决 ElTable 自动宽度高度导致的「ResizeObserver loop limit exceeded」问题
 const debounce = (fn, delay) => {
@@ -32,7 +34,7 @@ window.ResizeObserver = class ResizeObserver extends _ResizeObserver{
 }
 
 //初始化插件
-createApp(App).use(store).use(router).use(ElementPlus,{
+const  app =createApp(App).use(store).use(router).use(ElementPlus,{
     locale:{
         el:{
             // 整体覆盖
@@ -46,3 +48,6 @@ createApp(App).use(store).use(router).use(ElementPlus,{
         }
     }
 }).mount('#app')
+
+// app.config.globalProperties.$instance = service;
+

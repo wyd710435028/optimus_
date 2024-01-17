@@ -52,7 +52,7 @@
               label="操作">
             <template v-slot="scope">
               <el-row>
-                <el-button @click="reUnderstand(scope.row)" type="danger" :loading="isSending">{{reUnderstandButtonName}}</el-button>
+                <el-button @click="reUnderstand(scope.row)" type="danger" :loading="scope.row.isSending">{{scope.row.reUnderstandButtonName==null?'重新理解':scope.row.reUnderstandButtonName}}</el-button>
                 <el-button @click="docUnderstandResult(scope.row)" type="success">病历详情</el-button>
                 <el-button @click="docQuery(scope.row)" type="warning">文书查询</el-button>
               </el-row>
@@ -95,8 +95,6 @@
           pageSize: null,
           total: null
         },
-        isSending:false,
-        reUnderstandButtonName:'重新理解',
         understandStatus:''
       }
     },
@@ -123,33 +121,37 @@
       },
       reUnderstand(row) {
         // alert(row);
+        row.isSending = true;
         console.log(row);
         let hospitalId = row.hospitalId;
         let admissionId = row.admissionId;
         let hospitalName = row.hospitalName;
-        let srtage = row.stage;
+        let stage = row.stage;
         var _this = this;
-        _this.isSending = true;
-        _this.reUnderstandButtonName = '理解中';
+        row.reUnderstandButtonName = '理解中';
         //发送请求
-        // alert('http://10.128.3.237:8851/optimus/test/understand/patient/'+hospitalId+'/'+admissionId+'?esRead=false&esWrite=true&scene='+srtage);
-        axios.get('/reUnderstand/optimus/test/understand/patient/'+hospitalId+'/'+admissionId+'?esRead=false&esWrite=true&scene='+srtage).then(function(response){
+        axios.get('/reUnderstand/optimus/test/understand/patient/'+hospitalId+'/'+admissionId, {params:{
+            esRead:false,
+            esWrite:true,
+            scene:stage
+          }}).then(function(response){
           console.log(response);
           _this.understandStatus=response.status;
-          // alert(_this.understandStatus);
           if (_this.understandStatus=='200'){
-            _this.reUnderstandButtonName = '重新理解';
-            _this.isSending = false;
+            row.isSending = false;
+            row.reUnderstandButtonName = '重新理解';
             ElMessage({
               showClose: true,
-              message: '【'+hospitalId+'】'+hospitalName+'医院,'+',流水号【'+admissionId+'】理解成功!',
+              message: '【'+hospitalId+'】'+hospitalName+'医院,'+'流水号【'+admissionId+'】理解成功!',
               type: 'success',
               duration: 3 * 1000
             })
           }else {
+            row.isSending = false;
+            row.reUnderstandButtonName = '理解出错';
             ElMessage({
               showClose: true,
-              message: '【'+hospitalId+'】'+hospitalName+'医院,'+',流水号【'+admissionId+'】理解失败,请联系Optimus管理员!',
+              message: '【'+hospitalId+'】'+hospitalName+'医院,'+'流水号【'+admissionId+'】理解失败,请联系Optimus管理员!',
               type: 'error',
               duration: 3 * 1000
             })
@@ -158,35 +160,19 @@
       },
       //跳转到文书列表MedicalDocList页面
       docUnderstandResult(row){
-        // alert(row.hospitalId);
-        // alert(row.admissionId);
-        // alert(row.stage);
-        var _this = this;
-        // var pageSize = _this.pagination.pageSize;
-        // var currentPage = _this.pagination.currentPage;
-        // var total = _this.pagination.total;
-        // alert(pageSize);
-        // alert(currentPage);
-        // alert(total);
-        // this.$router.push('/MedicalDocList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage+'/'+pageSize+'/'+currentPage);
         this.$router.push('/MedicalDocList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);
       },
       docQuery(row){
-        // alert(row.hospitalId);
-        // alert(row.admissionId);
-        // alert(row.stage);
         this.$router.push('/DocQueryList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);
       },
       //分页插件方法
       //切换当前页
       handleCurrentChange(val) {
-        // alert(val);
         this.pagination.currentPage = val;
         this.queryList();
       },
       //切换每页显示条数
       handleSizeChange(val) {
-        // alert(`每页 ${val} 条`);
         this.pagination.pageSize = val;
         this.queryList();
       },
