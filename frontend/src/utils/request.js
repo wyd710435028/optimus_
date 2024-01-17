@@ -6,8 +6,8 @@ import {ElMessage} from 'element-plus'
 const service = axios.create({
     // baseURL: '/', // api的base_Url
     // 后端的请求路径
-    // baseURL: 'http://10.128.3.122:8100/optimus_visual', // 远程api的base_Url
-    baseURL: 'http://10.200.16.66:8100/optimus_visual', // 本地api的base_Url
+    baseURL: 'http://10.128.3.122:8100/optimus_visual', // 远程api的base_Url
+    // baseURL: 'http://10.200.16.66:8100/optimus_visual', // 本地api的base_Url
     timeout: 500000 // 请求超时时间
 })
 

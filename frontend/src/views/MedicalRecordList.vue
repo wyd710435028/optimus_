@@ -129,21 +129,23 @@ export default {
       })
     },
     reUnderstand(row) {
-      row.isSending = true;
       // alert(row);
+      row.isSending = true;
       console.log(row);
       let hospitalId = row.hospitalId;
       let admissionId = row.admissionId;
       let hospitalName = row.hospitalName;
-      let srtage = row.stage;
+      let stage = row.stage;
       var _this = this;
       row.reUnderstandButtonName = '理解中';
       //发送请求
-      // alert('http://10.128.3.237:8851/optimus/test/understand/patient/'+hospitalId+'/'+admissionId+'?esRead=false&esWrite=true&scene='+srtage);
-      axios.get('/reUnderstand/optimus/test/understand/patient/'+hospitalId+'/'+admissionId+'?esRead=false&esWrite=true&scene='+srtage).then(function(response){
+      axios.get('/reUnderstand/optimus/test/understand/patient/'+hospitalId+'/'+admissionId, {params:{
+          esRead:false,
+          esWrite:true,
+          scene:stage
+        }}).then(function(response){
         console.log(response);
         _this.understandStatus=response.status;
-        // alert(_this.understandStatus);
         if (_this.understandStatus=='200'){
           row.isSending = false;
           row.reUnderstandButtonName = '重新理解';
