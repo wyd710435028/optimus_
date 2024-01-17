@@ -5,14 +5,12 @@ module.exports = defineConfig({
   outputDir:'dist',
   publicPath:'./',
   devServer: {
-    client: {
-      overlay: false
-    },
     proxy:{
-      "/reUnderstand":{
-        target:"http://10.128.3.237:8851",
+      '/reUnderstand':{
+        target:'http://10.128.3.237:8851',
+        changeOrigin: true,
         pathRewrite:{
-          "^/reUnderstand":""
+          '^/reUnderstand':''
         }
       }
     }
