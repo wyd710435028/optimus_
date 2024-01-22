@@ -1,5 +1,6 @@
 package com.unisound.optimus_visual.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -11,6 +12,7 @@ import java.util.regex.Pattern;
 /**
  * 高亮文本工具类
  */
+@Slf4j
 public class Highlighter {
     /**
      * 正则匹配的方式
@@ -43,8 +45,17 @@ public class Highlighter {
             int start =matcher.start();
             int end = matcher.end();
             String substring = text.substring(start, end);
-            sb.append("<span style='background-color: "+keyMap.get(substring)+"'>");
+            String labelNameAndColor = StringUtils.isBlank(keyMap.get(substring))?"":keyMap.get(substring);
+            String[] split = labelNameAndColor.split("&");
+            String color = split[0];
+            String labelName = split.length==2?split[1]:"";
+            sb.append("<span title='点击跳转到实体链接页面' style='background-color: "+color+"'>");
+            sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/EntityLinkJump/"+substring+"/"+labelName+">");
+//            sb.append("<a style='color:black;text-decoration: none' onclick='showEntityLink("+substring+","+(StringUtils.isBlank(labelName)?"noValue":labelName)+")'"+">");
+//            sb.append("<el-text @click=\"showEntityLink("+substring+","+labelName+")\"></el-text>");
+            log.info("<a style='color:black;text-decoration: none' href= 'javascript:void(0)' onclick='showEntityLink("+substring+","+(StringUtils.isBlank(labelName)?"noValue":labelName)+")'"+">");
             sb.append(text, matcher.start(), matcher.end());
+            sb.append("</a>");
             sb.append("</span>");
             lastEnd = matcher.end();
         }
@@ -67,7 +78,7 @@ public class Highlighter {
             for (String key:keySet){
                 if (text.contains(key)){
                     String color = keyMap.get(key);
-                    res = res.replaceAll(key,"<span style='background-color: "+color+"'>"+key+"</span>");
+                    res = res.replaceAll(key,"<span style='background-color: "+color+"'>"+"<el-link href=\"www.baidu.com\">"+key+"</el-link>"+"</span>");
                 }
             }
         }

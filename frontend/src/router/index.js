@@ -6,6 +6,7 @@ import MedicalNodeDetail from "../views/MedicalNodeDetail.vue";
 import DocQueryList from "../views/DocQueryList.vue";
 import DocContentDetail from "../views/DocContentDetail.vue";
 import NodeDetail from "../views/NodeDetail.vue";
+import EntityLinkJump from "../views/EntityLinkJump.vue";
 
 const routes = [
   {
@@ -51,6 +52,14 @@ const routes = [
     name: 'DocContentDetail',
     component: DocContentDetail,
     props:true
+  },
+  {
+    path: '/EntityLinkJump/:entityName/:labelName',
+    name: 'EntityLinkJump',
+    component: EntityLinkJump,
+    meta: {
+      keepAlive: true
+    }
   }
 ]
 
