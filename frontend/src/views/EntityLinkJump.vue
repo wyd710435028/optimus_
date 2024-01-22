@@ -1,6 +1,9 @@
 <template>
   <router-view></router-view>
-    <el-card class="box-card">
+  <el-header style="background-color: #009688;">
+    <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
+  </el-header>
+    <el-card class="box-card" style="margin-top: 5px">
       <div class="card-header">
         <span style="font-weight: bold;font-size: 25px; color: #c45656; margin-top: 12px; margin-bottom: 4px;">实体百科</span>
 <!--        <el-button class="button" text>返回</el-button>-->
@@ -38,6 +41,9 @@ export default {
       this.detailVisible=true;
       //data是父组件弹窗传递过来的值，我们可以打印看看
       console.log(data);
+    },
+    returnIndex(){
+      this.$router.push('/');
     }
   },
   /*初始化加载*/

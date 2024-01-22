@@ -1,7 +1,9 @@
 <template>
   <router-view></router-view>
   <el-container>
-    <el-header style="background-color: #009688;cursor: pointer" @click="returnIndex()">Optimus可视化系统</el-header>
+    <el-header style="background-color: #009688;">
+      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
+    </el-header>
     <el-main style="border: 2px">
       <el-row>
         <el-form :inline="true" :model="formInline" class="demo-form-inline">
