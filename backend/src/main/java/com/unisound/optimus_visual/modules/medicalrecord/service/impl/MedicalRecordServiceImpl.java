@@ -1218,11 +1218,16 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         return result;
     }
 
+    /**
+     * 转换labelModelList格式
+     * @param labelModelList
+     * @return Key:标签内容,value:标签颜色&标签内容,说明: value中的标签内容用于实体链接地址的参数
+     */
     private Map<String, String> convertUnifyToMap(List<ShowLabelModel> labelModelList) {
         Map<String,String> colorMap = new LinkedHashMap<>();
         if (!CollectionUtils.isEmpty(labelModelList)){
             for (ShowLabelModel labelModel : labelModelList){
-                colorMap.put(labelModel.getLabelContent(),labelModel.getLabelColor());
+                colorMap.put(labelModel.getLabelContent(),labelModel.getLabelColor()+"&"+labelModel.getLabelContent());
             }
         }
         return colorMap;

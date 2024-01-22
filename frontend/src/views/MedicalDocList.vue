@@ -109,18 +109,35 @@
         </el-aside>
       </el-col>
     </el-row>
-
-
-
   </el-container>
+
+  <el-dialog title="实体链接弹窗" v-model="dialogVisible" width="35%">
+    <el-card class="box-card">
+      <div v-for="(value, key) in encyclopedia" :key="key" class="text item">
+        <div style="font-weight: bold;font-size: 18px; margin-top: 12px; margin-bottom: 4px;">
+          {{key}}
+        </div>
+        <div style="white-space: pre-wrap;">
+          {{value}}
+        </div>
+      </div>
+    </el-card>
+  </el-dialog>
 </template>
 <script>
 import {getUnderstandResult} from "../apis/get";
 import {getNodeByFileId} from "../apis/post";
 import {transLabelList} from "../apis/post";
 import {getNodeByFileIdWithHighLight} from "../apis/post";
+import {ElMessage} from "element-plus";
+import entitylinkDialog from "./EntityLinkJump"
+import { ref } from 'vue'
 
+const dialogVisible = ref(false);
 export default {
+  components:{
+    entitylinkDialog
+  },
   data() {
     return {
       //左侧树结构
@@ -202,7 +219,9 @@ export default {
       entityLabelList:[],
       spanLabelList:[],
       docType:'',
-      fileId:''
+      fileId:'',
+      Visiable:false,
+      detailVisible:false
     }
   },
   methods: {

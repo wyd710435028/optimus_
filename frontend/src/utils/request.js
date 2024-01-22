@@ -53,5 +53,6 @@ service.interceptors.response.use(
     }
 )
 
+//导出service配置，方便其他组件引用
 export default service
 
