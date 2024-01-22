@@ -1,7 +1,9 @@
 <template>
   <router-view></router-view>
   <el-container>
-    <el-header style="background-color: #009688;cursor: pointer" @click="returnIndex()">Optimus可视化系统</el-header>
+    <el-header style="background-color: #009688;">
+      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
+    </el-header>
     <el-container>
       <el-main>
         <el-divider>entity理解结果</el-divider>
