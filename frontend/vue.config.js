@@ -5,6 +5,9 @@ module.exports = defineConfig({
   outputDir:'dist',
   publicPath:'./',
   devServer: {
+    client:{
+      overlay: false
+    },
     //创建代理
     proxy:{
       '/reUnderstand':{

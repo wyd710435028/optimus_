@@ -8,6 +8,7 @@ import com.unisound.optimus_visual.global.result.CommonResult;
 import com.unisound.optimus_visual.modules.medicalrecord.model.Hospital;
 import com.unisound.optimus_visual.modules.medicalrecord.model.MedicalRecordVo;
 import com.unisound.optimus_visual.modules.medicalrecord.model.ShowDocModel;
+import com.unisound.optimus_visual.modules.medicalrecord.model.ShowEventModelVo;
 import com.unisound.optimus_visual.modules.medicalrecord.service.MedicalRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -138,6 +139,20 @@ public class MedicalRecordController {
     @RequestMapping("docQueryList")
     public CommonResult docQueryList(String hospitalId,String admissionId,String stage,String docName,String emrNo,String tags,Integer pageSize,Integer pageNum){
         PageInfo<ShowDocModel> docLis = medicalRecordService.docQueryList(hospitalId,admissionId,stage,docName,emrNo,tags,pageSize,pageNum);
+        return new CommonResult(docLis);
+    }
+
+    /**
+     * 查询事件列表
+     * @param hospitalId 查询条件:所属医院id
+     * @param admissionId 查询条件:流水号
+     * @param pageSize 每页容量
+     * @param pageNum 页码
+     * @return
+     */
+    @RequestMapping("eventQueryList")
+    public CommonResult eventQueryList(String hospitalId,String admissionId,String stage,String eventName,Integer pageSize,Integer pageNum){
+        PageInfo<ShowEventModelVo> docLis = medicalRecordService.eventQueryList(hospitalId,admissionId,stage,eventName,pageSize,pageNum);
         return new CommonResult(docLis);
     }
 

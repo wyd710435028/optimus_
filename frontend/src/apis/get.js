@@ -45,6 +45,20 @@ export function docQueryList(hospitalId,admissionId,stage,fileName,emrNo,tags,pa
     })
 }
 
+export function eventQueryList(hospitalId,admissionId,stage,eventName,pageSize,currentPage){
+    return service.get('/medicalrecord/eventQueryList', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            hospitalId: hospitalId,
+            admissionId: admissionId,
+            stage:stage,
+            eventName:eventName,
+            pageSize:pageSize,
+            pageNum:currentPage
+        }
+    })
+}
+
 export function docContentDetail(hospitalId,admissionId,stage,fileId){
     return service.get('/medicalrecord/docContentDetail', {
         headers: { 'Content-Type': 'application/json' },

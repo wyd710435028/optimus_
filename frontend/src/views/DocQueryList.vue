@@ -108,7 +108,7 @@ export default {
       //发送请求
       docQueryList(hospitalId,admissionId,stage,fileName,emrNo,tags,_this.pagination.pageSize,_this.pagination.currentPage).then(function (response){
         console.log(response);
-        _this.tableData = response.data.data.records;
+        _this.tableData = response.data.data.records==null?null:response.data.data.records;
         _this.pagination.pageSize=response.data.data.size;
         _this.pagination.currentPage=response.data.data.current;
         _this.pagination.total=response.data.data.total;
