@@ -232,6 +232,8 @@ export default {
       let hospitalId = this.$route.params.hospitalId;
       let admissionId = this.$route.params.admissionId;
       let stage = this.$route.params.stage;
+      let fileId = this.$route.params.fileId;
+      let docType = this.$route.params.docType;
       // alert(hospitalId);
       // alert(admissionId);
       // alert(stage);
@@ -244,8 +246,33 @@ export default {
         // _this.formatedDocMap=response.data.data.formatedDocMap;
         _this.nodeMap=response.data.data.docList;
         _this.docDetail=response.data.data;
+        // alert(fileId);
+        // alert(docType);
+        if (fileId!='noFileId'&&docType!='noDocType'){
+          getNodeByFileId(fileId,JSON.stringify(response.data.data.docList)).then(function (response) {
+            if (docType!=null){
+              if (docType=='EMR110001'){
+                //长期医嘱
+                _this.showContent = 'standingOrder';
+                _this.standingOrderTableData = response.data.data.standingOrderList;
+                _this.projectType = response.data.data.projectCategoriesList;
+                _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+              }else if (docType=='EMR110002'){
+                //临时医嘱
+                _this.showContent = 'statOrder';
+                _this.statOrderTableData = response.data.data.statOrderList;
+                _this.projectType = response.data.data.projectCategoriesList;
+                _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+              }else {
+                //正常文书
+                _this.showContent = 'normal';
+                _this.nodeList = response.data.data.nodeList;
+                _this.allEntityLabelList = response.data.data.labelList;
+              }
+            }
+          })
+        }
       })
-
     },
 
     /**
@@ -378,7 +405,7 @@ export default {
     clickTag(labelContent,labelColor) {
       let _this = this;
       let docType = _this.docType;
-      let fileId = _this.fileId;
+      let fileId = this.$route.params.fileId;
       getNodeByFileIdWithHighLight(fileId,labelContent,labelColor,JSON.stringify(_this.nodeMap)).then(function (response) {
         if (docType=='EMR110001'){
           //长期医嘱

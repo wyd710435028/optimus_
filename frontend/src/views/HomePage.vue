@@ -164,7 +164,7 @@
       },
       //跳转到文书列表MedicalDocList页面
       docUnderstandResult(row){
-        this.$router.push('/MedicalDocList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);
+        this.$router.push('/MedicalDocList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage+'/noFileId'+'/noDocType');
       },
       docQuery(row){
         this.$router.push('/DocQueryList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);
