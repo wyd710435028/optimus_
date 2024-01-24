@@ -58,7 +58,7 @@
                 <el-button @click="reUnderstand(scope.row)" type="danger" :loading="scope.row.isSending">{{scope.row.reUnderstandButtonName==null?'重新理解':scope.row.reUnderstandButtonName}}</el-button>
                 <el-button @click="docUnderstandResult(scope.row)" type="success">病历详情</el-button>
                 <el-button @click="docQuery(scope.row)" type="warning">文书查询</el-button>
-                <el-button @click="eventQuery(scope.row)" color="#009670">事件查询</el-button>
+                <el-button @click="eventQuery(scope.row)" color="#478A97">事件查询</el-button>
               </el-row>
             </template>
           </el-table-column>
@@ -164,7 +164,7 @@
       },
       //跳转到文书列表MedicalDocList页面
       docUnderstandResult(row){
-        this.$router.push('/MedicalDocList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);
+        this.$router.push('/MedicalDocList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage+'/noFileId'+'/noDocType');
       },
       docQuery(row){
         this.$router.push('/DocQueryList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);

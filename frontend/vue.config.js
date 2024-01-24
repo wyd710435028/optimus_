@@ -18,7 +18,7 @@ module.exports = defineConfig({
         }
       },
       '/entityLink':{
-        target:'http://10.128.1.204:9981', //将 /reUnderstand开头的请求转发到 http://10.128.3.237:8851
+        target:'http://10.128.1.204:9981', //将 /entityLink开头的请求转发到 http://10.128.3.237:8851
         changeOrigin: true, //允许跨域
         pathRewrite:{
           '^/entityLink':''

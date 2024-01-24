@@ -53,7 +53,7 @@ public class Highlighter {
             sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/EntityLinkJump/"+substring+"/"+labelName+">");
 //            sb.append("<a style='color:black;text-decoration: none' onclick='showEntityLink("+substring+","+(StringUtils.isBlank(labelName)?"noValue":labelName)+")'"+">");
 //            sb.append("<el-text @click=\"showEntityLink("+substring+","+labelName+")\"></el-text>");
-            log.info("<a style='color:black;text-decoration: none' href= 'javascript:void(0)' onclick='showEntityLink("+substring+","+(StringUtils.isBlank(labelName)?"noValue":labelName)+")'"+">");
+//            log.info("<a style='color:black;text-decoration: none' href= 'javascript:void(0)' onclick='showEntityLink("+substring+","+(StringUtils.isBlank(labelName)?"noValue":labelName)+")'"+">");
             sb.append(text, matcher.start(), matcher.end());
             sb.append("</a>");
             sb.append("</span>");

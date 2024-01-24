@@ -19,7 +19,7 @@ const routes = [
     }
   },
   {
-    path: '/MedicalDocList/:hospitalId/:admissionId/:stage',
+    path: '/MedicalDocList/:hospitalId/:admissionId/:stage/:fileId/:docType',
     name: 'MedicalDocList',
     component: MedicalDocList,
     props:true
