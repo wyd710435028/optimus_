@@ -50,13 +50,15 @@
               label="病历理解时间">
           </el-table-column>
           <el-table-column
-              fixed="right"
-              label="操作">
+              label="操作"
+              width="500px"
+          >
             <template v-slot="scope">
               <el-row>
                 <el-button @click="reUnderstand(scope.row)" type="danger" :loading="scope.row.isSending">{{scope.row.reUnderstandButtonName==null?'重新理解':scope.row.reUnderstandButtonName}}</el-button>
                 <el-button @click="docUnderstandResult(scope.row)" type="success">病历详情</el-button>
                 <el-button @click="docQuery(scope.row)" type="warning">文书查询</el-button>
+                <el-button @click="eventQuery(scope.row)" color="#009670">事件查询</el-button>
               </el-row>
             </template>
           </el-table-column>
@@ -166,6 +168,9 @@
       },
       docQuery(row){
         this.$router.push('/DocQueryList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);
+      },
+      eventQuery(row){
+        this.$router.push('/EventQueryList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);
       },
       //分页插件方法
       //切换当前页

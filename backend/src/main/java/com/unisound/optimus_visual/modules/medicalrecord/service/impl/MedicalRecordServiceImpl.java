@@ -273,6 +273,35 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     /**
+     * 获取一个病历下的所有文书
+     * @param hospitalId 医院id
+     * @param admissionId 流水号
+     * @param stage 病历阶段
+     * @return
+     */
+    public Map<String,Object> getAllEventsInOneRecord(String hospitalId, String admissionId, String stage){
+        Map<String,Object> resultMap = new LinkedHashMap<>();
+        //查询逻辑
+        String understandResultStr = this.getUnderstandResultStr(hospitalId, admissionId, stage);
+        if (StringUtils.isNotBlank(understandResultStr)) {
+            Map<String, Object> parseMap = JSON.parseObject(understandResultStr, Map.class);
+            if (!CollectionUtils.isEmpty(parseMap) && parseMap.containsKey("_source")) {
+                Map<String, Object> sourceMap = (Map<String, Object>) parseMap.get("_source");
+                if (!CollectionUtils.isEmpty(sourceMap) && sourceMap.containsKey("data")) {
+                    Map<String, Object> dataMap = (Map) sourceMap.get("data");
+                    if (!CollectionUtils.isEmpty(dataMap) && dataMap.containsKey("patient")) {
+                        Map<String, Object> patientMap = (Map<String, Object>) dataMap.get("patient");
+                        if (!CollectionUtils.isEmpty(patientMap) && patientMap.containsKey("inHospitalInfo")) {
+                            resultMap = (Map<String, Object>) patientMap.get("inHospitalInfo");
+                        }
+                    }
+                }
+            }
+        }
+        return resultMap;
+    }
+
+    /**
      * 根据黑名单配置筛选
      * @param nodeShowBlackList 不显示的节点名称
      * @param result
@@ -1100,6 +1129,68 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         }
         result.put("hightedText",hightedText);
         return result;
+    }
+
+    /**
+     * 查询事件列表
+     * @param hospitalId 查询条件:所属医院id
+     * @param admissionId 查询条件:流水号
+     * @param pageSize 每页容量
+     * @param pageNum 页码
+     * @return 事件查询列表
+     */
+    @Override
+    public PageInfo<ShowEventModelVo> eventQueryList(String hospitalId, String admissionId, String stage,String eventName, Integer pageSize, Integer pageNum) {
+        List<ShowEventModelVo> showEventModelVoList = new ArrayList<>();
+        if (StringUtils.isBlank(hospitalId)||StringUtils.isBlank(admissionId)||StringUtils.isBlank(stage)){
+            return null;
+        }
+        //查询事件信息
+        Map<String, Object> allEventsInOneRecord = this.getAllEventsInOneRecord(hospitalId, admissionId, stage);
+        if (allEventsInOneRecord.isEmpty()){
+            return null;
+        }
+        //todo 创建ShowEventModelVo对象集合
+        if (allEventsInOneRecord.containsKey("eventMap")){
+            JSONObject eventMap = (JSONObject) allEventsInOneRecord.get("eventMap");
+            for (String key:eventMap.keySet()){
+                List<JSONObject> jsonArray= (List<JSONObject>) eventMap.get(key);
+                if (!jsonArray.isEmpty()&&jsonArray.size()>0){
+                    for (JSONObject jsonObject:jsonArray){
+                        ShowEventModelVo eventModelVo = new ShowEventModelVo();
+                        eventModelVo.setId(Objects.isNull(jsonObject.get("id"))?"":jsonObject.get("id").toString());
+                        eventModelVo.setEventName(Objects.isNull(jsonObject.get("eventName"))?"":jsonObject.get("eventName").toString());
+                        eventModelVo.setEventTime(Objects.isNull(jsonObject.get("eventTime"))?"":jsonObject.get("eventTime").toString());
+                        eventModelVo.setEventIdentity(Objects.isNull(jsonObject.get("eventIdentity"))?"":jsonObject.get("eventIdentity").toString());
+                        eventModelVo.setDocMap(Objects.isNull(jsonObject.get("docMap"))?"":jsonObject.get("docMap").toString());
+                        eventModelVo.setOrderMap(Objects.isNull(jsonObject.get("orderMap"))?"":jsonObject.get("orderMap").toString());
+                        eventModelVo.setAttributeMap(Objects.isNull(jsonObject.get("attributeMap"))?"":jsonObject.get("attributeMap").toString());
+                        eventModelVo.setHighlightInfo(Objects.isNull(jsonObject.get("highlightInfo"))?"":jsonObject.get("highlightInfo").toString());
+                        eventModelVo.setAllDocFileIdSet(Objects.isNull(jsonObject.get("allDocFileIdSet"))?"":jsonObject.get("allDocFileIdSet").toString());
+                        eventModelVo.setTimeAttribute(Objects.isNull(jsonObject.get("timeAttribute"))?"":jsonObject.get("timeAttribute").toString());
+                        eventModelVo.setIdentityAttribute(Objects.isNull(jsonObject.get("identityAttribute"))?"":jsonObject.get("identityAttribute").toString());
+                        showEventModelVoList.add(eventModelVo);
+                    }
+                }
+            }
+        }
+        //开始分页
+        if (pageSize==null||pageSize<=0){
+            pageSize=10;
+        }
+        if (pageNum==null||pageNum<=0){
+            pageNum=1;
+        }
+        if (StringUtils.isNotBlank(eventName)){
+            showEventModelVoList = showEventModelVoList.stream().filter(e->e.getEventName().contains(eventName)).collect(Collectors.toList());
+        }
+        List<ShowEventModelVo> collect = showEventModelVoList.stream().skip(pageSize * (pageNum-1)).limit(pageSize).collect(Collectors.toList());
+        PageInfo pageInfo = new PageInfo();
+        pageInfo.setRecords(collect);
+        pageInfo.setTotal(showEventModelVoList.size());
+        pageInfo.setCurrent(pageNum==null?1:pageNum);
+        pageInfo.setSize(pageSize==null?10:pageSize);
+        return pageInfo;
     }
 
     /**

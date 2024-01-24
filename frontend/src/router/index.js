@@ -7,6 +7,7 @@ import DocQueryList from "../views/DocQueryList.vue";
 import DocContentDetail from "../views/DocContentDetail.vue";
 import NodeDetail from "../views/NodeDetail.vue";
 import EntityLinkJump from "../views/EntityLinkJump.vue";
+import EventQueryList from "@/views/EventQueryList.vue";
 
 const routes = [
   {
@@ -45,6 +46,12 @@ const routes = [
     path: '/DocQueryList/:hospitalId/:admissionId/:stage',
     name: 'DocQueryList',
     component: DocQueryList,
+    props:true
+  },
+  {
+    path: '/EventQueryList/:hospitalId/:admissionId/:stage',
+    name: 'EventQueryList',
+    component: EventQueryList,
     props:true
   },
   {

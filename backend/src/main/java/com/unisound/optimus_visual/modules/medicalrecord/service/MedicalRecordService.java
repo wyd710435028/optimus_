@@ -3,10 +3,7 @@ package com.unisound.optimus_visual.modules.medicalrecord.service;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.global.pagination.PageInfo;
-import com.unisound.optimus_visual.modules.medicalrecord.model.Hospital;
-import com.unisound.optimus_visual.modules.medicalrecord.model.MedicalRecordVo;
-import com.unisound.optimus_visual.modules.medicalrecord.model.ShowDocModel;
-import com.unisound.optimus_visual.modules.medicalrecord.model.ShowNodeModel;
+import com.unisound.optimus_visual.modules.medicalrecord.model.*;
 
 import java.util.List;
 import java.util.Map;
@@ -32,4 +29,6 @@ public interface MedicalRecordService {
     void combineTheLastTwoColumnsInTxt(String inputTxtUrl);
 
     Map<String, Object> hightTextByOneTag(String param);
+
+    PageInfo<ShowEventModelVo> eventQueryList(String hospitalId, String admissionId, String stage, String docName, Integer pageSize, Integer pageNum);
 }
