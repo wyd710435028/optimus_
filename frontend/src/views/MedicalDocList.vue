@@ -405,7 +405,7 @@ export default {
     clickTag(labelContent,labelColor) {
       let _this = this;
       let docType = _this.docType;
-      let fileId = this.$route.params.fileId;
+      let fileId = this.$route.params.fileId=='noFileId'?_this.fileId:this.$route.params.fileId;
       getNodeByFileIdWithHighLight(fileId,labelContent,labelColor,JSON.stringify(_this.nodeMap)).then(function (response) {
         if (docType=='EMR110001'){
           //长期医嘱

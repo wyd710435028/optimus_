@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisound.optimus_visual.modules.comment.dao.UserMapper">
+
+    <select id="getByParentCommentId" resultType="com.unisound.optimus_visual.modules.comment.entity.User">
+        select * from tb_user where id = (select user_id from tb_comment where id=#{parentId})
+    </select>
+</mapper>
+

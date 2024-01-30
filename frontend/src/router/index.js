@@ -8,6 +8,7 @@ import DocContentDetail from "../views/DocContentDetail.vue";
 import NodeDetail from "../views/NodeDetail.vue";
 import EntityLinkJump from "../views/EntityLinkJump.vue";
 import EventQueryList from "@/views/EventQueryList.vue";
+import CommentList from "@/views/CommentList.vue";
 
 const routes = [
   {
@@ -64,6 +65,14 @@ const routes = [
     path: '/EntityLinkJump/:entityName/:labelName',
     name: 'EntityLinkJump',
     component: EntityLinkJump,
+    meta: {
+      keepAlive: true
+    }
+  },
+  {
+    path: '/CommentList',
+    name: 'CommentList',
+    component: CommentList,
     meta: {
       keepAlive: true
     }

@@ -7,6 +7,9 @@ import store from './store'
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import zhLocale from 'element-plus/es/locale/lang/zh-cn';
+//引入ArcoVue
+import ArcoVue from '@arco-design/web-vue';
+import '@arco-design/web-vue/dist/arco.css';
 //引入axious
 import axios from 'axios';
 import service from "@/utils/request";
@@ -47,7 +50,7 @@ const  app =createApp(App).use(store).use(router).use(ElementPlus,{
             }
         }
     }
-}).mount('#app')
+}).use(ArcoVue).mount('#app')
 
 // app.config.globalProperties.$instance = service;
 
