@@ -39,4 +39,35 @@ export function hightTextByOneTag(text,labelContent,labelColor,entityOrSpanListS
     })
 }
 
+export function saveComment(parentId,userId,rootParentId,content){
+    return service.post('/comment/saveComment', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            parentId:parentId,
+            userId:userId,
+            rootParentId:rootParentId,
+            content:content
+        }
+    })
+}
+
+export function deleteCommentById(id){
+    return service.post('/comment/deleteCommentById', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            id:id
+        }
+    })
+}
+
+export function createNewRootComment(rootCommentContent,userId){
+    return service.post('/comment/createNewRootComment', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            rootCommentContent:rootCommentContent,
+            userId:userId
+        }
+    })
+}
+
 

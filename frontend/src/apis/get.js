@@ -71,4 +71,14 @@ export function docContentDetail(hospitalId,admissionId,stage,fileId){
     })
 }
 
+/**
+ * 查询评论列表
+ * @returns {Promise<axios.AxiosResponse<any>>}
+ */
+export function getCommentLst() {
+    return service.get('/comment/getCommentList', {
+        headers: { 'Content-Type': 'application/json' },
+    })
+}
+
 
