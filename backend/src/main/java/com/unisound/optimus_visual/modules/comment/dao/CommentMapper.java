@@ -18,5 +18,10 @@ public interface CommentMapper extends BaseMapper<Comment> {
 
     List<Comment> getByParentId(@Param("parentId") Long parentId);
 
-    void updateBatchById(@Param("idList") List<Long> idList);
+    /**
+     * 批量逻辑删除
+     * @param idList
+     * @return
+     */
+    int logicalDeleteBatchById(@Param("idList") List<Long> idList);
 }

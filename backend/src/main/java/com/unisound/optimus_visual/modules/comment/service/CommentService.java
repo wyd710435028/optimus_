@@ -11,4 +11,5 @@ public interface CommentService {
     List<Comment> getCommentList();
     Map<String, Object> saveComment(String param);
     Map<String, Object> deleteCommentById(String param);
+    Map<String, Object> createNewRootComment(String param);
 }

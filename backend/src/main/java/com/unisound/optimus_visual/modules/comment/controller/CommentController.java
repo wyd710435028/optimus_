@@ -44,4 +44,10 @@ public class CommentController {
         Map<String,Object> result = commentService.deleteCommentById(param);
         return new CommonResult(result);
     }
+
+    @RequestMapping("createNewRootComment")
+    public CommonResult createNewRootComment(@RequestBody String param){
+        Map<String,Object> result = commentService.createNewRootComment(param);
+        return new CommonResult(result);
+    }
 }

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.unisound.optimus_visual.modules.comment.dao.CommentMapper">
 
-    <update id="updateBatchById">
+    <update id="logicalDeleteBatchById">
         update tb_comment set is_delete=1 where id in
         <foreach item = "id" collection="idList" open="(" separator="," close=")">
             #{id}
@@ -11,11 +11,31 @@
 
     <!--查询评论列表-->
     <select id="getCommonList" resultType="com.unisound.optimus_visual.modules.comment.entity.Comment">
-        select * from tb_comment where is_delete = 0
+        SELECT
+            c.id,
+            c.content,
+            c.user_id,
+            u.avatar_url,
+            u.user_name,
+            c.create_time,
+            c.is_delete,
+            c.belongs_id,
+            c.parent_id,
+            c.root_parent_id
+        FROM
+            (
+                SELECT
+                    *
+                FROM
+                    tb_comment
+                WHERE
+                    is_delete = 0
+            ) AS c
+                LEFT JOIN tb_user AS u ON c.user_id = u.id order by create_time desc
     </select>
 
     <select id="getByParentId" resultType="com.unisound.optimus_visual.modules.comment.entity.Comment">
-        select * from tb_comment where parent_id=#{parentId}
+        select * from tb_comment where is_delete=0 and parent_id=#{parentId}
     </select>
 </mapper>
 

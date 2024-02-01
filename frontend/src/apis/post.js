@@ -60,4 +60,14 @@ export function deleteCommentById(id){
     })
 }
 
+export function createNewRootComment(rootCommentContent,userId){
+    return service.post('/comment/createNewRootComment', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            rootCommentContent:rootCommentContent,
+            userId:userId
+        }
+    })
+}
+
 

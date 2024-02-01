@@ -8,6 +8,7 @@ import com.unisound.optimus_visual.modules.comment.entity.User;
 import com.unisound.optimus_visual.modules.comment.service.CommentService;
 import com.unisound.optimus_visual.modules.comment.dao.CommentMapper;
 import com.unisound.optimus_visual.utils.DataStructureUtils;
+import com.unisound.optimus_visual.utils.ParamUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -96,42 +96,45 @@ public class CommentServiceImpl implements CommentService {
         Long id = jsonObject.getLong("id");
         //查看当前评论是否包含子评论
         List<Comment> subCommentList = commentMapper.getByParentId(id);
+        List<Long> idList = new ArrayList<>();
         if (CollectionUtils.isEmpty(subCommentList)){
             //不包含子评论,直接删除即可
-            commentMapper.deleteById(id);
+            idList.add(id);
         }else {
-//            //删除直接子评论
-//            Map<String,Object> deleteSubConditionMap = new LinkedHashMap<>();
-//            deleteSubConditionMap.put("parent_id",id);
-//            commentMapper.deleteByMap(deleteSubConditionMap);
-//
-//            //删除间接子评论
-//            Map<String,Object> deleteRootCOnditionMap = new LinkedHashMap<>();
-//            deleteRootCOnditionMap.put("root_parent_id",id);
-//            commentMapper.deleteByMap(deleteRootCOnditionMap);
-
-            //查询待删除评论信息
-//            Comment comment = commentMapper.selectById(id);
-//            List<Comment> allSubCommentsInOneComment = new ArrayList<>();
-//            if (!CollectionUtils.isEmpty(comment.getChild())){
-//                List<Comment> commentList = DataStructureUtils.processCommentTree(comment.getChild());
-//                for (int i=0;i<commentList.size();i++){
-//                    if (commentList.get(i).getId().equals(id)){
-//                         allSubCommentsInOneComment = this.getAllSubCommentsInOneComment(commentList.get(i));
-//                         break;
-//                    }
-//                }
-//            }
             List<Comment> allSubCommentsInOneComment = new ArrayList<>();
             List<Comment> allSubComments = this.getAllSubComments(id, allSubCommentsInOneComment);
-            List<Long> idList = allSubComments.stream().map(Comment::getId).distinct().collect(Collectors.toList());
+            idList = allSubComments.stream().map(Comment::getId).distinct().collect(Collectors.toList());
             idList.add(id);
-            log.info("删除的id有:{}",idList);
-//            commentMapper.deleteBatchIds(idList);
-            commentMapper.updateBatchById(idList);
         }
+        log.info("删除的id有:{}",idList);
+        commentMapper.logicalDeleteBatchById(idList);
         return result;
     }
+
+    /**
+     * 创建根评论(新评论)
+     * @param param
+     * @return
+     */
+    @Override
+    public Map<String, Object> createNewRootComment(String param) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        Long userId = jsonObject.getLong("userId");
+        String rootCommentContent = jsonObject.getString("rootCommentContent");
+        if (Objects.isNull(userId)||StringUtils.isBlank(rootCommentContent)){
+            return result;
+        }
+        Comment comment = new Comment();
+        comment.setContent(rootCommentContent);
+        comment.setUserId(userId);
+        comment.setCreateTime(new Date());
+        commentMapper.insert(comment);
+        comment.setRootParentId(comment.getId());
+        commentMapper.updateById(comment);
+        return result;
+    }
+
 
     public List<Comment> getAllSubCommentsInOneComment(Comment comment){
         List<Comment> result = new ArrayList<>();

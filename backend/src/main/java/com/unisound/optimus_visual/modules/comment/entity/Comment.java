@@ -42,11 +42,13 @@ public class Comment implements Serializable {
     /**
      * 用户头像
      */
+    @TableField(exist = false)
     private String avatarUrl;
 
     /**
     * 评论人名称
     */
+    @TableField(exist = false)
     private String userName;
 
     /**
