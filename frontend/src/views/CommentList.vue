@@ -18,7 +18,7 @@
           <div v-show="emojiPanelActive">
             <div class="emoji-wrapper scaleUp" @click="activeEmojiPanel">
             <span @click="addEmoji(emoji)" class="emoji" v-for="(emoji, idx) in emojiList" :key="idx">
-              <img :src="emoji.link" alt="">
+              <img :title="emoji.title" :src="emoji.link" alt="">
             </span>
             </div>
           </div>
@@ -454,6 +454,10 @@ export default {
 }
 .action:hover {
   background: #c0c4cc;
+}
+
+.img:hover{
+
 }
 
 textarea {
