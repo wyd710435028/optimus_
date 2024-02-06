@@ -34,6 +34,9 @@ public class DataStructureUtils {
             if (parentId!=null){
                 //生成多层级结构
                 Comment parentComment = map.get(parentId);
+                if (parentComment==null){
+                    return result;
+                }
                 if (parentComment.getChild()==null){
                     parentComment.setChild(new ArrayList<>());
                 }

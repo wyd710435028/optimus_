@@ -1,91 +1,165 @@
 <template>
   <router-view></router-view>
-  <div class="comment-area">
-    <div class="comment-right">
-      <div style="float:left;margin-top:50px;">
-        <!-- 文本框 -->
-        <textarea style="width: 500px;height:150px" ref="textarea" v-model="rootCommentContent" @focus="height80 = true" @blur="doBlur"
-                    :placeholder="placeholder" :max-length="{length:800,errorOnly:true}" allow-clear show-word-limit class="edit-area">
-        </textarea>
-        <!-- 表情面板 -->
-        <div class="comment-tips" style="margin-top: 10px;float: left;margin-left: 370px">
-          <a-row>
-            <svg-icon @click="activeEmojiPanel($event, true)" style="font-size: 35px;" icon-class="biaoqing1 "></svg-icon>
-            <a-button type="primary" size="large" @click="createRootComment(rootCommentContent,50)">发表评论</a-button>
-<!--            <a-button type="primary" size="large" @click="postComment">评论</a-button>-->
-          </a-row>
-          <!-- 待选择的表情列表 -->
-          <div v-show="emojiPanelActive">
-            <div class="emoji-wrapper scaleUp" @click="activeEmojiPanel">
-            <span @click="addEmoji(emoji)" class="emoji" v-for="(emoji, idx) in emojiList" :key="idx">
-              <img :title="emoji.title" :src="emoji.link" alt="">
-            </span>
-            </div>
-          </div>
-          <!-- 三角形 -->
-<!--          <div v-show="emojiPanelActive" class="triangle"></div>-->
+  <!-- 顶部带表情大的输入框和表情选择面板 -->
+  <div class="mo-yu-container">
+    <div class="input-part">
+      <div class="input-panel" id="msgInputContainer" ref="msgInputContainer"
+           placeholder="快来发表你的观点吧~~"
+           contenteditable="true" spellcheck="true">
+      </div>
+      <div class="action-bar" id="input-action-bar">
+        <span class="emoji-btn" @click="handleEmojiPanelVisibility"><IconFaceSmileFill/></span>
+        <span class="post-btn" @click="createRootComment(50)">发布</span>
+      </div>
+    </div>
+    <!-- 表情面板 -->
+    <div class="emoji-container" id="emoji-container" v-show="isEmojiShow">
+      <div class="emoji-list">
+        <div class="emoji-title-history" v-if="historyList.length!==0">最近使用</div>
+        <div class="emoji-history-list" v-if="historyList.length!==0">
+          <span v-for="i in historyList" :key="i">
+            <img class="emoji-item"  @click="onEmojiClick(i)"
+                 :src="'https://cdn.sunofbeaches.com/emoji/'+i+'.png'">
+          </span>
+        </div>
+        <div class="emoji-title-all">全部</div>
+        <div class="emoji-all-list">
+           <span v-for="i in 130" :key="i">
+            <img @click="onEmojiClick(i)" class="emoji-item"
+                 :src="'https://cdn.sunofbeaches.com/emoji/'+i+'.png'">
+           </span>
         </div>
       </div>
+<!--      <emoji-panel></emoji-panel>-->
     </div>
   </div>
 
+
   <!--评论列表-->
-  <div style="margin-top: 250px">
-    <div style="margin-top: 20px" v-for="comment in commentList" :key="comment">
+  <div @click="handleClickBlank">
+    <div v-for="comment in commentList" :key="comment">
       <!--根评论-->
-      <a-comment
-                 :author="comment.userName"
-                 :avatar="comment.avatarUrl"
-                 :content="comment.content"
-                 :datetime="comment.createTime">
-          <span @click="replayComment(comment)" class="action"> <IconMessage/> 回复 </span>
+      <div style="margin-top: 20px">
+        <!-- 根评论头像 -->
+        <span><img :src="comment.avatarUrl" style="width: 50px;height: 50px;border-radius:50%;float: left"></span>
+        <!-- 根评论人名称 -->
+        <span style="font-size: 16px;color: #86909c;margin-left: 20px;font-weight: bold">{{comment.userName}}</span>
+        <!-- 根评论时间 -->
+        <span style="font-size: 14px; color: #86909c;margin-left: 10px;font-weight: bold">{{comment.createTime}}</span>
+        <!-- 根评论内容 -->
+        <span style="font-size: 16px;">
+          <div
+              style="margin-left: 70px;margin-top: 8px"
+              v-html="comment.content"
+              contenteditable="false" spellcheck="false">
+          </div>
+        </span>
+        <!-- 根评论回复和删除操作 -->
+        <span style="margin-left: 18px;margin-top: 8px" @click="replayComment(comment)" class="action"> <IconMessage/> 回复 </span>
         <a-popconfirm content="删除此评论,子评论也会删除,是否继续?" type="warning" @ok="deleteComment(comment)">
           <span class="action"> <IconDelete/> 删除 </span>
         </a-popconfirm>
-        <div style="margin-top: 20px" v-if="comment.ifShowReplayInput==true">
-          <!--todo 目前写死,有登陆页面时写成获取当前用户信息-->
-          <a-comment
-              align="right"
-              avatar="https://img0.baidu.com/it/u=2947341353,265385944&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"
-          >
-            <template #actions>
-              <a-button key="0" type="secondary" @click="closeReplayInput(comment)"> 取消 </a-button>
-              <a-button key="1" type="primary" @click="submitComment(comment,comment.id,50,comment.rootParentId,commentContent)"> 提交 </a-button>
-            </template>
-            <template #content>
-              <a-input v-model="commentContent" placeholder="在此输入你的评论..." />
-            </template>
-          </a-comment>
-        </div>
-          <!--子评论-->
-          <div v-for="subComment in (comment.child)" :key="subComment" style="margin-top: 20px">
-            <a-comment
-                :author="subComment.userName+' 回复 '+subComment.parentName"
-                :avatar="subComment.avatarUrl"
-                :content="subComment.content"
-                :datetime="subComment.createTime"
-            >
-            <span @click="replayComment(subComment)" class="action"> <IconMessage /> 回复 </span>
-            <a-popconfirm content="删除此评论,子评论也会删除,是否继续?" type="warning" @ok="deleteComment(subComment)">
-              <span class="action"> <IconDelete/> 删除 </span>
-            </a-popconfirm>
-            <div style="margin-top: 20px" v-if="subComment.ifShowReplayInput==true">
-              <a-comment
-                  align="right"
-                  avatar="https://img0.baidu.com/it/u=2947341353,265385944&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"
-              >
-                <template #content>
-                  <a-input v-model="subCommentContent" placeholder="在此输入你的评论..." />
-                </template>
-                <template #actions>
-                  <a-button key="0" type="secondary" @click="closeReplayInput(subComment)"> 取消 </a-button>
-                  <a-button key="1" type="primary" @click="submitComment(subComment,subComment.id,50,subComment.rootParentId,subCommentContent)"> 提交 </a-button>
-                </template>
-              </a-comment>
+
+        <!-- 回复输入框,点击回复显示 -->
+        <div v-if="comment.ifShowReplayInput==true" style="margin-left: 65px;margin-top: 10px">
+          <!--todo 待做:目前写死,有登陆页面时写成获取当前用户信息-->
+          <!-- 当前用户头像 -->
+          <span><img src="https://img0.baidu.com/it/u=2947341353,265385944&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500" style="width: 40px;height: 40px;border-radius:50%;float: left"></span>
+          <!-- 输入框 -->
+          <div class="input-replay" id="rootMsgInputContainer" ref="rootMsgInputContainer" :placeholder="'回复:'+comment.userName" contenteditable="true" spellcheck="true"></div>
+          <div style="width: 400px;margin-left: 1316px;margin-top: 10px;">
+            <el-button key="0" type="warning" @click="closeReplayInput(comment)"> 取消 </el-button>
+            <el-button key="1" type="primary" @click="submitRootMsgComment(comment,comment.id,50,comment.rootParentId,commentContent)"> 提交 </el-button>
+            <el-button key="2" type="danger" @click="showEmojiInReplay()">表情</el-button>
+            <div style="position: relative" class="emoji-container" id="emoji-container" v-show="isEmojiShowInReplay">
+              <div class="emoji-list">
+                <div class="emoji-title-history" v-if="historyList.length!==0">
+                  最近使用
+                </div>
+                <div class="emoji-history-list" v-if="historyList.length!==0">
+                <span v-for="i in historyList" :key="i">
+                  <img class="emoji-item"  @click="onEmojiInReplayClick(i)"
+                       :src="'https://cdn.sunofbeaches.com/emoji/'+i+'.png'">
+                </span>
+                </div>
+                <div class="emoji-title-all">
+                  全部
+                </div>
+                <div class="emoji-all-list">
+                 <span v-for="i in 130" :key="i">
+                  <img @click="onEmojiInReplayClick(i)" class="emoji-item"
+                       :src="'https://cdn.sunofbeaches.com/emoji/'+i+'.png'">
+                 </span>
+                </div>
+              </div>
             </div>
-            </a-comment>
           </div>
-      </a-comment>
+        </div>
+      </div>
+
+      <!--子评论-->
+      <div v-for="subComment in (comment.child)" :key="subComment">
+        <div style="margin-top: 20px">
+          <!--子评论头像-->
+          <span><img :src="subComment.avatarUrl" style="width: 40px;height: 40px;border-radius:50%;float: left;margin-left:55px"></span>
+          <!--用户名-->
+          <span style="font-size: 16px;color: #86909c;margin-left: 10px;">{{subComment.userName}} 回复 {{subComment.parentName}}</span>
+          <!--时间-->
+          <span style="font-size: 14px; color: #86909c;margin-left: 20px;">{{subComment.createTime}}</span>
+          <!--评论内容,支持表情显示-->
+          <span style="font-size: 16px;">
+            <div
+              style="margin-left: 115px;margin-top: 8px"
+              v-html="subComment.content"
+              contenteditable="false" spellcheck="false">
+            </div>
+          </span>
+          <!--子评论回复和删除操作-->
+          <span style="margin-left:115px;margin-top: 8px" @click="replayComment(subComment)" class="action"> <IconMessage /> 回复 </span>
+          <a-popconfirm content="删除此评论,子评论也会删除,是否继续?" type="warning" @ok="deleteComment(subComment)">
+            <span class="action"> <IconDelete/> 删除 </span>
+          </a-popconfirm>
+
+          <!-- 回复输入框,点击回复显示 -->
+          <div v-if="subComment.ifShowReplayInput==true" style="margin-left: 90px;margin-top: 10px">
+            <!--todo 待做:目前写死,有登陆页面时写成获取当前用户信息-->
+            <!-- 当前用户头像 -->
+            <span><img src="https://img0.baidu.com/it/u=2947341353,265385944&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500" style="width: 30px;height: 30px;border-radius:50%;float: left"></span>
+            <!-- 输入框 -->
+            <div class="input-replay" id="rootSubMsgInputContainer" ref="rootSubMsgInputContainer" :placeholder="'回复:'+subComment.userName" contenteditable="true" spellcheck="true"></div>
+<!--            <div style="margin-top:10px;float: right; margin-right: 17.35%">-->
+<!--              -->
+<!--            </div>-->
+            <div style="width: 400px;margin-left: 1296px;margin-top: 10px;">
+              <el-button key="0" type="warning" @click="closeReplayInput(subComment)"> 取消 </el-button>
+              <el-button key="1" type="primary" @click="submitRootSubMsgComment(subComment,subComment.id,50,subComment.rootParentId,commentContent)"> 提交 </el-button>
+              <el-button key="2" type="danger" @click="showEmojiInSubReplay()">表情</el-button>
+              <div class="emoji-container" id="emoji-container" style="position: relative;z-index: 1000" v-show="isEmojiShowInSubReplay">
+                <div class="emoji-list">
+                  <div class="emoji-title-history" v-if="historyList.length!==0">
+                    最近使用
+                  </div>
+                  <div class="emoji-history-list" v-if="historyList.length!==0">
+                <span v-for="i in historyList" :key="i">
+                  <img class="emoji-item"  @click="onEmojiInSubReplayClick(i)"
+                       :src="'https://cdn.sunofbeaches.com/emoji/'+i+'.png'">
+                </span>
+                  </div>
+                  <div class="emoji-title-all">
+                    全部
+                  </div>
+                  <div class="emoji-all-list">
+                 <span v-for="i in 130" :key="i">
+                  <img @click="onEmojiInSubReplayClick(i)" class="emoji-item"
+                       :src="'https://cdn.sunofbeaches.com/emoji/'+i+'.png'">
+                 </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -99,6 +173,7 @@ import { ref } from 'vue';
 /* 表情配置数据 转为 数组 */
 import emojiConfig from '@/components/EmojiText/emoji.json'
 import SvgIcon from "@/components/SvgIcon.vue";
+import EmojiPanel from "@/views/EmojiPanel.vue";
 let emojiList = []
 for (let key in emojiConfig) {
   emojiList.push({
@@ -106,9 +181,11 @@ for (let key in emojiConfig) {
     link: emojiConfig[key]
   })
 }
+
 export default {
   //组件
   components: {
+    EmojiPanel,
     SvgIcon,
     IconHeart,
     IconMessage,
@@ -254,18 +331,18 @@ export default {
           "ifShowReplayInput": 0
         }
       ],
-
       /* 文本框中有文字 或 无文字但是处于焦点状态时 为true */
       height80: false,
-
       /* 表情配置数据 */
       emojiList,
-
       /* 是否打开表情面板 */
       emojiPanelActive: false,
-
       /* 文本框的内容 */
-      textareaContent: ''
+      textareaContent: '',
+      historyList: [10,23,1,33,22],
+      isEmojiShow: false,
+      isEmojiShowInReplay:false,
+      isEmojiShowInSubReplay:false
     }
   },
 
@@ -274,6 +351,9 @@ export default {
     //回复输入框显示/不显示
     replayComment(comment){
       let _this = this;
+      _this.isEmojiShowInReplay = false;
+      _this.isEmojiShow = false;
+      _this.isEmojiShowInSubReplay = false;
       if (_this.ifCanShowReplayInput) {
           comment.ifShowReplayInput = !comment.ifShowReplayInput;
           _this.ifCanShowReplayInput = !comment.ifShowReplayInput;
@@ -317,6 +397,46 @@ export default {
         });
       }
     },
+    submitRootMsgComment(comment,parentId,userId,rootParentId){
+      // alert('父评论是:'+parentId+',当前用户id是:'+userId+',根评论id是:'+rootParentId+',评论的内容是:'+content);
+      let content = document.getElementById("rootMsgInputContainer").innerHTML;
+      let _this = this;
+      if (content == null || content.trim().length == 0){
+        _this.$message.warning({content:'请输入评论内容',closable: true});
+      }else {
+        //输入评论内容才保存
+        saveComment(parentId,userId,rootParentId,content).then(function (response){
+          if (response.status=='200'){
+            _this.$message.success({content:'评论成功',closable: true});
+            //关闭输入框
+            _this.closeReplayInput(comment);
+            _this.queryCommentList();
+          }else {
+            _this.$message.error({content:'评论失败',closable:true});
+          }
+        });
+      }
+    },
+    submitRootSubMsgComment(comment,parentId,userId,rootParentId){
+      // alert('父评论是:'+parentId+',当前用户id是:'+userId+',根评论id是:'+rootParentId+',评论的内容是:'+content);
+      let content = document.getElementById("rootSubMsgInputContainer").innerHTML;
+      let _this = this;
+      if (content == null || content.trim().length == 0){
+        _this.$message.warning({content:'请输入评论内容',closable: true});
+      }else {
+        //输入评论内容才保存
+        saveComment(parentId,userId,rootParentId,content).then(function (response){
+          if (response.status=='200'){
+            _this.$message.success({content:'评论成功',closable: true});
+            //关闭输入框
+            _this.closeReplayInput(comment);
+            _this.queryCommentList();
+          }else {
+            _this.$message.error({content:'评论失败',closable:true});
+          }
+        });
+      }
+    },
     //删除评论
     deleteComment(comment){
       let _this = this;
@@ -333,7 +453,10 @@ export default {
     },
 
     //创建新评论(根评论)
-    createRootComment(rootCommentContent,userId){
+    createRootComment(userId){
+      // alert(document.getElementById('inputContent').innerHTML);
+      let rootCommentContent = document.getElementById('msgInputContainer').innerHTML;
+      // alert(document.getElementById('inputContent').textContent);
       // alert(rootCommentContent);
       let  _this = this;
       if (rootCommentContent == null || rootCommentContent.trim().length == 0){
@@ -344,6 +467,8 @@ export default {
             _this.$message.success({content:'发表成功',closable: true,duration:3000});
             _this.rootCommentContent = null;
             _this.queryCommentList();
+            _this.isEmojiShow = false;
+            document.getElementById('msgInputContainer').innerHTML = '';
           }else {
             _this.$message.error({content:'发表失败',closable:true,duration:3000});
           }
@@ -425,6 +550,159 @@ export default {
       this.$emit('comment',result)
 
       this.doBlur()
+    },
+
+    handleEmojiPanelVisibility() {
+      this.isEmojiShow = !this.isEmojiShow;
+    },
+    removeHistory() {
+      //todo 清空历史
+    },
+    //表情点击事件
+    onEmojiClick(i) {
+      //如果输入框没有焦点，那么让它获取焦点
+      if (this.$refs.msgInputContainer !== document.activeElement) {
+        this.$refs.msgInputContainer.focus();
+      }
+      //往焦点出插入内容
+      let targetUrl = "https://cdn.sunofbeaches.com/emoji/" + i + ".png";
+      console.log("targetUrl==> " + targetUrl);
+      let imageTag = `<img src="${targetUrl}" width="20" height="20">`;
+      document.execCommand("insertHtml", false, imageTag);
+      //保存历史记录
+      //先要获取出来，然后进行拼接
+      let targetStr = i.toString();
+      let items = window.localStorage.getItem("emoji-history");
+      if (items) {
+        //进行切割
+        let currentIndex = 0;
+        let itemArray = items.split(",");
+        for (let j = 0; j < itemArray.length; j++) {
+          //从头开始加,targetStr一定是有的了
+          //所以，先添加逗号
+          //判断i是否已经包含了
+          let item = itemArray[j];
+          if (targetStr.indexOf(item) === -1) {
+            targetStr += ",";
+            targetStr += item;
+            currentIndex++;
+          }
+          //1+1,2,3,4,5==>6个元素
+          if (currentIndex > 4) {
+            break;
+          }
+        }
+      }
+      //console.log("targetStr ==> " + targetStr);
+      //最多保存6个，也就是最近使用
+      window.localStorage.setItem("emoji-history", targetStr);
+      this.updateHistory();
+    },
+
+    //表情点击事件
+    onEmojiInReplayClick(i) {
+      //如果输入框没有焦点，那么让它获取焦点
+      if (this.$refs.rootMsgInputContainer !== document.activeElement) {
+        document.getElementById("rootMsgInputContainer").focus();
+      }
+      //往焦点出插入内容
+      let targetUrl = "https://cdn.sunofbeaches.com/emoji/" + i + ".png";
+      console.log("targetUrl==> " + targetUrl);
+      let imageTag = `<img src="${targetUrl}" width="20" height="20">`;
+      document.execCommand("insertHtml", false, imageTag);
+      //保存历史记录
+      //先要获取出来，然后进行拼接
+      let targetStr = i.toString();
+      let items = window.localStorage.getItem("emoji-history");
+      if (items) {
+        //进行切割
+        let currentIndex = 0;
+        let itemArray = items.split(",");
+        for (let j = 0; j < itemArray.length; j++) {
+          //从头开始加,targetStr一定是有的了
+          //所以，先添加逗号
+          //判断i是否已经包含了
+          let item = itemArray[j];
+          if (targetStr.indexOf(item) === -1) {
+            targetStr += ",";
+            targetStr += item;
+            currentIndex++;
+          }
+          //1+1,2,3,4,5==>6个元素
+          if (currentIndex > 4) {
+            break;
+          }
+        }
+      }
+      //console.log("targetStr ==> " + targetStr);
+      //最多保存6个，也就是最近使用
+      window.localStorage.setItem("emoji-history", targetStr);
+      this.updateHistory();
+    },
+    onEmojiInSubReplayClick(i) {
+      //如果输入框没有焦点，那么让它获取焦点
+      if (this.$refs.rootMsgInputContainer !== document.activeElement) {
+        document.getElementById("rootSubMsgInputContainer").focus();
+      }
+      //往焦点出插入内容
+      let targetUrl = "https://cdn.sunofbeaches.com/emoji/" + i + ".png";
+      console.log("targetUrl==> " + targetUrl);
+      let imageTag = `<img src="${targetUrl}" width="20" height="20">`;
+      document.execCommand("insertHtml", false, imageTag);
+      //保存历史记录
+      //先要获取出来，然后进行拼接
+      let targetStr = i.toString();
+      let items = window.localStorage.getItem("emoji-history");
+      if (items) {
+        //进行切割
+        let currentIndex = 0;
+        let itemArray = items.split(",");
+        for (let j = 0; j < itemArray.length; j++) {
+          //从头开始加,targetStr一定是有的了
+          //所以，先添加逗号
+          //判断i是否已经包含了
+          let item = itemArray[j];
+          if (targetStr.indexOf(item) === -1) {
+            targetStr += ",";
+            targetStr += item;
+            currentIndex++;
+          }
+          //1+1,2,3,4,5==>6个元素
+          if (currentIndex > 4) {
+            break;
+          }
+        }
+      }
+      //console.log("targetStr ==> " + targetStr);
+      //最多保存6个，也就是最近使用
+      window.localStorage.setItem("emoji-history", targetStr);
+      this.updateHistory();
+    },
+
+    updateHistory() {
+      let items = window.localStorage.getItem("emoji-history");
+      if (items) {
+        this.historyList = items.split(",");
+      }
+    },
+    //点击空白处的事件监听
+    handleClickBlank(){
+      // alert('点击了空白');
+      let _this = this;
+      _this.isEmojiShow = false;
+      // _this.isEmojiShowInReplay = false;
+    },
+    showEmojiInReplay(){
+      // alert("aaa");
+      let _this = this;
+      _this.isEmojiShow = false;
+      _this.isEmojiShowInReplay = !_this.isEmojiShowInReplay;
+    },
+    showEmojiInSubReplay(){
+      // alert("aaa");
+      let _this = this;
+      _this.isEmojiShow = false;
+      _this.isEmojiShowInSubReplay = !_this.isEmojiShowInSubReplay;
     }
   },
 
@@ -435,7 +713,23 @@ export default {
 
     document.addEventListener('click', function (e) { /* 点击其它地方, 关闭表情面板;点击表情面板时,需要阻止事件冒泡 */
       _this.emojiPanelActive = false
-    })
+    });
+
+    //防止点击表情的时候输入框失去焦点
+    let inputPart = document.getElementById("input-action-bar");
+    if (inputPart) {
+      inputPart.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+      })
+    }
+    let emojiContainer = document.getElementById("emoji-container");
+    if (emojiContainer) {
+      emojiContainer.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+      })
+    }
+    //更新历史
+    this.updateHistory();
   }
 };
 </script>
@@ -456,167 +750,144 @@ export default {
   background: #c0c4cc;
 }
 
-.img:hover{
-
+/*=========start======*/
+.emoji-item {
+  cursor: pointer; /* 修改光标形状 */
 }
 
-textarea {
-  outline: none;
-  border: none;
-  background: #f1f2f3;
-  resize: none;
-  border-radius: 8px;
-  padding: 10px 10px;
-  font-size: 16px;
-  color: #333333;
-  border: 1px solid transparent;
-}
-img {
-  -webkit-user-drag: none;
+.emoji-item:hover {
+  border: 1px solid #4682B4; /* 添加红色边框 */
+  background-color: #b3e19d;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
+.emoji-btn {
+  padding: 5px 0;
+  color: dodgerblue;
+  cursor: pointer;
 }
 
-.height80 {
-  //height: 80px !important;
+.post-btn {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 5px 20px;
+  background: dodgerblue;
+  color: white;
 }
 
-.height80 textarea {
-  border: 1px solid #49b1f5;
-}
-
-@keyframes scaleUp {
-  0% {
-    opacity: 0;
-    transform: scale(0)
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1)
-  }
-}
-
-.scaleUp {
-  animation: scaleUp 0.3s;
-  transform-origin: 0 0;
-}
-
-.comment-area {
+.action-bar {
   display: flex;
-  align-items: flex-start;
-  color: #90949e;
-  .comment-right {
-    flex: 1;
-    display: flex;
-    height: 60px;
-    transition: height 0.5s;
-
-    position: relative;
-
-    .edit-area {
-      flex: 1;
-    }
-
-    .comment-btn {
-      background-color: #49b1f5;
-      cursor: pointer;
-      width: 64px;
-      border-radius: 8px;
-      margin-left: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-    }
-
-    .comment-tips {
-      //position: absolute;
-      bottom: 0px;
-      height: 24px;
-      width: calc(100% - 72px);
-      margin-right: 72px;
-      display: flex;
-      align-items: center;
-
-      &>span:first-child {
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        &.active {
-          color: #49b1f5;
-        }
-
-      }
-
-
-      .emoji-wrapper {
-        user-select: none;
-        position: relative;
-        bottom: 0;
-        top: 100px;
-        left: -120px;
-        display: flex;
-        flex-wrap: wrap;
-        width: 294px;
-        height: 146px;
-        overflow-y: auto;
-        background-color: #eeeeee;
-        padding: 5px;
-        border-radius: 6px;
-        border-radius: 6px;
-        box-shadow: 0 3px 6px 0 rgb(0 0 0 / 12%);
-        border: 1px solid rgba(0, 0, 0, .06);
-
-        &::before {
-          content: '';
-          position: absolute;
-        }
-
-        span.emoji {
-          width: 30px;
-          height: 30px;
-          display: block;
-          margin: 2px;
-          cursor: pointer;
-          padding: 3px;
-          border-radius: 6px;
-
-          img {
-            width: 100%;
-            height: 100%;
-          }
-
-          transition: all 0.28s;
-
-          &:hover {
-            background-color: #dddddd;
-          }
-        }
-      }
-
-      .triangle {
-        content: '';
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        top: 200px;
-        left: 381px;
-        background-color: white;
-        border: 1px solid #f0f0f0;
-        transform: rotate(45deg);
-        border-right-color: transparent;
-        border-bottom-color: transparent;
-      }
-    }
-  }
-
+  justify-content: space-between;
 }
+
+
+.action-bar {
+  padding: 10px 10px 0;
+}
+
+.input-part {
+  padding: 10px;
+}
+
+.mo-yu-container {
+  width: 420px;
+  background: #fff;
+  position: fixed;
+  top: 0;
+  left: 800px;
+}
+
+.emoji-item {
+  width: 45px;
+  cursor: pointer;
+  height: 45px;
+  padding: 10px;
+}
+
+.emoji-list {
+  width: 400px;
+  height: 300px;
+  padding: 10px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+
+/*滚动条效果*/
+.emoji-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.emoji-list::-webkit-scrollbar-track {
+  background-color: #F9FAFB;
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  border-radius: 2em;
+}
+
+.emoji-list::-webkit-scrollbar-thumb {
+  background-color: #E5E6EB;
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  border-radius: 2em;
+}
+
+.input-panel:focus {
+  border: dodgerblue 2px solid;
+}
+
+.input-panel img {
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.input-panel {
+  margin: 0 auto;
+  font-size: 14px;
+  line-height: 20px;
+  background: #efefef;
+  width: 380px;
+  height: 100px;
+  outline: none;
+  border: #F4F5F6 2px solid;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.input-panel:empty:before {
+  content: attr(placeholder);
+  position: absolute;
+  color: #4d4d4d;
+  background-color: transparent;
+}
+
+.input-replay:focus {
+  border: dodgerblue 2px solid;
+}
+
+.input-replay img {
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.input-replay {
+  margin: 0 auto;
+  margin-left: 50px;
+  font-size: 14px;
+  line-height: 20px;
+  background: #ffffff;
+  width: 80%;
+  height: 35px;
+  outline: none;
+  border: #333333 2px solid;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.input-replay:empty:before {
+  content: attr(placeholder);
+  position: absolute;
+  color: #c45656;
+  background-color: transparent;
+}
+/*=========end======*/
 </style>
