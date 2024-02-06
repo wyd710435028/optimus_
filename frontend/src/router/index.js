@@ -9,6 +9,7 @@ import NodeDetail from "../views/NodeDetail.vue";
 import EntityLinkJump from "../views/EntityLinkJump.vue";
 import EventQueryList from "@/views/EventQueryList.vue";
 import CommentList from "@/views/CommentList.vue";
+import EmojiList from "@/views/EmojiList.vue";
 
 const routes = [
   {
@@ -73,6 +74,14 @@ const routes = [
     path: '/CommentList',
     name: 'CommentList',
     component: CommentList,
+    meta: {
+      keepAlive: true
+    }
+  },
+  {
+    path: '/EmojiList',
+    name: 'EmojiList',
+    component: EmojiList,
     meta: {
       keepAlive: true
     }

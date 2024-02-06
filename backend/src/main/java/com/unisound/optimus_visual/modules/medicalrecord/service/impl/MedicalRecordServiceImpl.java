@@ -273,7 +273,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     /**
-     * 获取一个病历下的所有文书
+     * 获取一个病历下的所有事件
      * @param hospitalId 医院id
      * @param admissionId 流水号
      * @param stage 病历阶段
