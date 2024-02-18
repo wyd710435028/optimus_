@@ -35,7 +35,7 @@ public class Highlighter {
         //处理"*"导致的正则匹配问题
 //        String regex = "[`_《》!@#$%^&*()+=|{}':;',\\[\\].<>?！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
 //        re.replaceAll(regex,"");
-        String s = re.replaceAll("\\*", "\\\\*").replaceAll("\\(","\\\\(").replaceAll("\\)","\\\\)").replaceAll("\\+","\\\\+").replaceAll("-","\\-").replaceAll("、","\\、");
+        String s = re.replaceAll("\\*", "\\\\*").replaceAll("\\(","\\\\(").replaceAll("\\)","\\\\)").replaceAll("\\+","\\\\+").replaceAll("-","\\-").replaceAll("、","\\、").replaceAll("\\{","\\\\{").replaceAll("\\}","\\\\}");
         Pattern pattern = Pattern.compile(s, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(text);
 
