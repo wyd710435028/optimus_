@@ -9,7 +9,9 @@ import NodeDetail from "../views/NodeDetail.vue";
 import EntityLinkJump from "../views/EntityLinkJump.vue";
 import EventQueryList from "@/views/EventQueryList.vue";
 import CommentList from "@/views/CommentList.vue";
-import EmojiList from "@/views/EmojiList.vue";
+import ToUserInformation from "@/views/ToUserInformation.vue";
+import CommonHeader from "@/views/common/CommonHeader.vue";
+import KeyWordsOption from "@/views/KeyWordsOption.vue";
 
 const routes = [
   {
@@ -79,9 +81,25 @@ const routes = [
     }
   },
   {
-    path: '/EmojiList',
-    name: 'EmojiList',
-    component: EmojiList,
+    path: '/ToUserInformation',
+    name: 'ToUserInformation',
+    component: ToUserInformation,
+    meta: {
+      keepAlive: true
+    }
+  },
+  {
+    path: '/CommonHeader',
+    name: 'CommonHeader',
+    component: CommonHeader,
+    meta: {
+      keepAlive: true
+    }
+  },
+  {
+    path: '/KeyWordsOption/:keyWords/:labelName/:fileId/:nodeName/',
+    name: 'KeyWordsOption',
+    component: KeyWordsOption,
     meta: {
       keepAlive: true
     }

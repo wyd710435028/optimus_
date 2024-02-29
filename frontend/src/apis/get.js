@@ -81,4 +81,16 @@ export function getCommentLst() {
     })
 }
 
+export function getCommentHistoryList(keyWords, fileId, nodeName, labelName) {
+    return service.get('/comment/getCommentHistoryList', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            keyWords: keyWords,
+            fileId: fileId,
+            nodeName:nodeName,
+            labelName:labelName
+        }
+    })
+}
+
 

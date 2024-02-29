@@ -1,9 +1,11 @@
 <template>
   <router-view></router-view>
   <el-container>
-    <el-header style="background-color: #009688;">
-      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
-    </el-header>
+    <!-- 公共头部 -->
+    <common-header></common-header>
+<!--    <el-header style="background-color: #009688;">-->
+<!--      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>-->
+<!--    </el-header>-->
     <el-main style="border: 2px">
       <el-row>
         <el-form :inline="true" :model="formInline" class="demo-form-inline">
@@ -86,8 +88,10 @@ import {getRecordList} from "../apis/get";
 import {getHospitalDropDown} from "../apis/get"
 import axios from "axios";
 import {ElMessage} from "element-plus";
+import CommonHeader from "@/views/common/CommonHeader.vue";
 // import {} from "../apis/post";
 export default {
+  components: {CommonHeader},
   data() {
     return {
       tableData: [],

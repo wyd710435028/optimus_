@@ -70,4 +70,20 @@ export function createNewRootComment(rootCommentContent,userId){
     })
 }
 
+export function createNewResultComment(rootCommentContent,userId,keyWords,fileId,nodeName,labelName,docName){
+    return service.post('/comment/createNewResultComment', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            rootCommentContent:rootCommentContent,
+            userId:userId,
+            keyWords:keyWords,
+            fileId:fileId,
+            nodeName:nodeName,
+            labelName:labelName,
+            docName:docName
+        }
+    })
+}
+
+
 

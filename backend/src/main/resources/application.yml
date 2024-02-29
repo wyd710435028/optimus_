@@ -51,7 +51,8 @@ NodeShowBlackList: 一般情况,既往史
 #设置黑名单的文书,多个用逗号隔开,如果为空则表示对所有文书生效
 UseBlackListOnDocList: EMR090001
 
-BaseResourceUrl: D:\wyd\dev_projects\optimus_visual\backend\base_resource
+#BaseResourceUrl: D:\wyd\dev_projects\optimus_visual\backend\base_resource
+BaseResourceUrl: D:\wyd\dev_projects\github_project\optimus_visual\backend\base_resource
 #BaseResourceUrl: /blzk/optimus_visual/base_resource
 
 

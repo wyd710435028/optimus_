@@ -1,16 +1,18 @@
 <template>
   <router-view></router-view>
   <el-container>
+    <!-- 公共头部 -->
     <el-header style="background-color: #009688;">
-      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
+      <common-header></common-header>
     </el-header>
+    <el-main style="border: 2px">
     <el-row class="container">
-      <el-button color="#359894" :dark="isDark" style="margin-top: 15px;margin-right: 20px" @click="returnHomePage()">返回</el-button>
+      <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnHomePage()">返回</el-button>
     </el-row>
     <el-row>
       <el-col :span="4">
-        <el-aside class="layout_col" style="width: unset">
-          <el-tree :data="treeData" :props="defaultProps" @node-click="getDocByFileId" style="font-size: 18px"></el-tree>
+        <el-aside class="layout_col">
+            <el-tree class="flow-tree" :data="treeData" :props="defaultProps" :highlight-current="true"  @node-click="getDocByFileId" style="font-size: 18px"></el-tree>
         </el-aside>
       </el-col>
       <el-col :span="16">
@@ -18,7 +20,7 @@
           <div v-if="showContent=='normal'">
             <div v-for="item in nodeList" :key="item">
               <el-row>
-                <el-col :span="4"><strong style="color: indianred">{{item.nodeName}}</strong></el-col>
+                <el-col :span="4"><strong style="color: indianred;font-size: 16px">{{item.nodeName}}</strong></el-col>
                 <el-col :span="20">
 <!--                  <div v-if="item.entityNum==0">-->
 <!--                    <label>{{item.nodeContent}}</label>-->
@@ -30,7 +32,7 @@
                     <el-table
                         :data="tableData"
                         border
-                        style="width: 100%;margin:10px">
+                        style="width: 100%;margin:10px;">
                       <el-table-column fixed prop="entityNum" label="entity数量">
                         <template v-slot="{}">
                           <el-link type="text" @click="toDocUnderstandDetail(item.nodeName,item.nodeContent,item.entityHightLighted,item.spanHightLighted,item.eventHightLighted,item.entityLabelList,item.spanLabelList,item.eventList,item.fileId,item.entityList,item.spanList)">{{item.entityNum}}</el-link>
@@ -103,28 +105,29 @@
         </el-main>
       </el-col>
       <el-col :span="4">
-        <el-aside class="layout_col">
+        <el-aside class="layout_col" style="margin-left: 10px">
 <!--          <span>entity标签列表</span>-->
           <div v-for="entityTag in allEntityLabelList" :key="entityTag">
-            <el-tag v-if="entityTag.labelType=='entity'" :color="entityTag.labelColor" style="margin-top: 5px" @click="clickTag(entityTag.labelContent,entityTag.labelColor)"><label style="color:#303133">{{entityTag.labelContent}}</label></el-tag>
+            <el-tag v-if="entityTag.labelType=='entity'" :color="entityTag.labelColor" style="margin-top: 5px;float: left;margin-left: 5px" @click="clickTag(entityTag.labelContent,entityTag.labelColor)"><label style="color:#303133">{{entityTag.labelContent}}</label></el-tag>
           </div>
         </el-aside>
       </el-col>
     </el-row>
-  </el-container>
+    </el-main>
+    <el-dialog title="实体链接弹窗" v-model="dialogVisible" width="35%">
 
-  <el-dialog title="实体链接弹窗" v-model="dialogVisible" width="35%">
-    <el-card class="box-card">
-      <div v-for="(value, key) in encyclopedia" :key="key" class="text item">
-        <div style="font-weight: bold;font-size: 18px; margin-top: 12px; margin-bottom: 4px;">
-          {{key}}
+      <el-card class="box-card">
+        <div v-for="(value, key) in encyclopedia" :key="key" class="text item">
+          <div style="font-weight: bold;font-size: 18px; margin-top: 12px; margin-bottom: 4px;">
+            {{key}}
+          </div>
+          <div style="white-space: pre-wrap;">
+            {{value}}
+          </div>
         </div>
-        <div style="white-space: pre-wrap;">
-          {{value}}
-        </div>
-      </div>
-    </el-card>
-  </el-dialog>
+      </el-card>
+    </el-dialog>
+  </el-container>
 </template>
 <script>
 import {getUnderstandResult} from "../apis/get";
@@ -134,10 +137,12 @@ import {getNodeByFileIdWithHighLight} from "../apis/post";
 import {ElMessage} from "element-plus";
 import entitylinkDialog from "./EntityLinkJump"
 import { ref } from 'vue'
+import CommonHeader from "@/views/common/CommonHeader.vue";
 
 const dialogVisible = ref(false);
 export default {
   components:{
+    CommonHeader,
     entitylinkDialog
   },
   data() {
@@ -438,17 +443,8 @@ export default {
 };
 </script>
 <style>
-  .el-header{
-    background-color: #409EFF;
-    color: #ffffff;
-    text-align: left;
-    line-height: 60px;
-  }
-  .side-bar {
-    width: 30%;
-  }
   .layout_col{
-    height: 1060px;
+    height: 85vh;
     border: 1px solid;
     border-color:#EBEDF0;
     margin-top: 20px;
@@ -456,5 +452,11 @@ export default {
   .container {
     display: flex;
     justify-content: flex-end;
+  }
+
+  /*设置横向滚动条*/
+  .el-tree {
+    min-width: 100%;
+    display: inline-block !important;
   }
 </style>

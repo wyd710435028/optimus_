@@ -36,7 +36,7 @@
 
 
   <!--评论列表-->
-  <div @click="handleClickBlank">
+  <div class="commentTree" @click="handleClickBlank">
     <div v-for="comment in commentList" :key="comment">
       <!--根评论-->
       <div style="margin-top: 20px">
@@ -55,10 +55,14 @@
           </div>
         </span>
         <!-- 根评论回复和删除操作 -->
-        <span style="margin-left: 18px;margin-top: 8px" @click="replayComment(comment)" class="action"> <IconMessage/> 回复 </span>
-        <a-popconfirm content="删除此评论,子评论也会删除,是否继续?" type="warning" @ok="deleteComment(comment)">
-          <span class="action"> <IconDelete/> 删除 </span>
-        </a-popconfirm>
+        <div style="margin-left: 15%;">
+          <span style="margin-top: 8px" @click="replayComment(comment)" class="action"> <IconMessage/> 回复 </span>
+          <el-popconfirm width="300" title="删除此评论,子评论也会删除,是否继续?" type="warning" @confirm="deleteComment(comment)">
+            <template #reference>
+              <span class="action"> <IconDelete/> 删除 </span>
+            </template>
+          </el-popconfirm>
+        </div>
 
         <!-- 回复输入框,点击回复显示 -->
         <div v-if="comment.ifShowReplayInput==true" style="margin-left: 65px;margin-top: 10px">
@@ -67,11 +71,14 @@
           <span><img src="https://img0.baidu.com/it/u=2947341353,265385944&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500" style="width: 40px;height: 40px;border-radius:50%;float: left"></span>
           <!-- 输入框 -->
           <div class="input-replay" id="rootMsgInputContainer" ref="rootMsgInputContainer" :placeholder="'回复:'+comment.userName" contenteditable="true" spellcheck="true"></div>
-          <div style="width: 400px;margin-left: 1316px;margin-top: 10px;">
-            <el-button key="0" type="warning" @click="closeReplayInput(comment)"> 取消 </el-button>
-            <el-button key="1" type="primary" @click="submitRootMsgComment(comment,comment.id,50,comment.rootParentId,commentContent)"> 提交 </el-button>
-            <el-button key="2" type="danger" @click="showEmojiInReplay()">表情</el-button>
-            <div style="position: relative" class="emoji-container" id="emoji-container" v-show="isEmojiShowInReplay">
+          <div style="width: 400px; margin-left: 37%; margin-top: 10px;">
+            <span style="margin-left: 18px;margin-top: 8px" @click="showEmojiInReplay()" class="action"> <IconFaceSmileFill/> 表情 </span>
+            <span style="margin-left: 18px;margin-top: 8px" @click="closeReplayInput(comment)" class="action"> <iconClose /> 取消 </span>
+            <span style="margin-left: 18px;margin-top: 8px" @click="submitRootMsgComment(comment,comment.id,50,comment.rootParentId,commentContent)" class="action"> <IconSend/> 发送 </span>
+<!--            <el-button key="2" type="danger" @click="showEmojiInReplay()">表情</el-button>-->
+<!--            <el-button key="0" type="warning" @click="closeReplayInput(comment)"> 取消 </el-button>-->
+<!--            <el-button key="1" type="primary" @click="submitRootMsgComment(comment,comment.id,50,comment.rootParentId,commentContent)"> 提交 </el-button>-->
+            <div style="position: relative;" class="emoji-container" id="emoji-container" v-show="isEmojiShowInReplay">
               <div class="emoji-list">
                 <div class="emoji-title-history" v-if="historyList.length!==0">
                   最近使用
@@ -116,9 +123,14 @@
           </span>
           <!--子评论回复和删除操作-->
           <span style="margin-left:115px;margin-top: 8px" @click="replayComment(subComment)" class="action"> <IconMessage /> 回复 </span>
-          <a-popconfirm content="删除此评论,子评论也会删除,是否继续?" type="warning" @ok="deleteComment(subComment)">
-            <span class="action"> <IconDelete/> 删除 </span>
-          </a-popconfirm>
+<!--          <a-popconfirm content="删除此评论,子评论也会删除,是否继续?" type="warning" @ok="deleteComment(subComment)">-->
+<!--            <span class="action"> <IconDelete/> 删除 </span>-->
+<!--          </a-popconfirm>-->
+          <el-popconfirm width="300" title="删除此评论,子评论也会删除,是否继续?" @confirm="deleteComment(subComment)">
+            <template #reference>
+              <span class="action"> <IconDelete/> 删除 </span>
+            </template>
+          </el-popconfirm>
 
           <!-- 回复输入框,点击回复显示 -->
           <div v-if="subComment.ifShowReplayInput==true" style="margin-left: 90px;margin-top: 10px">
@@ -130,10 +142,14 @@
 <!--            <div style="margin-top:10px;float: right; margin-right: 17.35%">-->
 <!--              -->
 <!--            </div>-->
-            <div style="width: 400px;margin-left: 1296px;margin-top: 10px;">
-              <el-button key="0" type="warning" @click="closeReplayInput(subComment)"> 取消 </el-button>
-              <el-button key="1" type="primary" @click="submitRootSubMsgComment(subComment,subComment.id,50,subComment.rootParentId,commentContent)"> 提交 </el-button>
-              <el-button key="2" type="danger" @click="showEmojiInSubReplay()">表情</el-button>
+            <div style="width: 400px;margin-left: 35%;margin-top: 10px;">
+<!--              <span class="emoji-btn" @click="showEmojiInSubReplay"><IconFaceSmileFill/></span>-->
+              <span style="margin-left: 18px;margin-top: 8px" @click="showEmojiInSubReplay()" class="action"> <IconFaceSmileFill/> 表情 </span>
+              <span style="margin-left: 18px;margin-top: 8px" @click="closeReplayInput(subComment)" class="action"> <iconClose /> 取消 </span>
+              <span style="margin-left: 18px;margin-top: 8px" @click="submitRootSubMsgComment(subComment,subComment.id,50,subComment.rootParentId,commentContent)" class="action"> <IconSend/> 发送 </span>
+<!--              <el-button key="2" type="danger" @click="showEmojiInSubReplay()">表情</el-button>-->
+<!--              <el-button key="0" type="warning" @click="closeReplayInput(subComment)"> 取消 </el-button>-->
+<!--              <el-button key="1" type="primary" @click="submitRootSubMsgComment(subComment,subComment.id,50,subComment.rootParentId,commentContent)"> 提交 </el-button>-->
               <div class="emoji-container" id="emoji-container" style="position: relative;z-index: 1000" v-show="isEmojiShowInSubReplay">
                 <div class="emoji-list">
                   <div class="emoji-title-history" v-if="historyList.length!==0">
@@ -160,12 +176,15 @@
           </div>
         </div>
       </div>
+      <el-divider></el-divider>
     </div>
   </div>
 </template>
 
 <script>
-import {IconDelete, IconHeart, IconMessage, IconStar,IconFaceSmileFill} from '@arco-design/web-vue/es/icon';
+
+
+import {IconDelete, IconHeart, IconMessage, IconStar,IconFaceSmileFill,IconSend,IconClose} from '@arco-design/web-vue/es/icon';
 import {getCommentLst} from "@/apis/get";
 import {saveComment,deleteCommentById,createNewRootComment} from "@/apis/post";
 import { ref } from 'vue';
@@ -173,7 +192,7 @@ import { ref } from 'vue';
 /* 表情配置数据 转为 数组 */
 import emojiConfig from '@/components/EmojiText/emoji.json'
 import SvgIcon from "@/components/SvgIcon.vue";
-import EmojiPanel from "@/views/EmojiPanel.vue";
+import {ElMessage} from "element-plus";
 let emojiList = []
 for (let key in emojiConfig) {
   emojiList.push({
@@ -185,13 +204,14 @@ for (let key in emojiConfig) {
 export default {
   //组件
   components: {
-    EmojiPanel,
     SvgIcon,
     IconHeart,
     IconMessage,
     IconStar,
     IconDelete,
-    IconFaceSmileFill
+    IconFaceSmileFill,
+    IconSend,
+    IconClose
   },
   props: {
     imgPrefix: { /* 图片路径前缀 */
@@ -221,115 +241,115 @@ export default {
       rootCommentContent:'',
       ifCanShowReplayInput:true,
       commentList:[
-        {
-          "id": 1,
-          "content": "管理员发送第一条评论",
-          "userId": 1,
-          "userName": "admin",
-          "createTime": "2024-01-25 06:10:50",
-          "isDelete": 0,
-          "belongsId": 1,
-          "parentId": null,
-          "rootParentId": 1,
-          "child": [
-            {
-              "id": 8,
-              "content": "用户孙七回复了管理员的第一条评论",
-              "userId": 6,
-              "userName": "sunqi",
-              "createTime": "2024-01-25 06:30:12",
-              "isDelete": 0,
-              "belongsId": 1,
-              "parentId": 1,
-              "rootParentId": 1,
-              "child": null,
-              "ifShowReplayInput": 0
-            }
-          ],
-          "ifShowReplayInput": 0
-        },
-        {
-          "id": 2,
-          "content": "用户张三发表的评论1",
-          "userId": 2,
-          "userName": "zhangsan",
-          "createTime": "2024-01-25 06:19:40",
-          "isDelete": 0,
-          "belongsId": 1,
-          "parentId": null,
-          "rootParentId": 2,
-          "child": [
-            {
-              "id": 4,
-              "content": "管理员回复张三的评论1",
-              "userId": 1,
-              "userName": "admin",
-              "createTime": "2024-01-25 06:21:37",
-              "isDelete": 0,
-              "belongsId": 1,
-              "parentId": 2,
-              "rootParentId": 2,
-              "child": [
-                {
-                  "id": 5,
-                  "content": "张三回复管理员回复的张三的评论1",
-                  "userId": 2,
-                  "userName": "admin",
-                  "createTime": "2024-01-25 06:23:06",
-                  "isDelete": 0,
-                  "belongsId": 1,
-                  "parentId": 4,
-                  "rootParentId": 2,
-                  "child": [
-                    {
-                      "id": 6,
-                      "content": "王五回复张三回复管理员回复的张三的评论1",
-                      "userId": 4,
-                      "userName": "wangwu",
-                      "createTime": "2024-01-25 06:25:21",
-                      "isDelete": 0,
-                      "belongsId": 1,
-                      "parentId": 5,
-                      "rootParentId": 2,
-                      "child": null,
-                      "ifShowReplayInput": 0
-                    }
-                  ],
-                  "ifShowReplayInput": 0
-                }
-              ],
-              "ifShowReplayInput": 0
-            }
-          ],
-          "ifShowReplayInput": 0
-        },
-        {
-          "id": 3,
-          "content": "用户李四发表的评论1",
-          "userId": 3,
-          "userName": "lisi",
-          "createTime": "2024-01-25 06:20:33",
-          "isDelete": 0,
-          "belongsId": 1,
-          "parentId": null,
-          "rootParentId": 3,
-          "child": [
-            {
-              "id": 7,
-              "content": "用户赵六回复了李四发表的评论1",
-              "userId": 5,
-              "userName": "zhaoliu",
-              "createTime": "2024-01-25 06:27:31",
-              "isDelete": 0,
-              "belongsId": 1,
-              "parentId": 3,
-              "rootParentId": 3,
-              "child": null,
-              "ifShowReplayInput": 0
-            }
-          ],
-          "ifShowReplayInput": 0
-        }
+        // {
+        //   "id": 1,
+        //   "content": "管理员发送第一条评论",
+        //   "userId": 1,
+        //   "userName": "admin",
+        //   "createTime": "2024-01-25 06:10:50",
+        //   "isDelete": 0,
+        //   "belongsId": 1,
+        //   "parentId": null,
+        //   "rootParentId": 1,
+        //   "child": [
+        //     {
+        //       "id": 8,
+        //       "content": "用户孙七回复了管理员的第一条评论",
+        //       "userId": 6,
+        //       "userName": "sunqi",
+        //       "createTime": "2024-01-25 06:30:12",
+        //       "isDelete": 0,
+        //       "belongsId": 1,
+        //       "parentId": 1,
+        //       "rootParentId": 1,
+        //       "child": null,
+        //       "ifShowReplayInput": 0
+        //     }
+        //   ],
+        //   "ifShowReplayInput": 0
+        // },
+        // {
+        //   "id": 2,
+        //   "content": "用户张三发表的评论1",
+        //   "userId": 2,
+        //   "userName": "zhangsan",
+        //   "createTime": "2024-01-25 06:19:40",
+        //   "isDelete": 0,
+        //   "belongsId": 1,
+        //   "parentId": null,
+        //   "rootParentId": 2,
+        //   "child": [
+        //     {
+        //       "id": 4,
+        //       "content": "管理员回复张三的评论1",
+        //       "userId": 1,
+        //       "userName": "admin",
+        //       "createTime": "2024-01-25 06:21:37",
+        //       "isDelete": 0,
+        //       "belongsId": 1,
+        //       "parentId": 2,
+        //       "rootParentId": 2,
+        //       "child": [
+        //         {
+        //           "id": 5,
+        //           "content": "张三回复管理员回复的张三的评论1",
+        //           "userId": 2,
+        //           "userName": "admin",
+        //           "createTime": "2024-01-25 06:23:06",
+        //           "isDelete": 0,
+        //           "belongsId": 1,
+        //           "parentId": 4,
+        //           "rootParentId": 2,
+        //           "child": [
+        //             {
+        //               "id": 6,
+        //               "content": "王五回复张三回复管理员回复的张三的评论1",
+        //               "userId": 4,
+        //               "userName": "wangwu",
+        //               "createTime": "2024-01-25 06:25:21",
+        //               "isDelete": 0,
+        //               "belongsId": 1,
+        //               "parentId": 5,
+        //               "rootParentId": 2,
+        //               "child": null,
+        //               "ifShowReplayInput": 0
+        //             }
+        //           ],
+        //           "ifShowReplayInput": 0
+        //         }
+        //       ],
+        //       "ifShowReplayInput": 0
+        //     }
+        //   ],
+        //   "ifShowReplayInput": 0
+        // },
+        // {
+        //   "id": 3,
+        //   "content": "用户李四发表的评论1",
+        //   "userId": 3,
+        //   "userName": "lisi",
+        //   "createTime": "2024-01-25 06:20:33",
+        //   "isDelete": 0,
+        //   "belongsId": 1,
+        //   "parentId": null,
+        //   "rootParentId": 3,
+        //   "child": [
+        //     {
+        //       "id": 7,
+        //       "content": "用户赵六回复了李四发表的评论1",
+        //       "userId": 5,
+        //       "userName": "zhaoliu",
+        //       "createTime": "2024-01-25 06:27:31",
+        //       "isDelete": 0,
+        //       "belongsId": 1,
+        //       "parentId": 3,
+        //       "rootParentId": 3,
+        //       "child": null,
+        //       "ifShowReplayInput": 0
+        //     }
+        //   ],
+        //   "ifShowReplayInput": 0
+        // }
       ],
       /* 文本框中有文字 或 无文字但是处于焦点状态时 为true */
       height80: false,
@@ -358,7 +378,12 @@ export default {
           comment.ifShowReplayInput = !comment.ifShowReplayInput;
           _this.ifCanShowReplayInput = !comment.ifShowReplayInput;
       }else {
-        _this.$message.warning({content:'有未关闭的评论框,请先关闭再评论!',closable: true});
+        // _this.$message.warning({content:'有未关闭的评论框,请先关闭再评论!',closable: true});
+        ElMessage({
+          showClose: true,
+          message: '有未关闭的评论框,请先关闭再评论!',
+          type: 'warning',
+        })
       }
     },
     //关闭回复输入框
@@ -382,17 +407,32 @@ export default {
       // alert('父评论是:'+parentId+',当前用户id是:'+userId+',根评论id是:'+rootParentId+',评论的内容是:'+content);
       let _this = this;
       if (content == null || content.trim().length == 0){
-        _this.$message.warning({content:'请输入评论内容',closable: true});
+        // _this.$message.warning({content:'请输入评论内容',closable: true});
+        ElMessage({
+          showClose: true,
+          message: '请输入评论内容',
+          type: 'warning',
+        })
       }else {
         //输入评论内容才保存
         saveComment(parentId,userId,rootParentId,content).then(function (response){
           if (response.status=='200'){
-            _this.$message.success({content:'评论成功',closable: true});
+            // _this.$message.success({content:'评论成功',closable: true});
+            ElMessage({
+              showClose: true,
+              message: '评论成功',
+              type: 'success',
+            })
             //关闭输入框
             _this.closeReplayInput(comment);
             _this.queryCommentList();
           }else {
-            _this.$message.error({content:'评论失败',closable:true});
+            // _this.$message.error({content:'评论失败',closable:true});
+            ElMessage({
+              showClose: true,
+              message: '评论失败',
+              type: 'error',
+            })
           }
         });
       }
@@ -402,17 +442,32 @@ export default {
       let content = document.getElementById("rootMsgInputContainer").innerHTML;
       let _this = this;
       if (content == null || content.trim().length == 0){
-        _this.$message.warning({content:'请输入评论内容',closable: true});
+        // _this.$message.warning({content:'请输入评论内容',closable: true});
+        ElMessage({
+          showClose: true,
+          message: '请输入评论内容',
+          type: 'warning',
+        })
       }else {
         //输入评论内容才保存
         saveComment(parentId,userId,rootParentId,content).then(function (response){
           if (response.status=='200'){
-            _this.$message.success({content:'评论成功',closable: true});
+            // _this.$message.success({content:'评论成功',closable: true});
+            ElMessage({
+              showClose: true,
+              message: '评论成功',
+              type: 'success',
+            })
             //关闭输入框
             _this.closeReplayInput(comment);
             _this.queryCommentList();
           }else {
-            _this.$message.error({content:'评论失败',closable:true});
+            // _this.$message.error({content:'评论失败',closable:true});
+            ElMessage({
+              showClose: true,
+              message: '评论失败',
+              type: 'error',
+            })
           }
         });
       }
@@ -422,17 +477,32 @@ export default {
       let content = document.getElementById("rootSubMsgInputContainer").innerHTML;
       let _this = this;
       if (content == null || content.trim().length == 0){
-        _this.$message.warning({content:'请输入评论内容',closable: true});
+        // _this.$message.warning({content:'请输入评论内容',closable: true});
+        ElMessage({
+          showClose: true,
+          message: '请输入评论内容',
+          type: 'warning',
+        })
       }else {
         //输入评论内容才保存
         saveComment(parentId,userId,rootParentId,content).then(function (response){
           if (response.status=='200'){
-            _this.$message.success({content:'评论成功',closable: true});
+            // _this.$message.success({content:'评论成功',closable: true});
+            ElMessage({
+              showClose: true,
+              message: '评论成功',
+              type: 'success',
+            })
             //关闭输入框
             _this.closeReplayInput(comment);
             _this.queryCommentList();
           }else {
-            _this.$message.error({content:'评论失败',closable:true});
+            // _this.$message.error({content:'评论失败',closable:true});
+            ElMessage({
+              showClose: true,
+              message: '评论失败',
+              type: 'error',
+            })
           }
         });
       }
@@ -443,10 +513,20 @@ export default {
       let id = comment.id;
       deleteCommentById(id).then(function (response){
         if (response.status=='200'){
-          _this.$message.success({content:'删除成功',closable: true,duration:3000});
+          // _this.$message.success({content:'删除成功',closable: true,duration:3000});
+          ElMessage({
+            showClose: true,
+            message: '删除成功',
+            type: 'success'
+          })
           _this.queryCommentList();
         }else {
-          _this.$message.error({content:'删除失败',closable:true,duration:3000});
+          // _this.$message.error({content:'删除失败',closable:true,duration:3000});
+          ElMessage({
+            showClose: true,
+            message: '删除失败',
+            type: 'error'
+          })
         }
       });
       // alert(comment.id);
@@ -460,17 +540,32 @@ export default {
       // alert(rootCommentContent);
       let  _this = this;
       if (rootCommentContent == null || rootCommentContent.trim().length == 0){
-        _this.$message.warning({content:'请输入评论内容',closable: true});
+        // _this.$message.warning({content:'请输入评论内容',closable: true});
+        ElMessage({
+          showClose: true,
+          message: '请输入评论内容',
+          type: 'warning',
+        })
       }else {
         createNewRootComment(rootCommentContent,userId).then(function (response){
           if (response.status=='200'){
-            _this.$message.success({content:'发表成功',closable: true,duration:3000});
+            // _this.$message.success({content:'发表成功',closable: true,duration:3000});
+            ElMessage({
+              showClose: true,
+              message: '发表成功',
+              type: 'success',
+            })
             _this.rootCommentContent = null;
             _this.queryCommentList();
             _this.isEmojiShow = false;
             document.getElementById('msgInputContainer').innerHTML = '';
           }else {
-            _this.$message.error({content:'发表失败',closable:true,duration:3000});
+            // _this.$message.error({content:'发表失败',closable:true,duration:3000});
+            ElMessage({
+              showClose: true,
+              message: '发表失败',
+              type: 'error',
+            })
           }
         });
       }
@@ -753,11 +848,23 @@ export default {
 /*=========start======*/
 .emoji-item {
   cursor: pointer; /* 修改光标形状 */
+  //border: 1px solid ; /* 添加红色边框 */
 }
 
 .emoji-item:hover {
   border: 1px solid #4682B4; /* 添加红色边框 */
-  background-color: #b3e19d;
+  //border-radius: 4px;
+  background-color: #B3C0D1;
+}
+
+.emoji-container{
+  margin-top: 10px;
+  margin-left: 15px;
+  //border-top: 1px solid #B3C0D1;
+  //border-left: 1px solid #B3C0D1;
+  background-color: #faecd8;
+  //border: 3px solid #c45656;
+  border-radius: 4px;
 }
 
 .emoji-btn {
@@ -791,9 +898,9 @@ export default {
 .mo-yu-container {
   width: 420px;
   background: #fff;
-  position: fixed;
-  top: 0;
-  left: 800px;
+  position: absolute;
+  top: 8%;
+  left: 53%;
 }
 
 .emoji-item {
@@ -851,6 +958,8 @@ export default {
   border: #F4F5F6 2px solid;
   border-radius: 4px;
   padding: 5px;
+  overflow-x: hidden;
+  word-break:break-all
 }
 
 .input-panel:empty:before {
@@ -876,18 +985,27 @@ export default {
   line-height: 20px;
   background: #ffffff;
   width: 80%;
-  height: 35px;
+  height: 40px;
   outline: none;
-  border: #333333 2px solid;
+  border: #86909c 1px solid;
   border-radius: 4px;
   padding: 5px;
+  overflow-x: hidden;
+  word-break:break-all
 }
 
 .input-replay:empty:before {
   content: attr(placeholder);
-  position: absolute;
+  position: relative;
   color: #c45656;
   background-color: transparent;
+}
+
+.commentTree{
+  width: 50%;
+  //margin-left: 20%;
+  //border: #333333 2px solid;
+  //border-radius: 4px;
 }
 /*=========end======*/
 </style>
