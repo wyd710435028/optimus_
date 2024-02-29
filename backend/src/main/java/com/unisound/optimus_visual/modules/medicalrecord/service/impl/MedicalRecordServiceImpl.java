@@ -410,11 +410,13 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     List<EntityOrSpanModel> entityList = nodeModel.getEntityList();
                                     String nodeContent = nodeModel.getNodeContent();
                                     //entity高亮
-                                    String entityHighted = highLightText(nodeContent,entityList,labelModelList);
+//                                    String entityHighted = highLightText(nodeContent,entityList,labelModelList);
+                                    String entityHighted = highLightText(nodeContent,entityList,labelModelList,fileId,nodeModel.getNodeName());
                                     nodeModel.setEntityHightLighted(entityHighted);
                                     //span高亮
                                     List<EntityOrSpanModel> spanList = nodeModel.getSpanList();
-                                    String spanHighted = highLightText(nodeContent, spanList, labelModelList);
+//                                    String spanHighted = highLightText(nodeContent, spanList, labelModelList);
+                                    String spanHighted = highLightText(nodeContent,spanList,labelModelList,fileId,nodeModel.getNodeName());
                                     nodeModel.setSpanHightLighted(spanHighted);
                                     //事件处理
                                     List<EventModel> eventList = nodeModel.getEventList();
@@ -483,6 +485,28 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         result.put("standingOrderList",standingOrderModelList);
         result.put("yzsProjectTypeList",yzsProjectTypeList);
         result.put("projectCategoriesList",projectCategoriesList);
+        return result;
+    }
+
+    private String highLightText(String nodeContent, List<EntityOrSpanModel> entityList, List<ShowLabelModel> labelModelList, String fileId, String nodeName) {
+        String result = "";
+        if (StringUtils.isBlank(nodeContent)){
+            return result;
+        }
+        if (CollectionUtils.isEmpty(entityList)||CollectionUtils.isEmpty(labelModelList)){
+            return nodeContent;
+        }else {
+            //高亮逻辑
+            Map<String,String> keyMap = new LinkedHashMap<>();
+            for (EntityOrSpanModel entity:entityList){
+                Map<String,String> colorMap = this.convertUnifyToMap(labelModelList);
+                String entityName = entity.getName();
+                String color = colorMap.get(entity.getLabel());
+                keyMap.put(entityName,color);
+            }
+            String highlightedText = Highlighter.highlightKeywords(nodeContent,keyMap,fileId,nodeName);
+            result =highlightedText;
+        }
         return result;
     }
 

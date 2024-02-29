@@ -1,8 +1,10 @@
 <template>
   <router-view></router-view>
   <el-container>
+    <!-- 公共头部 -->
+<!--    <common-header></common-header>-->
     <el-header style="background-color: #009688;">
-      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
+      <common-header></common-header>
     </el-header>
     <el-row class="container">
       <el-button color="#356B98" :dark="isDark" style="margin-top: 20px;margin-right: 5px" @click="refresh()">刷新</el-button>
@@ -92,8 +94,10 @@
 </template>
 <script>
 import {hightTextByOneTag} from "@/apis/post";
+import CommonHeader from "@/views/common/CommonHeader.vue";
 
 export default {
+  components: {CommonHeader},
   data() {
     return {
       nodeName:'',
@@ -193,7 +197,7 @@ export default {
       let hospitalId = this.$route.params.hospitalId;
       let admissionId = this.$route.params.admissionId;
       let stage = this.$route.params.stage;
-      this.$router.push('/MedicalDocList/'+hospitalId+'/'+admissionId+'/'+stage);
+      this.$router.push('/MedicalDocList/'+hospitalId+'/'+admissionId+'/'+stage+'/noFileId/noDocType');
     },
     returnIndex(){
       this.$router.push('/');

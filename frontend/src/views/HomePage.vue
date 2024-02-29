@@ -1,9 +1,8 @@
 <template>
   <router-view></router-view>
   <el-container>
-    <el-header style="background-color: #009688;">
-      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
-    </el-header>
+    <!-- 公共头部 -->
+    <common-header></common-header>
     <el-main style="border: 2px">
       <el-row>
         <el-form :inline="true" :model="formInline" class="demo-form-inline">
@@ -51,7 +50,7 @@
           </el-table-column>
           <el-table-column
               label="操作"
-              width="500px"
+              width="520px"
           >
             <template v-slot="scope">
               <el-row>
@@ -59,6 +58,7 @@
                 <el-button @click="docUnderstandResult(scope.row)" type="success">病历详情</el-button>
                 <el-button @click="docQuery(scope.row)" type="warning">文书查询</el-button>
                 <el-button @click="eventQuery(scope.row)" color="#478A97">事件查询</el-button>
+<!--                <el-button @click="commentDetail(scope.row)" color="#BA4A00">评论详情</el-button>-->
               </el-row>
             </template>
           </el-table-column>
@@ -78,7 +78,18 @@
         </el-pagination>
       </div>
     </el-footer>
+    <el-drawer
+        v-model="openCommentDetail"
+        title="评论详情"
+        direction="ltr"
+        size="50%"
+    >
+    <CommentList></CommentList>
+    </el-drawer>
   </el-container>
+<!--  <el-row>-->
+<!--    <CommentList></CommentList>-->
+<!--  </el-row>-->
 </template>
 <script>
   import {getRecordList} from "../apis/get";
@@ -86,8 +97,11 @@
   import axios from "axios";
   import {reactive} from "vue";
   import {ElMessage} from "element-plus";
+  import CommentList from "@/views/CommentList.vue";
+  import CommonHeader from "@/views/common/CommonHeader.vue";
   // import {} from "../apis/post";
   export default {
+    components: {CommentList,CommonHeader},
     data() {
       return {
         tableData: [],
@@ -99,7 +113,9 @@
           pageSize: null,
           total: null
         },
-        understandStatus:''
+        understandStatus:'',
+        openCommentDetail:false,
+        dialogVisible:false
       }
     },
     methods:{
@@ -121,6 +137,14 @@
           _this.pagination.pageSize=response.data.data.size;
           _this.pagination.currentPage=response.data.data.current;
           _this.pagination.total=response.data.data.total;
+          if ((_this.hospitalNo!=null&&_this.hospitalNo!="")||(_this.admissionId!=null&&_this.admissionId!="")){
+            ElMessage({
+              showClose: true,
+              message: '查询完毕',
+              type: 'success',
+              duration: 3 * 1000
+            })
+          }
         })
       },
       reUnderstand(row) {
@@ -172,6 +196,11 @@
       eventQuery(row){
         this.$router.push('/EventQueryList/'+row.hospitalId+'/'+row.admissionId+'/'+row.stage);
       },
+      commentDetail(row){
+        let _this = this;
+        _this.openCommentDetail = true
+        // alert("右侧弹出评论列表");
+      },
       //分页插件方法
       //切换当前页
       handleCurrentChange(val) {
@@ -206,5 +235,13 @@
   line-height: 60px;
 }
 .el-main {
+}
+.avatar{
+  float:right;
+  margin-top: 10px;
+}
+.avatar:hover{
+  background-color: #B3C0D1;
+  //border: 1px solid #4682B4;
 }
 </style>

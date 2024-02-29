@@ -1,8 +1,10 @@
 <template>
   <router-view></router-view>
   <el-container>
+    <!-- 公共头部 -->
     <el-header style="background-color: #009688;">
-      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
+      <common-header></common-header>
+<!--      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>-->
     </el-header>
     <el-row class="container">
       <el-button color="#359894" :dark="isDark" style="margin-top: 15px;margin-right: 20px" @click="returnDocQueryList()">返回</el-button>
@@ -88,7 +90,9 @@
 
 <script>
 import {docContentDetail, getUnderstandResult} from "../apis/get"
+import CommonHeader from "@/views/common/CommonHeader.vue";
 export default {
+  components: {CommonHeader},
   data(){
     return{
       showContent:'',//有三个选项: 1.normal->正常文书,2.statOrder->临时医嘱,3.standingOrder->长期医嘱

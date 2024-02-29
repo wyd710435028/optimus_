@@ -2,6 +2,7 @@ package com.unisound.optimus_visual.modules.comment.controller;
 
 import com.unisound.optimus_visual.global.result.CommonResult;
 import com.unisound.optimus_visual.modules.comment.entity.Comment;
+import com.unisound.optimus_visual.modules.comment.entity.ResultComment;
 import com.unisound.optimus_visual.modules.comment.service.CommentService;
 import com.unisound.optimus_visual.modules.medicalrecord.model.Hospital;
 import lombok.extern.slf4j.Slf4j;
@@ -49,5 +50,26 @@ public class CommentController {
     public CommonResult createNewRootComment(@RequestBody String param){
         Map<String,Object> result = commentService.createNewRootComment(param);
         return new CommonResult(result);
+    }
+
+    /**
+     * 创建评论
+     * @param param
+     * @return
+     */
+    @RequestMapping("createNewResultComment")
+    public CommonResult createNewResultComment(@RequestBody String param){
+        Map<String,Object> result = commentService.createNewResultComment(param);
+        return new CommonResult(result);
+    }
+
+    /**
+     * 获取评论历史列表
+     * @return
+     */
+    @RequestMapping("/getCommentHistoryList")
+    public CommonResult getCommentHistoryList(String keyWords,String fileId,String nodeName,String labelName) {
+        List<ResultComment> commentList = commentService.getCommentHistoryList(keyWords, fileId, nodeName, labelName);
+        return new CommonResult(commentList);
     }
 }

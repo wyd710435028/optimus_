@@ -1,9 +1,11 @@
 <template>
   <router-view></router-view>
   <el-container>
-    <el-header style="background-color: #009688;">
-      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
-    </el-header>
+    <!-- 公共头部 -->
+    <common-header></common-header>
+<!--    <el-header style="background-color: #009688;">-->
+<!--      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>-->
+<!--    </el-header>-->
     <el-main style="border: 2px">
       <el-row>
         <el-form :inline="true" class="demo-form-inline">
@@ -76,7 +78,9 @@
 </template>
 <script>
 import {docQueryList} from "../apis/get"
+import CommonHeader from "@/views/common/CommonHeader.vue";
 export default {
+  components: {CommonHeader},
   data(){
     return{
       tableData : [],

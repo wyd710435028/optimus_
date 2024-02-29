@@ -2,8 +2,10 @@ package com.unisound.optimus_visual.modules.comment.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.unisound.optimus_visual.modules.comment.dao.ResultCommentMapper;
 import com.unisound.optimus_visual.modules.comment.dao.UserMapper;
 import com.unisound.optimus_visual.modules.comment.entity.Comment;
+import com.unisound.optimus_visual.modules.comment.entity.ResultComment;
 import com.unisound.optimus_visual.modules.comment.entity.User;
 import com.unisound.optimus_visual.modules.comment.service.CommentService;
 import com.unisound.optimus_visual.modules.comment.dao.CommentMapper;
@@ -26,6 +28,8 @@ public class CommentServiceImpl implements CommentService {
     CommentMapper commentMapper;
     @Autowired
     UserMapper userMapper;
+    @Autowired
+    ResultCommentMapper resultCommentMapper;
 
     /**
      * 查询评论列表
@@ -132,6 +136,51 @@ public class CommentServiceImpl implements CommentService {
         commentMapper.insert(comment);
         comment.setRootParentId(comment.getId());
         commentMapper.updateById(comment);
+        return result;
+    }
+
+    /**
+     * 创建新的理解结果评论
+     * @param param
+     * @return
+     */
+    @Override
+    public Map<String, Object> createNewResultComment(String param) {
+        //todo 待修改
+        Map<String,Object> result = new LinkedHashMap<>();
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        Long userId = jsonObject.getLong("userId");
+        String rootCommentContent = jsonObject.getString("rootCommentContent");
+        String keyWords = jsonObject.getString("keyWords");
+        String fileId = jsonObject.getString("fileId");
+        String nodeName = jsonObject.getString("nodeName");
+        String labelName = jsonObject.getString("labelName");
+        String docName = jsonObject.getString("docName");
+        if (Objects.isNull(userId)||StringUtils.isBlank(rootCommentContent)){
+            return result;
+        }
+        ResultComment resultComment = new ResultComment();
+        resultComment.setKeyWords(keyWords);
+        resultComment.setFileId(fileId);
+        resultComment.setDocName(docName);
+        resultComment.setNodeName(nodeName);
+        resultComment.setLabelName(labelName);
+        resultComment.setCreateTime(new Date());
+        resultComment.setContent(rootCommentContent);
+        resultComment.setUserId(userId);
+        resultCommentMapper.insert(resultComment);
+        return result;
+    }
+
+    @Override
+    public List<ResultComment> getCommentHistoryList(String keyWords, String fileId, String nodeName, String labelName) {
+        //定义返回变量
+        List<ResultComment> result = new ArrayList<>();
+        //参数校验
+        if (StringUtils.isBlank(keyWords)||StringUtils.isBlank(fileId)||StringUtils.isBlank(nodeName)||StringUtils.isBlank(labelName)){
+            return result;
+        }
+        result = resultCommentMapper.getCommentHistoryList(keyWords,fileId,nodeName,labelName);
         return result;
     }
 

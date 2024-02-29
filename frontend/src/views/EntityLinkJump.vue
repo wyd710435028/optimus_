@@ -1,8 +1,10 @@
 <template>
   <router-view></router-view>
-  <el-header style="background-color: #009688;">
-    <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>
-  </el-header>
+  <!-- 公共头部 -->
+  <common-header></common-header>
+<!--  <el-header style="background-color: #009688;">-->
+<!--    <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>-->
+<!--  </el-header>-->
     <el-card class="box-card" style="margin-top: 5px">
       <div class="card-header">
         <span style="font-weight: bold;font-size: 25px; color: #c45656; margin-top: 12px; margin-bottom: 4px;">实体百科</span>
@@ -25,8 +27,10 @@
 <script>
 import axios from "axios";
 import {ElMessage} from "element-plus";
+import CommonHeader from "@/views/common/CommonHeader.vue";
 export default {
   name:"entitylinkDialog",
+  components: {CommonHeader},
   /*属性*/
   data(){
     return{
