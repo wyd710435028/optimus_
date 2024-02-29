@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.unisound.optimus_visual.base.ResourceLoad;
 import com.unisound.optimus_visual.elasticsearch.dao.IndexDataFetcher;
 import com.unisound.optimus_visual.elasticsearch.dao.PatientDataFetcher;
 import com.unisound.optimus_visual.global.enums.emrNoConstant;
@@ -1807,6 +1808,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             }
 
         }
+        //将label内容英文转换为中文
+        //根据labelMapping进行转换,英文转换为中文
+        ResourceLoad.convertLabelListContentToChinese(labelModelList);
         return labelModelList;
     }
 

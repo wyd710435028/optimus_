@@ -1,6 +1,8 @@
 package com.unisound.optimus_visual.base;
 
+import com.unisound.optimus_visual.modules.medicalrecord.model.ShowLabelModel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -23,6 +25,11 @@ public class ResourceLoad {
     public static Map<String,String> globalHospitaiMap = new LinkedHashMap<>();
 
     public static Map<String,String> globalTreeMapping = new LinkedHashMap<>();
+
+    /**
+     * 全局的label映射Map
+     */
+    public static Map<String,String> globalLabelMapping = new LinkedHashMap<>();
 
     /**
      * 颜色list(用于标签背景颜色显示)
@@ -103,6 +110,47 @@ public class ResourceLoad {
             log.info("加载了{}个颜色编码信息",colorList.size());
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 初始化标签映射信息
+     */
+    @PostConstruct
+    public void initLabelMapping(){
+        String url = baseResourceUrl + File.separator + "labelMapping.txt";
+        File file = new File(url);
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                //#号开头的忽略,作为注释
+                if(line.startsWith("#")) {
+                    continue;
+                }
+                String[] columns = line.split("\t");
+                globalLabelMapping.put(columns[0],columns[1]);
+            }
+            log.info("加载了{}个文书分组",globalLabelMapping.size());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 将labelList的内容转换为中文
+     * @param labelModelList
+     */
+    public static void convertLabelListContentToChinese(List<ShowLabelModel> labelModelList){
+        //根据labelMapping进行转换,英文转换为中文
+        for (ShowLabelModel showLabelModel:labelModelList){
+            String labelContent = showLabelModel.getLabelContent();
+            if (globalLabelMapping.containsKey(labelContent)){
+                String labelChineseName = globalLabelMapping.get(labelContent);
+                if (StringUtils.isNotBlank(labelChineseName)){
+                    showLabelModel.setLabelContent(labelChineseName);
+                }
+            }
         }
     }
 
