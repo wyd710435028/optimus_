@@ -49,7 +49,7 @@ public class Highlighter {
             String[] split = labelNameAndColor.split("&");
             String color = split[0];
             String labelName = split.length==2?split[1]:"";
-            sb.append("<span title='点击跳转到实体链接页面' style='background-color: "+color+"'>");
+            sb.append("<span title='点击跳转到评论/实体链接页面' style='background-color: "+color+"'>");
             substring = substring.replaceAll("/", "%2F");
 //            sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/EntityLinkJump/"+substring+"/"+labelName+">");
             sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/KeyWordsOption/"+substring+"/"+labelName+"/aaa/现病史/出院记录>");
@@ -118,7 +118,7 @@ public class Highlighter {
             String color = split[0];
             String labelName = split.length==2?split[1]:"";
             substring = substring.replaceAll("/", "%2F");
-            sb.append("<span title='点击跳转到实体链接页面' style='background-color: "+color+"'>");
+            sb.append("<span title='点击跳转到评论/实体链接页面' style='background-color: "+color+"'>");
 //            sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/EntityLinkJump/"+substring+"/"+labelName+">");
             sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/KeyWordsOption/"+substring+"/"+labelName+"/"+fileId+"/"+nodeName+">");
 //            sb.append("<a style='color:black;text-decoration: none' onclick='showEntityLink("+substring+","+(StringUtils.isBlank(labelName)?"noValue":labelName)+")'"+">");

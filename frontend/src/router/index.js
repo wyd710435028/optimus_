@@ -35,7 +35,7 @@ const routes = [
     props:true
   },
   {
-    path: '/MedicalNodeDetail/:nodeName/:nodeContent/:entityHightLighted/:spanHightLighted/:eventHightLighted/:entityLabelList/:spanLabelList/:eventList/:entityList/:spanList/:hospitalId/:admissionId/:stage',
+    path: '/MedicalNodeDetail/:nodeName/:nodeContent/:entityHightLighted/:spanHightLighted/:eventHightLighted/:entityLabelList/:spanLabelList/:eventList/:entityList/:spanList/:hospitalId/:admissionId/:stage/:fileId',
     name: 'MedicalNodeDetail',
     component: MedicalNodeDetail,
     props: true

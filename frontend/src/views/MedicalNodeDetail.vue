@@ -100,6 +100,7 @@ export default {
   components: {CommonHeader},
   data() {
     return {
+      fileId:'',
       nodeName:'',
       nodeContent:'',
       entityHightLighted:'',
@@ -152,6 +153,7 @@ export default {
       this.eventData = JSON.parse(eventList);
       this.entityList = JSON.parse(entityList);
       this.spanList = JSON.parse(spanList);
+      this.fileId = this.$route.params.fileId;
       // alert(entityList);
       // alert(spanList);
       // alert(this.nodeContent);
@@ -170,8 +172,12 @@ export default {
       // alert(labelColor);
       //entity集合(字符串形式)
       let entityList = this.$route.params.entityList;
+      let fileId = _this.fileId;
+      let nodeName = _this.nodeName;
+      // alert(fileId);
+      // alert(nodeName);
       // alert(entityList);
-      hightTextByOneTag(nodeContent,labelContent,labelColor,entityList).then(function (response){
+      hightTextByOneTag(nodeContent,labelContent,labelColor,entityList,fileId,nodeName).then(function (response){
         _this.entityHightLighted =response.data.data.hightedText;
       })
     },
@@ -186,7 +192,9 @@ export default {
       //entity集合(字符串形式)
       let spanList = this.$route.params.spanList;
       // alert(entityList);
-      hightTextByOneTag(nodeContent,labelContent,labelColor,spanList).then(function (response){
+      let fileId = _this.fileId;
+      let nodeName = _this.nodeName;
+      hightTextByOneTag(nodeContent,labelContent,labelColor,spanList,fileId,nodeName).then(function (response){
         _this.spanHightLighted =response.data.data.hightedText;
       })
     },

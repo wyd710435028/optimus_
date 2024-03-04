@@ -404,6 +404,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                             }else {
                                 nodeModelList =  docModel.getNodeList();
                                 labelModelList = docModel.getLabelList();
+                                //转换label为中文
+                                ResourceLoad.convertLabelListContentToChinese(labelModelList);
                                 //做高亮处理
                                 //doc下的节点列表
                                 for (ShowNodeModel nodeModel:nodeModelList){
@@ -544,9 +546,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                             }else {
                                 nodeModelList =  docModel.getNodeList();
                                 List<ShowLabelModel> hightLabelList = new ArrayList<>();
-                                ShowLabelModel hightLabel = new ShowLabelModel(labelContent,labelColor,null);
+                                ShowLabelModel hightLabel = new ShowLabelModel(labelContent,labelColor,null,getLabelChineseName(labelContent));
                                 hightLabelList.add(hightLabel);
                                 labelModelList = docModel.getLabelList();
+                                ResourceLoad.convertLabelListContentToChinese(labelModelList);
                                 //做高亮处理
                                 //doc下的节点列表
                                 for (ShowNodeModel nodeModel:nodeModelList){
@@ -554,11 +557,11 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     List<EntityOrSpanModel> entityList = nodeModel.getEntityList();
                                     String nodeContent = nodeModel.getNodeContent();
                                     //entity高亮
-                                    String entityHighted = highLightText(nodeContent,entityList,hightLabelList);
+                                    String entityHighted = highLightText(nodeContent,entityList,hightLabelList,fileId,nodeModel.getNodeName());
                                     nodeModel.setEntityHightLighted(entityHighted);
                                     //span高亮
                                     List<EntityOrSpanModel> spanList = nodeModel.getSpanList();
-                                    String spanHighted = highLightText(nodeContent, spanList, labelModelList);
+                                    String spanHighted = highLightText(nodeContent, spanList, labelModelList,fileId,nodeModel.getNodeName());
                                     nodeModel.setSpanHightLighted(spanHighted);
                                     //事件处理
                                     List<EventModel> eventList = nodeModel.getEventList();
@@ -1133,10 +1136,12 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 String entityOrSpanListStr = paramsJson.getString("entityOrSpanListStr");
                 String text = paramsJson.getString("text");
                 String labelColor = paramsJson.getString("labelColor");
+                String fileId = paramsJson.getString("fileId");
+                String nodeName = paramsJson.getString("nodeName");
                 JSONArray jsonArray = JSON.parseArray(entityOrSpanListStr);
                 List<EntityOrSpanModel> entityOrSpanModels = JSONArray.parseArray(jsonArray.toJSONString(), EntityOrSpanModel.class);
                 List<EntityOrSpanModel> toDealList = new ArrayList<>();
-                ShowLabelModel showLabelModel = new ShowLabelModel(labelContent,labelColor,null);
+                ShowLabelModel showLabelModel = new ShowLabelModel(labelContent,labelColor,null,getLabelChineseName(labelContent));
                 List<ShowLabelModel> singleLabelList = new ArrayList<>();
                 singleLabelList.add(showLabelModel);
                 if (!jsonArray.isEmpty()){
@@ -1147,7 +1152,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                     }
                 }
                 if (!CollectionUtils.isEmpty(toDealList)){
-                    hightedText = this.highLightText(text,toDealList,singleLabelList);
+                    hightedText = this.highLightText(text,toDealList,singleLabelList,fileId,nodeName);
                 }
             }
 
@@ -1783,6 +1788,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                     labelModel.setLabelType("entity");
                     labelModel.setLabelContent(label);
                     labelModel.setLabelColor(entityMap.get(label));
+                    labelModel.setLabelChineseName(getLabelChineseName(label));
                     labelModelList.add(labelModel);
                 }
             }
@@ -1793,6 +1799,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                     labelModel.setLabelType("span");
                     labelModel.setLabelContent(label);
                     labelModel.setLabelColor(spanMap.get(label));
+                    labelModel.setLabelChineseName(getLabelChineseName(label));
                     labelModelList.add(labelModel);
                 }
             }
@@ -1803,6 +1810,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                     labelModel.setLabelType("event");
                     labelModel.setLabelContent(label);
                     labelModel.setLabelColor(eventMap.get(label));
+                    labelModel.setLabelChineseName(getLabelChineseName(label));
                     labelModelList.add(labelModel);
                 }
             }

@@ -148,10 +148,27 @@ public class ResourceLoad {
             if (globalLabelMapping.containsKey(labelContent)){
                 String labelChineseName = globalLabelMapping.get(labelContent);
                 if (StringUtils.isNotBlank(labelChineseName)){
-                    showLabelModel.setLabelContent(labelChineseName);
+                    showLabelModel.setLabelChineseName(labelChineseName);
                 }
+            }else {
+                showLabelModel.setLabelChineseName(labelContent);
             }
         }
+    }
+
+    /**
+     * 获取label中文名称
+     * @param labelContent
+     * @return
+     */
+    public static String getLabelChineseName(String labelContent){
+        if (StringUtils.isBlank(labelContent)){
+            return "";
+        }
+        if (globalLabelMapping.containsKey(labelContent)){
+            return globalLabelMapping.get(labelContent);
+        }
+        return labelContent;
     }
 
 }

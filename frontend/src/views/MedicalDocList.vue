@@ -108,7 +108,7 @@
         <el-aside class="layout_col" style="margin-left: 10px">
 <!--          <span>entity标签列表</span>-->
           <div v-for="entityTag in allEntityLabelList" :key="entityTag">
-            <el-tag v-if="entityTag.labelType=='entity'" :color="entityTag.labelColor" style="margin-top: 5px;float: left;margin-left: 5px" @click="clickTag(entityTag.labelContent,entityTag.labelColor)"><label style="color:#303133">{{entityTag.labelContent}}</label></el-tag>
+            <el-tag v-if="entityTag.labelType=='entity'" :color="entityTag.labelColor" style="margin-top: 5px;float: left;margin-left: 5px" @click="clickTag(entityTag.labelContent,entityTag.labelColor)"><label style="color:#303133">{{entityTag.labelChineseName}}</label></el-tag>
           </div>
         </el-aside>
       </el-col>
@@ -360,6 +360,7 @@ export default {
       //     spanLabelList:spanLabelListStr,
       //     eventList:eventListStr
       //   }});
+      // alert(fileId);
       this.$router.push(
           {
             name:'MedicalNodeDetail',
@@ -376,7 +377,8 @@ export default {
               spanList:spanListStr,
               hospitalId:hospitalId,
               admissionId:admissionId,
-              stage:stage
+              stage:stage,
+              fileId:fileId
             }
         });
     },
