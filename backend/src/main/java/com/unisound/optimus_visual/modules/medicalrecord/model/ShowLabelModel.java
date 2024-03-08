@@ -24,6 +24,7 @@ public class ShowLabelModel {
     String labelType;
 
     /**
-     * 包含的
+     * 标签中文名称,默认为labelcontent
      */
+    String labelChineseName = this.labelContent;
 }

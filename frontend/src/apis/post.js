@@ -27,14 +27,16 @@ export function transLabelList(allEntityLabelList){
     })
 }
 
-export function hightTextByOneTag(text,labelContent,labelColor,entityOrSpanListStr){
+export function hightTextByOneTag(text,labelContent,labelColor,entityOrSpanListStr,fileId,nodeName){
     return service.post('/medicalrecord/hightTextByOneTag', {
         headers: { 'Content-Type': 'application/json' },
         params: {
             text:text,
             labelContent:labelContent,
             labelColor:labelColor,
-            entityOrSpanListStr:entityOrSpanListStr
+            entityOrSpanListStr:entityOrSpanListStr,
+            fileId:fileId,
+            nodeName:nodeName
         }
     })
 }

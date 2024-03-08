@@ -126,7 +126,8 @@ export default {
       let nodeName = _this.$route.params.nodeName;
       let labelName = _this.$route.params.labelName;
       //EntityLinkJump/:entityName/:labelName
-      _this.$router.push('/EntityLinkJump/'+keyWords+'/'+labelName);
+      // _this.$router.push('/EntityLinkJump/'+keyWords+'/'+labelName);
+      window.location.href="http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b";
     },
     comment(){
       let _this = this;
