@@ -123,10 +123,7 @@ export default {
           'sign',
           'medicine',
           'check',
-          'indicator',
-          'time',
-          'name',
-          'hospital'
+          'indicator'
       ]
     }
   },
