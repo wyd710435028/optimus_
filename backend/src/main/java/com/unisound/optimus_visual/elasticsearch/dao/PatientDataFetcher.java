@@ -28,6 +28,8 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -481,15 +483,16 @@ public class PatientDataFetcher {
 		if (pageSize==null){
 			pageSize=10;
 		}
-		searchSourceBuilder.from((pageNum-1)*pageSize);
-		searchSourceBuilder.size(pageSize);
+		searchSourceBuilder.sort(new FieldSortBuilder("@timestamp").order(SortOrder.DESC)).from((pageNum-1)*pageSize).size(pageSize);
+//		searchSourceBuilder.from((pageNum-1)*pageSize);
+//		searchSourceBuilder.size(pageSize);
 		SearchRequest searchRequest = new SearchRequest(index_pre + index);
 		searchRequest.source(searchSourceBuilder);
 		SearchResponse search;
 		try {
 			search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
 		} catch (Exception e) {
-			// e.printStackTrace();
+			 e.printStackTrace();
 			return new HashMap<>();
 		}
 		SearchHits searchHits = search.getHits();
