@@ -124,6 +124,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             resultMap = queryByHospital(hospital,pageNum,pageSize);
             if (!CollectionUtils.isEmpty(resultMap)){
                 List<MedicalRecordVo> voList = (List<MedicalRecordVo>) resultMap.get("admissionIdList");
+                //根据病历理解时间倒排
+//                Collections.sort(voList,Comparator.comparing(MedicalRecordVo::getTimeStamp).reversed());
                 Integer subTotal = (Integer) resultMap.get("total");
                 total+=subTotal;
                 if (!CollectionUtils.isEmpty(voList)){

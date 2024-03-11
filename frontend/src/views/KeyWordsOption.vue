@@ -87,6 +87,7 @@
 import CommentList from "@/views/CommentList.vue";
 import EmojiPanel from "@/views/emoji/EmojiPanel.vue";
 import {getCommentHistoryList} from "@/apis/get";
+import {ElMessage} from "element-plus";
 
 export default {
   name:"KeyWordsOption",
@@ -114,6 +115,15 @@ export default {
           userName: 'Tom',
           createTime: 'No. 189, Grove St, Los Angeles',
         }
+      ],
+      entityLinkWhiteList:[
+          'operation',
+          'disease',
+          'symptom',
+          'sign',
+          'medicine',
+          'check',
+          'indicator'
       ]
     }
   },
@@ -127,7 +137,17 @@ export default {
       let labelName = _this.$route.params.labelName;
       //EntityLinkJump/:entityName/:labelName
       // _this.$router.push('/EntityLinkJump/'+keyWords+'/'+labelName);
-      window.location.href="http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b";
+      if (_this.entityLinkWhiteList.includes(labelName)){
+        window.location.href="http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b";
+      }else {
+        //提示错误
+        ElMessage({
+          showClose: true,
+          message: labelName+'不在白名单内,无法跳转到实体链接',
+          type: 'warning',
+          duration: 3 * 1000
+        })
+      }
     },
     comment(){
       let _this = this;

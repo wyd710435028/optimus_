@@ -131,7 +131,7 @@ public class ResourceLoad {
                 String[] columns = line.split("\t");
                 globalLabelMapping.put(columns[0],columns[1]);
             }
-            log.info("加载了{}个文书分组",globalLabelMapping.size());
+            log.info("加载了{}个标签映射信息",globalLabelMapping.size());
         } catch (IOException e) {
             e.printStackTrace();
         }
