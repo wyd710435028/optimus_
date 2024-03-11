@@ -120,7 +120,9 @@ public class Highlighter {
             substring = substring.replaceAll("/", "%2F");
             sb.append("<span title='点击跳转到评论/实体链接页面' style='background-color: "+color+"'>");
 //            sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/EntityLinkJump/"+substring+"/"+labelName+">");
-            sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/KeyWordsOption/"+substring+"/"+labelName+"/"+fileId+"/"+nodeName+">");
+            if (StringUtils.isNotBlank(labelName)){
+                sb.append("<a style='color:black;text-decoration: none' target='_blank' href=#/KeyWordsOption/"+substring+"/"+labelName+"/"+fileId+"/"+nodeName+">");
+            }
 //            sb.append("<a style='color:black;text-decoration: none' onclick='showEntityLink("+substring+","+(StringUtils.isBlank(labelName)?"noValue":labelName)+")'"+">");
 //            sb.append("<el-text @click=\"showEntityLink("+substring+","+labelName+")\"></el-text>");
 //            log.info("<a style='color:black;text-decoration: none' href= 'javascript:void(0)' onclick='showEntityLink("+substring+","+(StringUtils.isBlank(labelName)?"noValue":labelName)+")'"+">");
