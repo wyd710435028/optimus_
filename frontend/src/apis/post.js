@@ -88,4 +88,18 @@ export function createNewResultComment(rootCommentContent,userId,keyWords,fileId
 }
 
 
+export function createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign){
+    return service.post('/comment/createNewOrderComment', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            rootCommentContent:rootCommentContent,
+            userId:userId,
+            fileId:fileId,
+            orderContent:orderContent,
+            executeTime:executeTime,
+            executorSign:executorSign
+        }
+    })
+}
+
 

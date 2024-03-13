@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisound.optimus_visual.modules.comment.dao.OrderCommentMapper">
+    <select id="getOrderCommentHistoryList" resultType="com.unisound.optimus_visual.modules.comment.entity.ResultComment">
+        SELECT
+            trc.*,
+            tu.user_name
+        FROM
+            (
+                SELECT
+                    *
+                FROM
+                    tb_order_comment
+                WHERE
+                    file_id = #{fileId} and order_content = #{content} and execute_time=#{executeTime} and executor_sign=#{executorSign}
+            ) AS trc
+                LEFT JOIN tb_user AS tu ON trc.user_id = tu.id order by trc.create_time DESC;
+    </select>
+</mapper>
+

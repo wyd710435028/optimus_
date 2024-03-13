@@ -2,9 +2,11 @@ package com.unisound.optimus_visual.modules.comment.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.unisound.optimus_visual.modules.comment.dao.OrderCommentMapper;
 import com.unisound.optimus_visual.modules.comment.dao.ResultCommentMapper;
 import com.unisound.optimus_visual.modules.comment.dao.UserMapper;
 import com.unisound.optimus_visual.modules.comment.entity.Comment;
+import com.unisound.optimus_visual.modules.comment.entity.OrderComment;
 import com.unisound.optimus_visual.modules.comment.entity.ResultComment;
 import com.unisound.optimus_visual.modules.comment.entity.User;
 import com.unisound.optimus_visual.modules.comment.service.CommentService;
@@ -30,6 +32,8 @@ public class CommentServiceImpl implements CommentService {
     UserMapper userMapper;
     @Autowired
     ResultCommentMapper resultCommentMapper;
+    @Autowired
+    OrderCommentMapper orderCommentMapper;
 
     /**
      * 查询评论列表
@@ -181,6 +185,49 @@ public class CommentServiceImpl implements CommentService {
             return result;
         }
         result = resultCommentMapper.getCommentHistoryList(keyWords,fileId,nodeName,labelName);
+        return result;
+    }
+
+
+    @Override
+    public Map<String, Object> createNewOrderComment(String param) {
+        //todo 待修改
+        Map<String,Object> result = new LinkedHashMap<>();
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        String rootCommentContent = jsonObject.getString("rootCommentContent");
+        Long userId = jsonObject.getLong("userId");
+        String orderContent = jsonObject.getString("orderContent");
+        String admissionNo = jsonObject.getString("admissionNo");
+        String hospitalNo = jsonObject.getString("hospitalNo");
+        String executeTime = jsonObject.getString("executeTime");
+        String executorSign = jsonObject.getString("executorSign");
+        String fileId = jsonObject.getString("fileId");
+        if (Objects.isNull(userId)||StringUtils.isBlank(rootCommentContent)){
+            return result;
+        }
+        OrderComment orderComment = new OrderComment();
+        orderComment.setContent(rootCommentContent);
+        orderComment.setAdmissionNo(admissionNo);
+        orderComment.setHospitalNo(hospitalNo);
+        orderComment.setFileId(fileId);
+        orderComment.setOrderContent(orderContent);
+        orderComment.setExecuteTime(executeTime);
+        orderComment.setExecutorSign(executorSign);
+        orderComment.setUserId(userId);
+        orderComment.setCreateTime(new Date());
+        orderCommentMapper.insert(orderComment);
+        return result;
+    }
+
+    @Override
+    public List<ResultComment> getOrderCommentHistoryList(String fileId, String content, String executeTime, String executorSign) {
+        //定义返回变量
+        List<ResultComment> result = new ArrayList<>();
+        //参数校验
+        if (StringUtils.isBlank(fileId)||StringUtils.isBlank(content)||StringUtils.isBlank(executeTime)||StringUtils.isBlank(executorSign)){
+            return result;
+        }
+        result = orderCommentMapper.getOrderCommentHistoryList(fileId,content,executeTime,executorSign);
         return result;
     }
 

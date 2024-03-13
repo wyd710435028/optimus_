@@ -16,4 +16,8 @@ public interface CommentService {
     Map<String, Object> createNewResultComment(String param);
 
     List<ResultComment> getCommentHistoryList(String keyWords, String fileId, String nodeName, String labelName);
+
+    Map<String, Object> createNewOrderComment(String param);
+
+    List<ResultComment> getOrderCommentHistoryList(String fileId, String content, String executeTime, String executorSign);
 }

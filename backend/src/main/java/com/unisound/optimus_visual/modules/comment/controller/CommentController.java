@@ -64,12 +64,29 @@ public class CommentController {
     }
 
     /**
+     * 创建评论
+     * @param param
+     * @return
+     */
+    @RequestMapping("createNewOrderComment")
+    public CommonResult createNewOrderComment(@RequestBody String param){
+        Map<String,Object> result = commentService.createNewOrderComment(param);
+        return new CommonResult(result);
+    }
+
+    /**
      * 获取评论历史列表
      * @return
      */
     @RequestMapping("/getCommentHistoryList")
     public CommonResult getCommentHistoryList(String keyWords,String fileId,String nodeName,String labelName) {
         List<ResultComment> commentList = commentService.getCommentHistoryList(keyWords, fileId, nodeName, labelName);
+        return new CommonResult(commentList);
+    }
+
+    @RequestMapping("getOrderCommentHistoryList")
+    public CommonResult getOrderCommentHistoryList(String fileId,String content,String executeTime,String executorSign) {
+        List<ResultComment> commentList = commentService.getOrderCommentHistoryList(fileId,content,executeTime,executorSign);
         return new CommonResult(commentList);
     }
 }
