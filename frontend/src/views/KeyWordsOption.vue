@@ -41,7 +41,7 @@
     <div style="margin-left: 30px" v-if="showCommentInput==true">
       <p>
         <!-- 表情面板 -->
-        <emoji-panel></emoji-panel>
+        <emoji-panel :file-id="fileId"></emoji-panel>
       </p>
       <!--      <el-input v-model="input" placeholder="在此输入评论内容" />-->
       <!--      <el-button type="danger" style="float: right;margin-top: 5px">提交</el-button>-->

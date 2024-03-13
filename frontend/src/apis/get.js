@@ -93,4 +93,17 @@ export function getCommentHistoryList(keyWords, fileId, nodeName, labelName) {
     })
 }
 
+export function getOrderCommentHistoryList(fileId,content,executeTime,executorSign) {
+    return service.get('/comment/getOrderCommentHistoryList', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            fileId: fileId,
+            content: content,
+            executeTime:executeTime,
+            executorSign:executorSign
+        }
+    })
+}
+
+
 

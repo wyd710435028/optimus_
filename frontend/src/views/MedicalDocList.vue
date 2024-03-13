@@ -74,6 +74,12 @@
                 <el-table-column prop="executorSign" label="执行人签名"></el-table-column>
                 <el-table-column prop="yzsProjectType" label="云知声项目类别" :filters="yzsProjectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="projectCategories" label="项目大类" :filters="projectType" :filter-method="filterHandler"></el-table-column>
+                <el-table-column prop="operation" label="操作">
+                  <template v-slot="scope">
+                  <el-button plain type="primary" @click="openTheComment(scope.row)">评论</el-button>
+<!--                  <el-button plain type="danger" @click="commentHistory">历史评论</el-button>-->
+                  </template>
+                </el-table-column>
               </el-table>
             </el-row>
           </div>
@@ -99,6 +105,12 @@
                 <el-table-column prop="stopExecutorSign" label="停止执行人签名"></el-table-column>
                 <el-table-column prop="yzsProjectType" label="云知声项目类别" :filters="yzsProjectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="projectCategories" label="项目大类" :filters="projectType" :filter-method="filterHandler"></el-table-column>
+                <el-table-column prop="operation" label="操作">
+                  <template v-slot="scope">
+                    <el-button plain type="primary" @click="openTheComment(scope.row)">评论</el-button>
+                    <!--                  <el-button plain type="danger" @click="commentHistory">历史评论</el-button>-->
+                  </template>
+                </el-table-column>
               </el-table>
             </el-row>
           </div>
@@ -115,7 +127,6 @@
     </el-row>
     </el-main>
     <el-dialog title="实体链接弹窗" v-model="dialogVisible" width="35%">
-
       <el-card class="box-card">
         <div v-for="(value, key) in encyclopedia" :key="key" class="text item">
           <div style="font-weight: bold;font-size: 18px; margin-top: 12px; margin-bottom: 4px;">
@@ -128,9 +139,67 @@
       </el-card>
     </el-dialog>
   </el-container>
+  <!-- 医嘱理解结果评论弹出框 -->
+  <el-dialog align-center="true" v-model="orderDialogFormVisible" title="评论" width="460px">
+    <div style="align-items: center;margin-left: 25px">
+      <el-row>
+        <strong>FileId: </strong>
+        <span class="orderDialogContentStyle">{{fileId}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
+        <strong>日期: </strong>
+        <span class="orderDialogContentStyle">{{statOrderDialog.day}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
+        <strong>时间: </strong>
+        <span class="orderDialogContentStyle">{{statOrderDialog.time}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
+        <strong>医嘱内容: </strong>
+        <span class="orderDialogContentStyle">{{statOrderDialog.content}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
+        <strong>医师签名: </strong>
+        <span class="orderDialogContentStyle">{{statOrderDialog.physicianSign}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
+        <strong>执行时间: </strong>
+        <span class="orderDialogContentStyle">{{statOrderDialog.executeTime}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
+        <strong>执行人签名: </strong>
+        <span class="orderDialogContentStyle">{{statOrderDialog.executorSign}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
+        <strong>云知声项目类别: </strong>
+        <span class="orderDialogContentStyle">{{statOrderDialog.yzsProjectType}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
+        <strong>项目大类: </strong>
+        <span class="orderDialogContentStyle">{{statOrderDialog.projectCategories}}</span>
+      </el-row>
+    </div>
+    <el-divider>★★★</el-divider>
+    <EmojiPanel @ifSendSuccess="handleSend" :file-id="fileId" :order-content="statOrderDialog.content" :execute-time="statOrderDialog.executeTime" :executor-sign="statOrderDialog.executorSign"></EmojiPanel>
+    <el-divider>★★★</el-divider>
+<!--    <el-button size="small" type="primary" style="float: right;margin-top: 5px" @click="commentHistory">评论历史</el-button>-->
+    <span class="post-btn" @click="commentHistory">历史评论</span>
+    <div v-if="showCmmentHistoryList==true">
+      <el-table :data="commentHistoryTab">
+        <el-table-column prop="content" label="内容" width="180">
+          <!-- 支持html格式 -->
+          <template v-slot="{ row }">
+            <span v-html="row.content"></span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="时间" width="180" />
+        <el-table-column prop="userName" label="评论人" />
+      </el-table>
+    </div>
+  </el-dialog>
 </template>
 <script>
-import {getUnderstandResult} from "../apis/get";
+import {getOrderCommentHistoryList, getUnderstandResult} from "../apis/get";
 import {getNodeByFileId} from "../apis/post";
 import {transLabelList} from "../apis/post";
 import {getNodeByFileIdWithHighLight} from "../apis/post";
@@ -138,10 +207,13 @@ import {ElMessage} from "element-plus";
 import entitylinkDialog from "./EntityLinkJump"
 import { ref } from 'vue'
 import CommonHeader from "@/views/common/CommonHeader.vue";
+import EmojiPanel from "@/views/emoji/EmojiPanel.vue";
+import KeyWordsOption from "@/views/KeyWordsOption.vue";
 
 const dialogVisible = ref(false);
 export default {
   components:{
+    EmojiPanel,
     CommonHeader,
     entitylinkDialog
   },
@@ -228,7 +300,33 @@ export default {
       docType:'',
       fileId:'',
       Visiable:false,
-      detailVisible:false
+      detailVisible:false,
+      orderDialogFormVisible:false,
+      statOrderDialog:[
+        {
+          day:'',
+          time:'',
+          content:'',
+          physicianSign:'',
+          executeTime:'',
+          executorSign:'',
+          yzsProjectType:'',
+          projectCategories:''
+        }
+      ],
+      showCmmentHistoryList:false,
+      commentHistoryTab:[
+        {
+          content: '2016-05-03',
+          userName: 'Tom',
+          createTime: 'No. 189, Grove St, Los Angeles',
+        },
+        {
+          content: '2016-05-03',
+          userName: 'Tom',
+          createTime: 'No. 189, Grove St, Los Angeles',
+        }
+      ]
     }
   },
   methods: {
@@ -436,6 +534,37 @@ export default {
     },
     returnIndex(){
       this.$router.push('/');
+    },
+    /**
+     * 控制评价弹出框的关闭
+     * @param ifSendSuccess
+     */
+    handleSend(ifSendSuccess){
+      let _this = this;
+      if (ifSendSuccess){
+        _this.orderDialogFormVisible=false;
+      }
+    },
+    openTheComment(row){
+      let _this=this;
+      _this.orderDialogFormVisible = !_this.orderDialogFormVisible;
+      // console.log(row);
+      _this.statOrderDialog.day = row.day;
+      _this.statOrderDialog.time = row.time;
+      _this.statOrderDialog.content = row.content;
+      _this.statOrderDialog.physicianSign = row.physicianSign;
+      _this.statOrderDialog.executeTime = row.executeTime;
+      _this.statOrderDialog.executorSign = row.executorSign;
+      _this.statOrderDialog.yzsProjectType = row.yzsProjectType;
+      _this.statOrderDialog.projectCategories = row.projectCategories;
+      // KeyWordsOption.queryCommentHistoryList('', fileId, nodeName, labelName);
+      getOrderCommentHistoryList(_this.fileId,row.content,row.executeTime,row.executorSign).then(function(response){
+        _this.commentHistoryTab = response.data.data;
+      })
+    },
+    commentHistory(){
+      let _this = this;
+      _this.showCmmentHistoryList = !_this.showCmmentHistoryList;
     }
   },
   mounted(){
@@ -460,5 +589,19 @@ export default {
   .el-tree {
     min-width: 100%;
     display: inline-block !important;
+  }
+  .orderDialogContentStyle{
+    color: #c45656;
+    margin-left: 10px;
+  }
+
+  .post-btn {
+    float: right;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 5px 20px;
+    background: dodgerblue;
+    color: white;
+    margin-bottom: 15px;
   }
 </style>

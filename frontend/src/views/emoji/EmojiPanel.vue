@@ -47,7 +47,7 @@
 
 import {IconDelete, IconHeart, IconMessage, IconStar,IconFaceSmileFill,IconSend,IconClose} from '@arco-design/web-vue/es/icon';
 import {getCommentLst} from "@/apis/get";
-import {createNewResultComment, createNewRootComment} from "@/apis/post";
+import {createNewOrderComment, createNewResultComment, createNewRootComment} from "@/apis/post";
 
 /* 表情配置数据 转为 数组 */
 import emojiConfig from '@/components/EmojiText/emoji.json'
@@ -60,6 +60,20 @@ for (let key in emojiConfig) {
     link: emojiConfig[key]
   })
 }
+
+import {defineComponent} from "vue";
+// export default defineComponent({
+//   name:"EmojiPanel",
+//   props:{
+//     content:String,
+//     admissionNo:String,
+//     hospitalNo:String,
+//     fileId:String,
+//     orderContent:String,
+//     executeTime:String,
+//     executorSign:String
+//   }
+// });
 
 export default {
   //组件
@@ -91,7 +105,13 @@ export default {
     },
     afterComment: {  /* 发表评论之后，需要执行的函数 */
       type: Function
-    }
+    },
+    admissionNo:String,
+    hospitalNo:String,
+    fileId:String,
+    orderContent:String,
+    executeTime:String,
+    executorSign:String
   },
   //数据
   data(){
@@ -246,32 +266,66 @@ export default {
           type: 'warning',
         })
       }else {
-        let keyWords = _this.$route.params.keyWords;
-        let fileId = _this.$route.params.fileId;
-        let nodeName = _this.$route.params.nodeName;
-        let labelName = _this.$route.params.labelName;
-        let docName = _this.$route.params.docName;
-        // alert(keyWords+"-"+fileId+"-"+nodeName+"-"+labelName+"-"+docName);
-        createNewResultComment(rootCommentContent,userId,keyWords,fileId,nodeName,labelName,docName).then(function (response){
-          if (response.status=='200'){
-            // _this.$message.success({content:'发表成功',closable: true,duration:3000});
-            ElMessage({
-              showClose: true,
-              message: '发表成功',
-              type: 'success',
-            })
-            _this.rootCommentContent = null;
-            _this.isEmojiShow = false;
-            document.getElementById('msgInputContainer').innerHTML = '';
-          }else {
-            // _this.$message.error({content:'发表失败',closable:true,duration:3000});
-            ElMessage({
-              showClose: true,
-              message: '发表失败',
-              type: 'error',
-            })
-          }
-        });
+        // let fileId = _this.$route.params.fileId;
+        let fileId = _this.fileId;
+        if (fileId.toUpperCase().startsWith('LSYZ')||fileId.toUpperCase().startsWith('CQYZ')){
+          //对医嘱的评论
+          // alert(_this.orderContent);
+          let orderContent = _this.orderContent;
+          let executeTime = _this.executeTime;
+          let executorSign = _this.executorSign;
+          createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign).then(function (response){
+            if (response.status=='200'){
+              // _this.$message.success({content:'发表成功',closable: true,duration:3000});
+              ElMessage({
+                showClose: true,
+                message: '发表成功',
+                type: 'success',
+              })
+              _this.rootCommentContent = null;
+              _this.isEmojiShow = false;
+              document.getElementById('msgInputContainer').innerHTML = '';
+              //用于向父组件传值
+              _this.$emit('ifSendSuccess',true);
+            }else {
+              // _this.$message.error({content:'发表失败',closable:true,duration:3000});
+              ElMessage({
+                showClose: true,
+                message: '发表失败',
+                type: 'error',
+              })
+            }
+          });
+        }else {
+          //其他文书的评论
+          let keyWords = _this.$route.params.keyWords;
+          let nodeName = _this.$route.params.nodeName;
+          let labelName = _this.$route.params.labelName;
+          let docName = _this.$route.params.docName;
+          // alert(keyWords+"-"+fileId+"-"+nodeName+"-"+labelName+"-"+docName);
+          createNewResultComment(rootCommentContent,userId,keyWords,fileId,nodeName,labelName,docName).then(function (response){
+            if (response.status=='200'){
+              // _this.$message.success({content:'发表成功',closable: true,duration:3000});
+              ElMessage({
+                showClose: true,
+                message: '发表成功',
+                type: 'success',
+              })
+              _this.rootCommentContent = null;
+              _this.isEmojiShow = false;
+              document.getElementById('msgInputContainer').innerHTML = '';
+              //用于向父组件传值
+              _this.$emit('ifSendSuccess',true);
+            }else {
+              // _this.$message.error({content:'发表失败',closable:true,duration:3000});
+              ElMessage({
+                showClose: true,
+                message: '发表失败',
+                type: 'error',
+              })
+            }
+          });
+        }
       }
     },
 
