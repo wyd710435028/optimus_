@@ -66,6 +66,7 @@
                   stripe
                   :header-cell-style="{background:'#eef1f6',color:'#606266'}"
                   style="width: 100%;margin:10px">
+                <el-table-column fixed prop="unisoundId" label="unisoundId"></el-table-column>
                 <el-table-column fixed prop="day" label="日期"></el-table-column>
                 <el-table-column prop="time" label="时间"></el-table-column>
                 <el-table-column prop="content" label="医嘱内容"></el-table-column>
@@ -74,10 +75,12 @@
                 <el-table-column prop="executorSign" label="执行人签名"></el-table-column>
                 <el-table-column prop="yzsProjectType" label="云知声项目类别" :filters="yzsProjectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="projectCategories" label="项目大类" :filters="projectType" :filter-method="filterHandler"></el-table-column>
-                <el-table-column prop="operation" label="操作">
+                <el-table-column prop="operation" label="操作" width="130px">
                   <template v-slot="scope">
-                  <el-button plain type="primary" @click="openTheComment(scope.row)">评论</el-button>
-<!--                  <el-button plain type="danger" @click="commentHistory">历史评论</el-button>-->
+                    <el-badge v-if ="scope.row.commentNum>0" :value="scope.row.commentNum" :max="99" class="item">
+                      <el-button type="primary" @click="openTheComment(scope.row)">评论</el-button>
+                    </el-badge>
+                    <el-button v-else plain type="primary" @click="openTheComment(scope.row)">评论</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -94,6 +97,7 @@
                   stripe
                   :header-cell-style="{background:'#eef1f6',color:'#606266'}"
                   style="width: 100%;margin:10px;">
+                <el-table-column fixed prop="unisoundId" label="unisoundId"></el-table-column>
                 <el-table-column fixed prop="openingTime" label="开立时间"></el-table-column>
                 <el-table-column prop="startTime" label="开始时间"></el-table-column>
                 <el-table-column prop="content" label="医嘱内容"></el-table-column>
@@ -105,10 +109,12 @@
                 <el-table-column prop="stopExecutorSign" label="停止执行人签名"></el-table-column>
                 <el-table-column prop="yzsProjectType" label="云知声项目类别" :filters="yzsProjectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="projectCategories" label="项目大类" :filters="projectType" :filter-method="filterHandler"></el-table-column>
-                <el-table-column prop="operation" label="操作">
+                <el-table-column prop="operation" label="操作" width="130px">
                   <template v-slot="scope">
-                    <el-button plain type="primary" @click="openTheComment(scope.row)">评论</el-button>
-                    <!--                  <el-button plain type="danger" @click="commentHistory">历史评论</el-button>-->
+                    <el-badge v-if ="scope.row.commentNum>0" :value="scope.row.commentNum" :max="99" class="item">
+                      <el-button type="primary" @click="openTheComment(scope.row)">评论</el-button>
+                    </el-badge>
+                    <el-button v-else plain type="primary" @click="openTheComment(scope.row)">评论</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -116,12 +122,29 @@
           </div>
         </el-main>
       </el-col>
-      <el-col :span="4">
+      <!-- 正常文书时显示 -->
+      <el-col v-if="showContent=='normal'||showContent==null||showContent==''" :span="4">
         <el-aside class="layout_col" style="margin-left: 10px">
 <!--          <span>entity标签列表</span>-->
           <div v-for="entityTag in allEntityLabelList" :key="entityTag">
             <el-tag v-if="entityTag.labelType=='entity'" :color="entityTag.labelColor" style="margin-top: 5px;float: left;margin-left: 5px" @click="clickTag(entityTag.labelContent,entityTag.labelColor)"><label style="color:#303133">{{entityTag.labelChineseName}}</label></el-tag>
           </div>
+        </el-aside>
+      </el-col>
+      <!-- 临时/长期医嘱时显示 -->
+      <el-col v-if="showContent=='statOrder'||showContent=='standingOrder'" :span="4">
+        <el-aside class="layout_col" style="margin-left: 10px">
+<!--          <CommentList></CommentList>-->
+          <el-row>
+<!--            <el-text style="margin-top: 18px;margin-left: 15px; font-weight: bold;color: #529b2e;" tag="ins" class="mx-1" size="large" type="warning">操作日志</el-text>-->
+          </el-row>
+<!--          <el-row>-->
+<!--            <el-table>-->
+<!--              <el-table-column prop="content" label="操作人"></el-table-column>-->
+<!--              <el-table-column prop="content" label="操作人"></el-table-column>-->
+<!--              <el-table-column prop="content" label="操作人"></el-table-column>-->
+<!--            </el-table>-->
+<!--          </el-row>-->
         </el-aside>
       </el-col>
     </el-row>
@@ -140,47 +163,51 @@
     </el-dialog>
   </el-container>
   <!-- 医嘱理解结果评论弹出框 -->
-  <el-dialog align-center="true" v-model="orderDialogFormVisible" title="评论" width="460px">
+  <el-dialog @close="closeOrderCommentDialog" align-center="true" v-model="orderDialogFormVisible" title="评论" width="35%">
     <div style="align-items: center;margin-left: 25px">
       <el-row>
         <strong>FileId: </strong>
         <span class="orderDialogContentStyle">{{fileId}}</span>
       </el-row>
       <el-row style="margin-top: 10px">
+        <strong>UnisoundId: </strong>
+        <span class="orderDialogContentStyle">{{orderDialog.unisoundId}}</span>
+      </el-row>
+      <el-row style="margin-top: 10px">
         <strong>日期: </strong>
-        <span class="orderDialogContentStyle">{{statOrderDialog.day}}</span>
+        <span class="orderDialogContentStyle">{{orderDialog.day}}</span>
       </el-row>
       <el-row style="margin-top: 10px">
         <strong>时间: </strong>
-        <span class="orderDialogContentStyle">{{statOrderDialog.time}}</span>
+        <span class="orderDialogContentStyle">{{orderDialog.time}}</span>
       </el-row>
       <el-row style="margin-top: 10px">
         <strong>医嘱内容: </strong>
-        <span class="orderDialogContentStyle">{{statOrderDialog.content}}</span>
+        <span class="orderDialogContentStyle">{{orderDialog.content}}</span>
       </el-row>
       <el-row style="margin-top: 10px">
         <strong>医师签名: </strong>
-        <span class="orderDialogContentStyle">{{statOrderDialog.physicianSign}}</span>
+        <span class="orderDialogContentStyle">{{orderDialog.physicianSign}}</span>
       </el-row>
       <el-row style="margin-top: 10px">
         <strong>执行时间: </strong>
-        <span class="orderDialogContentStyle">{{statOrderDialog.executeTime}}</span>
+        <span class="orderDialogContentStyle">{{orderDialog.executeTime}}</span>
       </el-row>
       <el-row style="margin-top: 10px">
         <strong>执行人签名: </strong>
-        <span class="orderDialogContentStyle">{{statOrderDialog.executorSign}}</span>
+        <span class="orderDialogContentStyle">{{orderDialog.executorSign}}</span>
       </el-row>
       <el-row style="margin-top: 10px">
         <strong>云知声项目类别: </strong>
-        <span class="orderDialogContentStyle">{{statOrderDialog.yzsProjectType}}</span>
+        <span class="orderDialogContentStyle">{{orderDialog.yzsProjectType}}</span>
       </el-row>
       <el-row style="margin-top: 10px">
         <strong>项目大类: </strong>
-        <span class="orderDialogContentStyle">{{statOrderDialog.projectCategories}}</span>
+        <span class="orderDialogContentStyle">{{orderDialog.projectCategories}}</span>
       </el-row>
     </div>
     <el-divider>★★★</el-divider>
-    <EmojiPanel @ifSendSuccess="handleSend" :file-id="fileId" :order-content="statOrderDialog.content" :execute-time="statOrderDialog.executeTime" :executor-sign="statOrderDialog.executorSign"></EmojiPanel>
+    <EmojiPanel @ifSendSuccess="handleSend" :file-id="fileId" :order-content="orderDialog.content" :execute-time="orderDialog.executeTime" :executor-sign="orderDialog.executorSign" :unisound-id="orderDialog.unisoundId"></EmojiPanel>
     <el-divider>★★★</el-divider>
 <!--    <el-button size="small" type="primary" style="float: right;margin-top: 5px" @click="commentHistory">评论历史</el-button>-->
     <span class="post-btn" @click="commentHistory">历史评论</span>
@@ -194,13 +221,21 @@
         </el-table-column>
         <el-table-column prop="createTime" label="时间" width="180" />
         <el-table-column prop="userName" label="评论人" />
+        <el-table-column prop="" label="操作">
+          <template v-slot="scope">
+            <el-switch
+                inline-prompt
+                active-text="点击关闭"
+                inactive-text="点击开启" :value="scope.row.orderCommentStatus==1?true:false" @change="orderCommentStatusChange(scope.row)"/>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
   </el-dialog>
 </template>
 <script>
 import {getOrderCommentHistoryList, getUnderstandResult} from "../apis/get";
-import {getNodeByFileId} from "../apis/post";
+import {getNodeByFileId,updateOrderCommentStatus} from "../apis/post";
 import {transLabelList} from "../apis/post";
 import {getNodeByFileIdWithHighLight} from "../apis/post";
 import {ElMessage} from "element-plus";
@@ -209,10 +244,12 @@ import { ref } from 'vue'
 import CommonHeader from "@/views/common/CommonHeader.vue";
 import EmojiPanel from "@/views/emoji/EmojiPanel.vue";
 import KeyWordsOption from "@/views/KeyWordsOption.vue";
+import CommentList from "@/views/CommentList.vue";
 
 const dialogVisible = ref(false);
 export default {
   components:{
+    CommentList,
     EmojiPanel,
     CommonHeader,
     entitylinkDialog
@@ -236,7 +273,8 @@ export default {
         physicianSign:'',
         executeTime:'',
         executorSign:'',
-        projectCategories:''
+        projectCategories:'',
+        commentNum:''
       }],//临时医嘱
       standingOrderTableData:[{
         openingTime:'',
@@ -248,7 +286,8 @@ export default {
         stopTime:'',
         stopPhysicianSign:'',
         stopExecutorSign:'',
-        projectCategories:''
+        projectCategories:'',
+        commentNum:''
       }],//长期医嘱
       projectType:[
         // { text: '检验', value: '检验' },
@@ -302,7 +341,7 @@ export default {
       Visiable:false,
       detailVisible:false,
       orderDialogFormVisible:false,
-      statOrderDialog:[
+      orderDialog:[
         {
           day:'',
           time:'',
@@ -311,22 +350,27 @@ export default {
           executeTime:'',
           executorSign:'',
           yzsProjectType:'',
-          projectCategories:''
+          projectCategories:'',
+          unisoundId:''
         }
       ],
       showCmmentHistoryList:false,
       commentHistoryTab:[
         {
+          id:1,
           content: '2016-05-03',
           userName: 'Tom',
           createTime: 'No. 189, Grove St, Los Angeles',
+          orderCommentStatus:1
         },
         {
+          id:2,
           content: '2016-05-03',
           userName: 'Tom',
           createTime: 'No. 189, Grove St, Los Angeles',
+          orderCommentStatus:1
         }
-      ]
+      ],
     }
   },
   methods: {
@@ -543,28 +587,98 @@ export default {
       let _this = this;
       if (ifSendSuccess){
         _this.orderDialogFormVisible=false;
+        //刷新评论条数
+        getNodeByFileId(_this.fileId, JSON.stringify(_this.nodeMap)).then(function (response) {
+          if (_this.fileId.startsWith('CQYZ')){
+            //长期医嘱
+            _this.showContent = 'standingOrder';
+            _this.standingOrderTableData = response.data.data.standingOrderList;
+            _this.projectType = response.data.data.projectCategoriesList;
+            _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+          }else if (_this.fileId.startsWith('LSYZ')){
+            //临时医嘱
+            _this.showContent = 'statOrder';
+            _this.statOrderTableData = response.data.data.statOrderList;
+            _this.projectType = response.data.data.projectCategoriesList;
+            _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+          }else {
+            //正常文书
+            _this.showContent = 'normal';
+            _this.nodeList = response.data.data.nodeList;
+            _this.allEntityLabelList = response.data.data.labelList;
+          }
+        })
       }
+    },
+    closeOrderCommentDialog(){
+      // _this.orderDialogFormVisible=false;
+      let _this = this;
+      // alert("关闭了dialog");
+      //刷新评论条数
+      getNodeByFileId(_this.fileId, JSON.stringify(_this.nodeMap)).then(function (response) {
+        if (_this.fileId.startsWith('CQYZ')){
+          //长期医嘱
+          _this.showContent = 'standingOrder';
+          _this.standingOrderTableData = response.data.data.standingOrderList;
+          _this.projectType = response.data.data.projectCategoriesList;
+          _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+        }else if (_this.fileId.startsWith('LSYZ')){
+          //临时医嘱
+          _this.showContent = 'statOrder';
+          _this.statOrderTableData = response.data.data.statOrderList;
+          _this.projectType = response.data.data.projectCategoriesList;
+          _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+        }else {
+          //正常文书
+          _this.showContent = 'normal';
+          _this.nodeList = response.data.data.nodeList;
+          _this.allEntityLabelList = response.data.data.labelList;
+        }
+      })
     },
     openTheComment(row){
       let _this=this;
       _this.orderDialogFormVisible = !_this.orderDialogFormVisible;
       // console.log(row);
-      _this.statOrderDialog.day = row.day;
-      _this.statOrderDialog.time = row.time;
-      _this.statOrderDialog.content = row.content;
-      _this.statOrderDialog.physicianSign = row.physicianSign;
-      _this.statOrderDialog.executeTime = row.executeTime;
-      _this.statOrderDialog.executorSign = row.executorSign;
-      _this.statOrderDialog.yzsProjectType = row.yzsProjectType;
-      _this.statOrderDialog.projectCategories = row.projectCategories;
+      _this.orderDialog.day = row.day;
+      _this.orderDialog.time = row.time;
+      _this.orderDialog.content = row.content;
+      _this.orderDialog.physicianSign = row.physicianSign;
+      _this.orderDialog.executeTime = row.executeTime;
+      _this.orderDialog.executorSign = row.executorSign;
+      _this.orderDialog.yzsProjectType = row.yzsProjectType;
+      _this.orderDialog.projectCategories = row.projectCategories;
+      _this.orderDialog.unisoundId = row.unisoundId
       // KeyWordsOption.queryCommentHistoryList('', fileId, nodeName, labelName);
-      getOrderCommentHistoryList(_this.fileId,row.content,row.executeTime,row.executorSign).then(function(response){
+      getOrderCommentHistoryList(_this.fileId,row.unisoundId).then(function(response){
         _this.commentHistoryTab = response.data.data;
       })
     },
     commentHistory(){
       let _this = this;
       _this.showCmmentHistoryList = !_this.showCmmentHistoryList;
+    },
+    orderCommentStatusChange(row){
+      // 更新状态
+      updateOrderCommentStatus(row.id,row.orderCommentStatus).then(function (response){
+        row.orderCommentStatus =row.orderCommentStatus ==0?1:0;
+        // 消息提示
+        if (response.status=='200'){
+          ElMessage({
+            showClose: true,
+            message: '评论状态更新成功!',
+            type: 'success',
+            duration: 3 * 1000
+          })
+        }else {
+          ElMessage({
+            showClose: true,
+            message: '评论状态更新失败!',
+            type: 'error',
+            duration: 3 * 1000
+          })
+        }
+      })
     }
   },
   mounted(){
@@ -603,5 +717,10 @@ export default {
     background: dodgerblue;
     color: white;
     margin-bottom: 15px;
+  }
+
+  .item {
+    margin-top: 10px;
+    margin-right: 40px;
   }
 </style>

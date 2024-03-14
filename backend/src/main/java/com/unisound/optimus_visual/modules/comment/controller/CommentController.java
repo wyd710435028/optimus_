@@ -2,6 +2,7 @@ package com.unisound.optimus_visual.modules.comment.controller;
 
 import com.unisound.optimus_visual.global.result.CommonResult;
 import com.unisound.optimus_visual.modules.comment.entity.Comment;
+import com.unisound.optimus_visual.modules.comment.entity.OrderComment;
 import com.unisound.optimus_visual.modules.comment.entity.ResultComment;
 import com.unisound.optimus_visual.modules.comment.service.CommentService;
 import com.unisound.optimus_visual.modules.medicalrecord.model.Hospital;
@@ -85,8 +86,14 @@ public class CommentController {
     }
 
     @RequestMapping("getOrderCommentHistoryList")
-    public CommonResult getOrderCommentHistoryList(String fileId,String content,String executeTime,String executorSign) {
-        List<ResultComment> commentList = commentService.getOrderCommentHistoryList(fileId,content,executeTime,executorSign);
+    public CommonResult getOrderCommentHistoryList(String fileId,String unisoundId) {
+        List<OrderComment> commentList = commentService.getOrderCommentHistoryList(fileId,unisoundId);
         return new CommonResult(commentList);
+    }
+
+    @RequestMapping("updateOrderCommentStatus")
+    public CommonResult updateOrderCommentStatus(@RequestBody String param) {
+        Integer result = commentService.updateOrderCommentStatus(param);
+        return new CommonResult(result);
     }
 }
