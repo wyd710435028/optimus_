@@ -23,8 +23,11 @@
           </el-form-item>
         </el-form>
       </el-row>
+      <el-row class="container">
+        <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnHomePage()">返回</el-button>
+      </el-row>
       <el-row>
-        <el-table border :data="tableData" :default-sort="{ prop: 'createTime', order: 'descending' }" stripe style="width: 100%">
+        <el-table border :data="tableData" :default-sort="{ prop: 'createTime', order: 'descending' }" stripe style="width: 100%;margin-top: 15px">
           <el-table-column type="expand">
             <template #default="props">
               <el-table table-layout="auto" border size="small"  :header-row-style="{lineHeight:'50px'}" :header-cell-style="{backgroundColor:'#F5B7B1',color:'#566573',fontSize:'12px'}" :data="props.row.relatedDocs">
@@ -156,6 +159,12 @@ export default {
     },
     returnIndex(){
       this.$router.push('/');
+    },
+    returnHomePage(){
+      // let pageSize = this.$route.params.pageSize;
+      // let currentPage = this.$route.params.currentPage;
+      let hospitalId = this.$route.params.hospitalId;
+      this.$router.push('/MedicalRecordList/'+hospitalId);
     }
   },
   mounted(){
@@ -167,4 +176,7 @@ export default {
   }
 }
 </script>
-<style></style>
+
+<!--样式-->
+<style>
+</style>
