@@ -202,6 +202,7 @@ public class CommentServiceImpl implements CommentService {
         String executeTime = jsonObject.getString("executeTime");
         String executorSign = jsonObject.getString("executorSign");
         String fileId = jsonObject.getString("fileId");
+        String unisoundId = jsonObject.getString("unisoundId");
         if (Objects.isNull(userId)||StringUtils.isBlank(rootCommentContent)){
             return result;
         }
@@ -215,19 +216,34 @@ public class CommentServiceImpl implements CommentService {
         orderComment.setExecutorSign(executorSign);
         orderComment.setUserId(userId);
         orderComment.setCreateTime(new Date());
+        orderComment.setUnisoundId(unisoundId);
         orderCommentMapper.insert(orderComment);
         return result;
     }
 
     @Override
-    public List<ResultComment> getOrderCommentHistoryList(String fileId, String content, String executeTime, String executorSign) {
+    public List<OrderComment> getOrderCommentHistoryList(String fileId,String unisoundId) {
         //定义返回变量
-        List<ResultComment> result = new ArrayList<>();
+        List<OrderComment> result = new ArrayList<>();
         //参数校验
-        if (StringUtils.isBlank(fileId)||StringUtils.isBlank(content)||StringUtils.isBlank(executeTime)||StringUtils.isBlank(executorSign)){
+        if (StringUtils.isBlank(fileId)||StringUtils.isBlank(unisoundId)){
             return result;
         }
-        result = orderCommentMapper.getOrderCommentHistoryList(fileId,content,executeTime,executorSign);
+        result = orderCommentMapper.getOrderCommentHistoryByUnisoundId(fileId,unisoundId);
+        return result;
+    }
+
+    @Override
+    public Integer updateOrderCommentStatus(String param) {
+        Integer result = null;
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        String idStr = jsonObject.getString("id");
+        String orderCommentStatus = jsonObject.getString("orderCommentStatus");
+        if (StringUtils.isBlank(idStr)||StringUtils.isBlank(orderCommentStatus)){
+            return result;
+        }
+        Integer id = Integer.parseInt(idStr);
+        result = orderCommentMapper.updateOrderCommentStatus(id,orderCommentStatus.equals("0")?"1":"0");
         return result;
     }
 

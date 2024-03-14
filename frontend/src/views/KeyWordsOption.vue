@@ -38,7 +38,7 @@
   <el-divider></el-divider>
   <el-row>
     <el-button type="primary" @click="comment">评论</el-button>
-    <div style="margin-left: 30px" v-if="showCommentInput==true">
+    <div style="margin-left: 30px;width: 100%" v-if="showCommentInput==true">
       <p>
         <!-- 表情面板 -->
         <emoji-panel :file-id="fileId"></emoji-panel>
@@ -109,11 +109,13 @@ export default {
           content: '2016-05-03',
           userName: 'Tom',
           createTime: 'No. 189, Grove St, Los Angeles',
+          orderCommentStatus:true
         },
         {
           content: '2016-05-03',
           userName: 'Tom',
           createTime: 'No. 189, Grove St, Los Angeles',
+          orderCommentStatus:true
         }
       ],
       entityLinkWhiteList:[

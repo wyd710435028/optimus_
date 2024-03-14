@@ -10,6 +10,8 @@ import com.unisound.optimus_visual.elasticsearch.dao.IndexDataFetcher;
 import com.unisound.optimus_visual.elasticsearch.dao.PatientDataFetcher;
 import com.unisound.optimus_visual.global.enums.emrNoConstant;
 import com.unisound.optimus_visual.global.pagination.PageInfo;
+import com.unisound.optimus_visual.modules.comment.dao.OrderCommentMapper;
+import com.unisound.optimus_visual.modules.comment.entity.OrderComment;
 import com.unisound.optimus_visual.modules.medicalrecord.model.*;
 import com.unisound.optimus_visual.modules.medicalrecord.service.MedicalRecordService;
 import com.unisound.optimus_visual.utils.*;
@@ -26,6 +28,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.sql.Wrapper;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,6 +57,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Autowired
     PatientDataFetcher patientDataFetcher;
+
+    @Autowired
+    OrderCommentMapper orderCommentMapper;
 
     /**
      * 查询病历列表
@@ -390,18 +396,48 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 String nodeListStr = jsonObject.getString("nodeList");
                 List<ShowDocModel> docModelList = JSON.parseObject(nodeListStr, new TypeReference<List<ShowDocModel>>() {
                 });
+                //医嘱评论数量
+                //todo 根据fileId和unisoundId分组查询评论数量放入一个Map：key-> fileId+unisoundId, value->数量
+//                Map<String,Integer> orderCommentCountMap = orderCommentMapper.getCommentCount();
+                List<OrderComment> commentList = orderCommentMapper.getByFileId(fileId);
+                Map<String, Long> orderCommentCountMap = new LinkedHashMap<>();
+                if (!CollectionUtils.isEmpty(commentList)){
+                    orderCommentCountMap = commentList.stream().collect(Collectors.groupingBy(OrderComment::getUnisoundId, Collectors.counting()));
+                }
                 if (!CollectionUtils.isEmpty(docModelList)){
                     for (ShowDocModel docModel:docModelList){
                         if (fileId.equals(docModel.getFileId())){
                             if (docModel.getDocType().equals("EMR110001")){
                                 //长期医嘱
                                 if (!CollectionUtils.isEmpty(docModel.getStandingOrderList())){
-                                    standingOrderModelList.addAll(docModel.getStandingOrderList());
+                                    List<StandingOrderModel> standingOrderModels = docModel.getStandingOrderList();
+                                    if (!CollectionUtils.isEmpty(standingOrderModels)){
+                                        //统计每个医嘱的评论数量
+                                        for (StandingOrderModel standingOrderModel:standingOrderModels){
+                                            String unisoundId = standingOrderModel.getUnisoundId();
+                                            if (orderCommentCountMap.containsKey(unisoundId)){
+                                                Long integer = orderCommentCountMap.get(unisoundId);
+                                                standingOrderModel.setCommentNum(Integer.parseInt(integer.toString()));
+                                            }
+                                        }
+                                    }
+                                    standingOrderModelList.addAll(standingOrderModels);
                                 }
                             } else if (docModel.getDocType().equals("EMR110002")){
                                 //临时医嘱
                                 if (!CollectionUtils.isEmpty(docModel.getStatOrderList())){
-                                    statOrderModelList.addAll(docModel.getStatOrderList());
+                                    List<StatOrderModel> statOrderModels = docModel.getStatOrderList();
+                                    if (!CollectionUtils.isEmpty(statOrderModels)){
+                                        //统计每个医嘱的评论数量
+                                        for (StatOrderModel statOrderModel:statOrderModels){
+                                            String unisoundId = statOrderModel.getUnisoundId();
+                                            if (orderCommentCountMap.containsKey(unisoundId)){
+                                                Long integer = orderCommentCountMap.get(unisoundId);
+                                                statOrderModel.setCommentNum(Integer.parseInt(integer.toString()));
+                                            }
+                                        }
+                                    }
+                                    statOrderModelList.addAll(statOrderModels);
                                 }
                             }else {
                                 nodeModelList =  docModel.getNodeList();
@@ -1854,6 +1890,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     List<Map<String,String>> orderList = (List<Map<String, String>>) node.get("chd");
                                     if (!CollectionUtils.isEmpty(orderList)){
                                         StandingOrderModel standingOrderModel = new StandingOrderModel();
+                                        //设置唯一表示unisoundId
+                                        String unisoundId = (String) node.get("unisoundId");
+                                        standingOrderModel.setUnisoundId(unisoundId);
                                         for (Map<String,String> order:orderList){
                                             if (order.get("name").equals("医嘱开立时间")){
                                                 standingOrderModel.setOpeningTime(order.get("text"));
@@ -1907,6 +1946,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     List<Map<String,String>> orderList = (List<Map<String, String>>) node.get("chd");
                                     if (!CollectionUtils.isEmpty(orderList)){
                                         StatOrderModel statOrderModel = new StatOrderModel();
+                                        //设置唯一表示unisoundId
+                                        String unisoundId = (String) node.get("unisoundId");
+                                        statOrderModel.setUnisoundId(unisoundId);
                                         for (Map<String,String> order:orderList){
                                             if (order.get("name").equals("医嘱开立时间")){
                                                 statOrderModel.setDay(order.get("text"));

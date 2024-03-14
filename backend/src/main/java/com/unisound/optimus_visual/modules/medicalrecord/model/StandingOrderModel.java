@@ -19,4 +19,13 @@ public class StandingOrderModel {
     String stopExecutorSign;
     String yzsProjectType;
     String projectCategories;
+    /**
+     * 医嘱id唯一标识
+     */
+    String unisoundId;
+
+    /**
+     * 评论数量
+     */
+    Integer commentNum=0;
 }

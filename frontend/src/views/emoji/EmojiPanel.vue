@@ -111,7 +111,8 @@ export default {
     fileId:String,
     orderContent:String,
     executeTime:String,
-    executorSign:String
+    executorSign:String,
+    unisoundId:String
   },
   //数据
   data(){
@@ -274,7 +275,8 @@ export default {
           let orderContent = _this.orderContent;
           let executeTime = _this.executeTime;
           let executorSign = _this.executorSign;
-          createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign).then(function (response){
+          let unisoundId = _this.unisoundId;
+          createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign,unisoundId).then(function (response){
             if (response.status=='200'){
               // _this.$message.success({content:'发表成功',closable: true,duration:3000});
               ElMessage({
@@ -545,7 +547,7 @@ export default {
 }
 
 .emoji-list {
-  width: 400px;
+  width: 100%;
   height: 300px;
   padding: 10px;
   overflow-y: scroll;
@@ -586,7 +588,7 @@ export default {
   font-size: 14px;
   line-height: 20px;
   background: #efefef;
-  width: 380px;
+  width: 100%;
   height: 100px;
   outline: none;
   border: #F4F5F6 2px solid;

@@ -69,9 +69,25 @@ public class OrderComment implements Serializable {
     private Long userId;
 
     /**
+     * 用户名称(不存在于表中)
+     */
+    @TableField(exist = false)
+    private String userName;
+
+    /**
      * 评论创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
+
+    /**
+     * 医嘱唯一标识 unisoundId
+     */
+    private String unisoundId;
+
+    /**
+     * 评论状态，开启/关闭->1 开启,0 关闭
+     */
+    private Integer orderCommentStatus;
 
 }

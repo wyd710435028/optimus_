@@ -1,6 +1,7 @@
 package com.unisound.optimus_visual.modules.comment.service;
 
 import com.unisound.optimus_visual.modules.comment.entity.Comment;
+import com.unisound.optimus_visual.modules.comment.entity.OrderComment;
 import com.unisound.optimus_visual.modules.comment.entity.ResultComment;
 import org.springframework.stereotype.Service;
 
@@ -19,5 +20,7 @@ public interface CommentService {
 
     Map<String, Object> createNewOrderComment(String param);
 
-    List<ResultComment> getOrderCommentHistoryList(String fileId, String content, String executeTime, String executorSign);
+    List<OrderComment> getOrderCommentHistoryList(String fileId, String unisoundId);
+
+    Integer updateOrderCommentStatus(String param);
 }

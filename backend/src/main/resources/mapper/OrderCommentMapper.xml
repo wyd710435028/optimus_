@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.unisound.optimus_visual.modules.comment.dao.OrderCommentMapper">
+
+    <update id="updateOrderCommentStatus">
+        update tb_order_comment set order_comment_status = #{orderCommentStatus} where id=#{id}
+    </update>
     <select id="getOrderCommentHistoryList" resultType="com.unisound.optimus_visual.modules.comment.entity.ResultComment">
         SELECT
             trc.*,
@@ -14,7 +18,31 @@
                 WHERE
                     file_id = #{fileId} and order_content = #{content} and execute_time=#{executeTime} and executor_sign=#{executorSign}
             ) AS trc
-                LEFT JOIN tb_user AS tu ON trc.user_id = tu.id order by trc.create_time DESC;
+                LEFT JOIN tb_user AS tu ON trc.user_id = tu.id order by trc.create_time DESC
+    </select>
+
+    <select id="getOrderCommentHistoryByUnisoundId" resultType="com.unisound.optimus_visual.modules.comment.entity.OrderComment">
+        SELECT
+            trc.*,
+            tu.user_name
+        FROM
+            (
+                SELECT
+                    *
+                FROM
+                    tb_order_comment
+                WHERE
+                    file_id = #{fileId} and unisound_id=#{unisoundId}
+            ) AS trc
+                LEFT JOIN tb_user AS tu ON trc.user_id = tu.id order by trc.create_time DESC
+    </select>
+
+    <select id="getCommentCount" resultType="java.util.Map">
+        select CONCAT(oc.file_id,oc.unisound_id) as `key`, COUNT(1) as `value` from tb_order_comment as oc GROUP BY file_id,unisound_id
+    </select>
+
+    <select id="getByFileId" resultType="com.unisound.optimus_visual.modules.comment.entity.OrderComment">
+        select * from tb_order_comment where file_id = #{fileId} and order_comment_status=1;
     </select>
 </mapper>
 

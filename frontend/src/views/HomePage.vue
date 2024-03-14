@@ -160,7 +160,7 @@
         //发送请求
         axios.get('/reUnderstand/optimus/test/understand/patient/'+hospitalId+'/'+admissionId, {params:{
             esRead:false,
-            esWrite:true,
+            esWrite:true,w
             scene:stage
           }}).then(function(response){
           console.log(response);
