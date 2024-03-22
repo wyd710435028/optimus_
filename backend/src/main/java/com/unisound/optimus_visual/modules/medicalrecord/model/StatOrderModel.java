@@ -25,4 +25,14 @@ public class StatOrderModel {
      * 评论数量
      */
     Integer commentNum=0;
+
+    /**
+     * 临时医嘱执行状态
+     */
+    String statOrderExecuteStatus;
+
+    /**
+     * 临时医嘱状态
+     */
+    String statOrderStatus;
 }

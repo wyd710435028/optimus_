@@ -58,7 +58,7 @@
                 <el-button @click="docUnderstandResult(scope.row)" type="success">病历详情</el-button>
                 <el-button @click="docQuery(scope.row)" type="warning">文书查询</el-button>
                 <el-button @click="eventQuery(scope.row)" color="#478A97">事件查询</el-button>
-<!--                <el-button @click="commentDetail(scope.row)" color="#BA4A00">评论详情</el-button>-->
+                <el-button @click="commentDetail(scope.row)" color="#BA4A00">评论详情</el-button>
               </el-row>
             </template>
           </el-table-column>
@@ -168,6 +168,8 @@
           if (_this.understandStatus=='200'){
             row.isSending = false;
             row.reUnderstandButtonName = '重新理解';
+            //更新理解时间
+
             ElMessage({
               showClose: true,
               message: '【'+hospitalId+'】'+hospitalName+'医院,'+'流水号【'+admissionId+'】理解成功!',

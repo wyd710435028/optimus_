@@ -15,6 +15,9 @@
 	<description>optimus可视化项目后端</description>
 	<properties>
 		<java.version>1.8</java.version>
+		<springfox-swagger.version>3.0.0</springfox-swagger.version>
+		<swagger-models.version>1.6.0</swagger-models.version>
+		<swagger-annotations.version>1.6.0</swagger-annotations.version>
 	</properties>
 	<dependencies>
 		<!--springboot通用依赖-->
@@ -91,6 +94,30 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml-schemas</artifactId>
 			<version>4.0.1</version>
+		</dependency>
+
+		<!--AOP相关依赖-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+		<!--Swagger-UI API文档生产工具-->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-boot-starter</artifactId>
+			<version>${springfox-swagger.version}</version>
+		</dependency>
+		<!--解决Swagger访问主页时的NumberFormatException问题-->
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-models</artifactId>
+			<version>${swagger-models.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>${swagger-annotations.version}</version>
 		</dependency>
 	</dependencies>
 

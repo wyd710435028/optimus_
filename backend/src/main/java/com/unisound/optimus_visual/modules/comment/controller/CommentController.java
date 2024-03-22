@@ -6,6 +6,7 @@ import com.unisound.optimus_visual.modules.comment.entity.OrderComment;
 import com.unisound.optimus_visual.modules.comment.entity.ResultComment;
 import com.unisound.optimus_visual.modules.comment.service.CommentService;
 import com.unisound.optimus_visual.modules.medicalrecord.model.Hospital;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -47,6 +48,7 @@ public class CommentController {
         return new CommonResult(result);
     }
 
+    @ApiOperation("创建新的根评论")
     @RequestMapping("createNewRootComment")
     public CommonResult createNewRootComment(@RequestBody String param){
         Map<String,Object> result = commentService.createNewRootComment(param);
@@ -58,6 +60,7 @@ public class CommentController {
      * @param param
      * @return
      */
+    @ApiOperation("创建新的普通文书评论")
     @RequestMapping("createNewResultComment")
     public CommonResult createNewResultComment(@RequestBody String param){
         Map<String,Object> result = commentService.createNewResultComment(param);
@@ -69,6 +72,7 @@ public class CommentController {
      * @param param
      * @return
      */
+    @ApiOperation("创建新的医嘱评论")
     @RequestMapping("createNewOrderComment")
     public CommonResult createNewOrderComment(@RequestBody String param){
         Map<String,Object> result = commentService.createNewOrderComment(param);
@@ -91,6 +95,7 @@ public class CommentController {
         return new CommonResult(commentList);
     }
 
+    @ApiOperation("更新医嘱评论状态")
     @RequestMapping("updateOrderCommentStatus")
     public CommonResult updateOrderCommentStatus(@RequestBody String param) {
         Integer result = commentService.updateOrderCommentStatus(param);

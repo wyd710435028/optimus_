@@ -173,6 +173,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                         medicalRecordVo.setStage(hospital.getScene());
                         medicalRecordVo.setHospitalId(id);
                         medicalRecordVo.setHospitalName(globalHospitaiMap.get(id));
+                        medicalRecordVo.setTimeStamp(admissionMap.get("timestamp").toString());
                         medicalRecordVoList.add(medicalRecordVo);
                     }
                 }
@@ -1927,6 +1928,12 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                             if (order.get("name").equals("项目类别")){
                                                 standingOrderModel.setProjectCategories(order.get("text"));
                                             }
+                                            if (order.get("name").equals("医嘱执行状态")){
+                                                standingOrderModel.setStandingOrderExecuteStatus(order.get("text"));
+                                            }
+                                            if (order.get("name").equals("医嘱状态")){
+                                                standingOrderModel.setStandingOrderStatus(order.get("text"));
+                                            }
                                         }
                                         orderModelList.add(standingOrderModel);
                                     }
@@ -1973,6 +1980,12 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                             }
                                             if (order.get("name").equals("项目类别")){
                                                 statOrderModel.setProjectCategories(order.get("text"));
+                                            }
+                                            if (order.get("name").equals("医嘱执行状态")){
+                                                statOrderModel.setStatOrderExecuteStatus(order.get("text"));
+                                            }
+                                            if (order.get("name").equals("医嘱状态")){
+                                                statOrderModel.setStatOrderStatus(order.get("text"));
                                             }
                                         }
                                         statOrderModelList.add(statOrderModel);

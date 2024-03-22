@@ -23,6 +23,10 @@ spring:
       initial-size: 3
       max-active: 20
       min-idle: 5
+  #用于解决swagger3.0.0和spring boot2.6.3兼容问题
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/*.xml #绑定xml文件

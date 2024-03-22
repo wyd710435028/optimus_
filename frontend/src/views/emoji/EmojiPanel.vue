@@ -276,7 +276,11 @@ export default {
           let executeTime = _this.executeTime;
           let executorSign = _this.executorSign;
           let unisoundId = _this.unisoundId;
-          createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign,unisoundId).then(function (response){
+          let admissionNo = _this.$route.params.admissionId;
+          let hospitalNo = _this.$route.params.hospitalId;
+          // alert(admissionNo);
+          // alert(hospitalNo);
+          createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign,unisoundId,admissionNo,hospitalNo).then(function (response){
             if (response.status=='200'){
               // _this.$message.success({content:'发表成功',closable: true,duration:3000});
               ElMessage({
