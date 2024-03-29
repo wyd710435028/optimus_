@@ -12,6 +12,8 @@ import CommentList from "@/views/CommentList.vue";
 import ToUserInformation from "@/views/ToUserInformation.vue";
 import CommonHeader from "@/views/common/CommonHeader.vue";
 import KeyWordsOption from "@/views/KeyWordsOption.vue";
+import MedicalRecordStatisticsChart from "@/views/MedicalRecordStatisticsChart.vue";
+import StatisticsList from "@/views/StatisticsList.vue";
 
 const routes = [
   {
@@ -100,6 +102,22 @@ const routes = [
     path: '/KeyWordsOption/:keyWords/:labelName/:fileId/:nodeName/',
     name: 'KeyWordsOption',
     component: KeyWordsOption,
+    meta: {
+      keepAlive: true
+    }
+  },
+  {
+    path: '/MedicalRecordStatisticsChart/:hospitalId/:hospitalName/:admissionId/:statisticstype',
+    name: 'MedicalRecordStatisticsChart',
+    component: MedicalRecordStatisticsChart,
+    meta: {
+      keepAlive: true
+    }
+  },
+  {
+    path: '/StatisticsList/:hospitalId/:admissionId/:hospitalName/:statisticstype',
+    name: 'StatisticsList',
+    component: StatisticsList,
     meta: {
       keepAlive: true
     }

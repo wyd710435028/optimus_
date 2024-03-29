@@ -62,6 +62,7 @@
                 <el-button @click="docUnderstandResult(scope.row)" type="success">病历详情</el-button>
                 <el-button @click="docQuery(scope.row)" type="warning">文书查询</el-button>
                 <el-button @click="eventQuery(scope.row)" color="#478A97">事件查询</el-button>
+                <el-button @click="toMedicalRecordStatisticsChart(scope.row)" color="#5F433F">统计</el-button>
               </el-row>
             </template>
           </el-table-column>
@@ -201,6 +202,13 @@ export default {
     },
     returnIndex(){
       this.$router.push('/');
+    },
+    toMedicalRecordStatisticsChart(row){
+      console.log(row);
+      let hospitalName = row.hospitalName;
+      let hospitalId = row.hospitalId;
+      let admissionId = row.admissionId;
+      this.$router.push('/MedicalRecordStatisticsChart/'+row.hospitalId+'/'+row.hospitalName+'/'+row.admissionId+'/'+'span');
     }
   },
   mounted() {

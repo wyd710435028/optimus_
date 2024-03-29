@@ -103,5 +103,43 @@ export function getOrderCommentHistoryList(fileId,unisoundId) {
     })
 }
 
+/**
+ * 查询统计数据
+ * @param fileId
+ * @param unisoundId
+ * @returns {Promise<axios.AxiosResponse<any>>}
+ */
+export function queryStatisticsData(hospitalId,admissionId,stage) {
+    return service.get('/medicalrecord/queryStatisticsData', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            hospitalId: hospitalId,
+            admissionId:admissionId,
+            stage:stage
+        }
+    })
+}
+
+/**
+ * 查询统计数据
+ * @param fileId
+ * @param unisoundId
+ * @returns {Promise<axios.AxiosResponse<any>>}
+ */
+export function getSpanListInMedicRecord(hospitalId,admissionId,stage,docGroupName,pageSize,pageNum,spanName) {
+    return service.get('/medicalrecord/getSpanListInMedicRecord', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            hospitalId: hospitalId,
+            admissionId:admissionId,
+            stage:stage,
+            docGroupName:docGroupName,
+            pageSize:pageSize,
+            pageNum:pageNum,
+            spanName:spanName
+        }
+    })
+}
+
 
 

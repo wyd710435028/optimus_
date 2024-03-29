@@ -81,4 +81,8 @@ public class ShowDocModel extends ShowDocModelVo {
      * 关联文书id列表
      */
     List<Map<String,String>> relatedDocIds;
+
+    Integer entityTotalNum = 0;
+    Integer spanTotalNum = 0;
+    Integer eventTotalNum = 0;
 }

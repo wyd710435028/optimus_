@@ -5,10 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.elasticsearch.dao.IndexDataFetcher;
 import com.unisound.optimus_visual.global.pagination.PageInfo;
 import com.unisound.optimus_visual.global.result.CommonResult;
-import com.unisound.optimus_visual.modules.medicalrecord.model.Hospital;
-import com.unisound.optimus_visual.modules.medicalrecord.model.MedicalRecordVo;
-import com.unisound.optimus_visual.modules.medicalrecord.model.ShowDocModel;
-import com.unisound.optimus_visual.modules.medicalrecord.model.ShowEventModelVo;
+import com.unisound.optimus_visual.modules.medicalrecord.model.*;
 import com.unisound.optimus_visual.modules.medicalrecord.service.MedicalRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -168,6 +165,35 @@ public class MedicalRecordController {
     public CommonResult docContentDetail(String hospitalId,String admissionId,String stage,String fileId){
         //查询es中的病历理解数据
         Map<String,Object> result = medicalRecordService.getDocContentDetail(hospitalId,admissionId,stage,fileId);
+        return new CommonResult(result);
+    }
+
+    /**
+     * 获取病历理解结果
+     * @param admissionId 流水号
+     * @param hospitalId 医院id
+     * @param stage 病历所属阶段
+     * @return
+     */
+    @RequestMapping("queryStatisticsData")
+    public CommonResult queryStatisticsData(String hospitalId,String admissionId,String stage) throws JsonProcessingException {
+        //查询es中的病历理解数据
+        Map<String,Object> result = medicalRecordService.queryStatisticsData(hospitalId,admissionId,stage);
+        return new CommonResult(result);
+    }
+
+    /**
+     * 获取病历下的span信息详情
+     * @param hospitalId 医院id
+     * @param admissionId 流水号
+     * @param stage 病历环环节
+     * @return
+     * @throws JsonProcessingException
+     */
+    @RequestMapping("getSpanListInMedicRecord")
+    public CommonResult getSpanListInMedicRecord(String hospitalId,String admissionId,String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanName) throws JsonProcessingException {
+        //查询es中的病历理解数据
+        Map<String,Object> result = medicalRecordService .getSpanListInMedicRecord(hospitalId,admissionId,stage,docGroupName,pageSize,pageNum,spanName);
         return new CommonResult(result);
     }
 

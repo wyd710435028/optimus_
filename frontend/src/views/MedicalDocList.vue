@@ -77,7 +77,7 @@
                 <el-table-column prop="time" label="时间"></el-table-column>
                 <el-table-column prop="content" label="医嘱内容">
                   <template v-slot="scope">
-                    <el-link v-if="scope.row.yzsProjectType=='药品'||scope.row.yzsProjectType=='手术或操作'||scope.row.yzsProjectType=='检查'||scope.row.yzsProjectType=='检验'" type="primary" @click="toEntityLink(scope.row)">{{scope.row.content}}</el-link>
+                    <el-link v-if="ifOrderCanLink(scope.row.yzsProjectType)" type="primary" @click="toEntityLink(scope.row)">{{scope.row.content}}</el-link>
                     <span v-else>{{scope.row.content}}</span>
                   </template>
                 </el-table-column>
@@ -117,7 +117,7 @@
                 <el-table-column prop="startTime" label="开始时间"></el-table-column>
                 <el-table-column prop="content" label="医嘱内容">
                   <template v-slot="scope">
-                    <el-link v-if="scope.row.yzsProjectType=='药品'||scope.row.yzsProjectType=='手术或操作'||scope.row.yzsProjectType=='检查'||scope.row.yzsProjectType=='检验'" type="primary" @click="toEntityLink(scope.row)">{{scope.row.content}}</el-link>
+                    <el-link v-if="ifOrderCanLink(scope.row.yzsProjectType)" type="primary" @click="toEntityLink(scope.row)">{{scope.row.content}}</el-link>
                     <span v-else>{{scope.row.content}}</span>
                   </template>
                 </el-table-column>
@@ -712,8 +712,23 @@ export default {
       let keyWords = row.content;
       //todo 判断是否在白名单内，如果在白名单内才跳?
       // window.location.href="http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b";
+      //keywords进行格式化
+      keyWords = keyWords.split(' ').join('');
+      alert(keyWords);
       //在新的标签页打开
       window.open("http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b",'_blank');
+    },
+
+    //判断医嘱是否可以跳转实体链接，true:可以；false：不可以
+    ifOrderCanLink(classify){
+      let result = false;
+      // alert(classify);
+      if (classify!=null){
+        if (classify.includes('药品')||classify.includes('手术')||classify.includes('操作')||classify.includes('检查')||classify.includes('检验')){
+          result =true;
+        }
+      }
+      return result;
     }
   },
   mounted(){

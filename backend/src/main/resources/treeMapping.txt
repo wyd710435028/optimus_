@@ -10,3 +10,4 @@
 检验记录	EMR040002,HIS000001
 分娩记录	EMR050203
 高拍文书	EMR180001
+UserBase	UserBase
