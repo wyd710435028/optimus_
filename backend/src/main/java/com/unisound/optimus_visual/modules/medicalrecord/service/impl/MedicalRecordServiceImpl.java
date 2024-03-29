@@ -173,6 +173,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                         medicalRecordVo.setStage(hospital.getScene());
                         medicalRecordVo.setHospitalId(id);
                         medicalRecordVo.setHospitalName(globalHospitaiMap.get(id));
+                        medicalRecordVo.setTimeStamp(admissionMap.get("timestamp").toString());
                         medicalRecordVoList.add(medicalRecordVo);
                     }
                 }
@@ -774,6 +775,52 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     /**
+     * 将Map格式的病历转换为ShowDocModel对象
+     * @param docList
+     * @return
+     */
+    public List<ShowDocModel> convertDocListToShowDocModelList(List<Map<String, Object>> docList){
+        List<ShowDocModel> result = new ArrayList<>();
+        if (!docList.isEmpty()){
+            for (Map<String,Object> doc:docList){
+                if (doc.isEmpty()){
+                    continue;
+                }
+                ShowDocModel docModel = new ShowDocModel();
+                docModel.setFileId(doc.get("fileId")==null?"":doc.get("fileId").toString());
+                docModel.setFileTime(doc.get("fileTime")==null?"":doc.get("fileTime").toString());
+                docModel.setFileName(doc.get("fileName")==null?"":doc.get("fileName").toString());
+                docModel.setDocType(doc.get("docType")==null?"":doc.get("docType").toString());
+                docModel.setOperateTime(doc.get("operateTime")==null?"":doc.get("operateTime").toString());
+                docModel.setTags(doc.get("tags")==null?"":doc.get("tags").toString());
+                docModel.setDocName(doc.get("docName")==null?"":doc.get("docName").toString());
+                docModel.setRecordTime(doc.get("recordTime")==null?"":doc.get("recordTime").toString());
+                docModel.setCreateTime(doc.get("createTime")==null?"":doc.get("createTime").toString());
+                docModel.setDocClassName(doc.get("docClassName")==null?"":doc.get("docClassName").toString());
+                JSONObject jsonObject = doc.get("relatedDocIds")==null?new JSONObject():(JSONObject) doc.get("relatedDocIds");
+                if (!jsonObject.isEmpty()&&jsonObject.size()>0){
+                    List<Map<String,String>> fileIdList = new ArrayList<>();
+                    for (String key:jsonObject.keySet()){
+                        JSONArray jsonArray = (JSONArray) jsonObject.get(key);
+                        if (!jsonArray.isEmpty()){
+                            for (int i = 0;i<jsonArray.size();i++){
+                                Map<String,String> map = new LinkedHashMap<>();
+                                String fId = (String) jsonArray.get(i);
+                                map.put("relateDocDesc",key);
+                                map.put("relateDocId",fId);
+                                fileIdList.add(map);
+                            }
+                        }
+                    }
+                    docModel.setRelatedDocIds(fileIdList);
+                }
+                result.add(docModel);
+            }
+        }
+        return result;
+    }
+
+    /**
      * 获取指定文书内容
      * @param admissionId 流水号
      * @param hospitalId 医院id
@@ -1262,6 +1309,205 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     /**
+     * 查询统计数据
+     * @param hospitalId 医院id
+     * @param admissionId 流水号
+     * @param stage 病历阶段
+     * @return
+     */
+    @Override
+    public Map<String, Object> queryStatisticsData(String hospitalId, String admissionId, String stage) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        Map<String, Object> understandResult = this.getUnderstandResult(hospitalId, admissionId, stage);
+        //todo span处理逻辑
+        //柱状图
+        HistogramModel spanHistogramModel = new HistogramModel();
+        Map<String,String> titleMap = new LinkedHashMap<>();
+        titleMap.put("text","Span数统计: x->文书组名称,y->文书组下的Span数");
+        spanHistogramModel.setTitle(titleMap);
+        //获取treeData并对其分组，放入Map：key->分组名称，value->fileId集合
+        Map<String,List<String>> docGroup = this.getDocGroupedFileId(understandResult);
+        List<ShowDocModel> showDocModelList = (List<ShowDocModel>) understandResult.get("docList");
+        //构造echarts图表对象
+        //构造xAxis data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+        //总数量(病历级别)
+        Integer spanTotal = 0;
+        Integer entityTotal = 0;
+        Integer eventTotal = 0;
+        if (!docGroup.isEmpty()){
+            //设置x轴
+            //todo x轴的顺序不固定，需要处理
+            List<String> xList = new ArrayList<>(docGroup.keySet());
+            spanHistogramModel.setXAxis(xList);
+            List<Integer> spanCountList = new ArrayList<>();
+            List<Integer> entityCountList = new ArrayList<>();
+            List<Integer> eventCountList = new ArrayList<>();
+            for (String groupStr:docGroup.keySet()){
+                List<String> fileIds = docGroup.get(groupStr);
+                Integer spanCount = 0;
+                Integer entityCount = 0;
+                Integer eventCount = 0;
+                if (!CollectionUtils.isEmpty(showDocModelList)){
+                    for (ShowDocModel docModel:showDocModelList){
+                        if (fileIds.contains(docModel.getFileId())){
+                            //统计entity、span、event数量
+                            spanCount+=docModel.getSpanTotalNum();
+                            entityCount+=docModel.getEntityTotalNum();
+                            eventCount+=docModel.getEventTotalNum();
+                        }
+                    }
+                }
+                spanCountList.add(spanCount);
+                entityCountList.add(entityCount);
+                eventCountList.add(eventCount);
+                spanTotal+=spanCount;
+                entityTotal+=entityCount;
+                eventTotal+=eventCount;
+            }
+            //span的数据
+            HistogramSeries spanSeries = new HistogramSeries();
+            spanSeries.setData(spanCountList);
+            //todo 可以设置样式
+//            spanSeries.setItemStyle();
+            List<HistogramSeries> spanSeriesList = new ArrayList<>();
+            spanSeriesList.add(spanSeries);
+            spanHistogramModel.setSeries(spanSeriesList);
+            //todo entity的数据
+            //todo event的数据
+        }
+        result.put("spanOption",spanHistogramModel);
+        result.put("spanTotal",spanTotal);
+        result.put("entityTotal",entityTotal);
+        result.put("eventTotal",eventTotal);
+        //todo event和entity的处理
+        //table列表
+        return result;
+    }
+
+    @Override
+    public Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanNam) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        Map<String, Object> understandResult = this.getUnderstandResult(hospitalId, admissionId, stage);
+        //对文书内容分组
+        Map<String, List<String>> docGroupedFileId = this.getDocGroupedFileId(understandResult);
+        List<ShowDocModel> showDocModelList = (List<ShowDocModel>) understandResult.get("docList");
+        List<EntityOrSpanStatisticsModel> spanStatisticsList = new ArrayList<>();
+        if (!docGroupedFileId.isEmpty()){
+            if (StringUtils.isBlank(docGroupName)){
+                //todo 如果没有分组名称,则查询病历下的所有span
+                if (!CollectionUtils.isEmpty(showDocModelList)){
+                    for (ShowDocModel docModel:showDocModelList){
+                        //获取节点信息，放入list
+                        List<ShowNodeModel> nodeList = docModel.getNodeList();
+                        if (CollectionUtils.isEmpty(nodeList)){
+                            continue;
+                        }
+                        //获取一个文书下的所有span标签信息
+                        List<EntityOrSpanStatisticsModel> spanStatisticsModels = this.getEntityOrSpanStatisticsInOneDocModel(docModel);
+                        spanStatisticsList.addAll(spanStatisticsModels);
+                    }
+                }
+            }else {
+                //todo 查询指定分组下的span
+                List<String> fileIds = docGroupedFileId.get(docGroupName);
+                if (!CollectionUtils.isEmpty(fileIds)){
+                    if (!CollectionUtils.isEmpty(showDocModelList)){
+                        for (ShowDocModel docModel:showDocModelList){
+                            if (fileIds.contains(docModel.getFileId())){
+                                //获取节点信息，放入list
+                                List<ShowNodeModel> nodeList = docModel.getNodeList();
+                                if (CollectionUtils.isEmpty(nodeList)){
+                                    continue;
+                                }
+                                //获取一个文书下的所有span标签信息
+                                List<EntityOrSpanStatisticsModel> spanStatisticsModels = this.getEntityOrSpanStatisticsInOneDocModel(docModel);
+                                spanStatisticsList.addAll(spanStatisticsModels);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        List<EntityOrSpanStatisticsModel> resultList = spanStatisticsList;
+        //对返回结果做查询筛选以及分类处理
+        if (StringUtils.isNotBlank(spanNam)){
+            spanStatisticsList = resultList.stream().filter(span->span.getSpanLabel().contains(spanNam)).collect(Collectors.toList());
+            resultList = spanStatisticsList.stream().skip(pageSize*(pageNum-1)).limit(pageSize).collect(Collectors.toList());
+        }else {
+            resultList = resultList.stream().skip(pageSize*(pageNum-1)).limit(pageSize).collect(Collectors.toList());
+        }
+        result.put("spanStatisticsList",resultList);
+        result.put("size",pageSize);
+        result.put("current",pageNum);
+        result.put("total",spanStatisticsList.size());
+        return result;
+    }
+
+
+    private List<EntityOrSpanStatisticsModel> getEntityOrSpanStatisticsInOneDocModel(ShowDocModel docModel) {
+        //todo
+        List<EntityOrSpanStatisticsModel> result = new ArrayList<>();
+        if (Objects.isNull(docModel)||docModel.getDocType().equals("UserBase")){
+            return result;
+        }
+        List<ShowNodeModel> nodeList = docModel.getNodeList();
+        if (CollectionUtils.isEmpty(nodeList)){
+            return result;
+        }
+        for (ShowNodeModel node:nodeList){
+            if (this.ifNodeInBlackList(node.getNodeName(),nodeShowBlackList)){
+                continue;
+            }
+            List<EntityOrSpanModel> spanList = node.getSpanList();
+            if (CollectionUtils.isEmpty(spanList)){
+                continue;
+            }
+            String docType = docModel.getDocType();
+            for (EntityOrSpanModel entityOrSpanModel:spanList){
+                EntityOrSpanStatisticsModel entityOrSpanStatisticsModel = new EntityOrSpanStatisticsModel();
+                entityOrSpanStatisticsModel.setEmrNo(docType);
+                entityOrSpanStatisticsModel.setDocName(docModel.getDocName());
+                entityOrSpanStatisticsModel.setNodeName(node.getNodeName());
+                entityOrSpanStatisticsModel.setNodeContent(node.getNodeContent());
+                entityOrSpanStatisticsModel.setSpanTextContent(entityOrSpanModel.getName());
+                entityOrSpanStatisticsModel.setSpanLabel(entityOrSpanModel.getLabel());
+                result.add(entityOrSpanStatisticsModel);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 对文书分组
+     * @param understandResult
+     * @return
+     */
+    public Map<String,List<String>> getDocGroupedFileId(Map<String, Object> understandResult){
+        Map<String,List<String>> result = new LinkedHashMap<>();
+        if (understandResult.containsKey("treeData")){
+            List<Map<String,Object>> treeList = (List<Map<String, Object>>) understandResult.get("treeData");
+            for (Map<String,Object> tree:treeList){
+                String key = (String) tree.get("label");
+                List<String> fileIdList = new ArrayList<>();
+                if (tree.containsKey("fileId")){
+                    String fileId = (String) tree.get("fileId");
+                    fileIdList.add(fileId);
+                }
+                if (tree.containsKey("children")){
+                    List<Map<String,Object>> childrenList = (List<Map<String, Object>>) tree.get("children");
+                    if (!CollectionUtils.isEmpty(childrenList)){
+                        for (Map<String,Object> map:childrenList){
+                            String fileId = (String) map.get("fileId");
+                            fileIdList.add(fileId);
+                        }
+                    }
+                }
+                result.put(key,fileIdList);
+            }
+        }
+        return result;
+    }
+    /**
      * 处理Doc内容生成json
      * @param voAdmissionId 流水号
      * @param fileId 文书id
@@ -1562,6 +1808,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         if (CollectionUtils.isEmpty(formatedDocMap)){
             return docModelList;
         }
+        List<String> blackList = Arrays.asList(nodeShowBlackList.split(","));
         //处理标签信息
 //        Map<String,String> colorMap = new LinkedHashMap<>();
         Map<String,Map<String,String>> colorMap = new LinkedHashMap<>();
@@ -1594,6 +1841,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             }
             showDocModel.setFileId(split[0]);
             showDocModel.setDocType(split[1]);
+            showDocModel.setDocName(split[2]);
             Map<String, Map<String, Object>> nodes = formatedDocMap.get(key);
             if (split[1].equals("EMR110001")){
                 //长期医嘱
@@ -1609,6 +1857,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 //常规文书
                 List<ShowNodeModel> nodeList = new ArrayList<>();
                 List<ShowLabelModel> labelList = new ArrayList<>();
+                Integer entityTotalNum = 0;
+                Integer spanTotalNum = 0;
+                Integer eventTotalNum = 0;
                 if (!CollectionUtils.isEmpty(nodes)){
                     for (String nodeName:nodes.keySet()){
                         Map<String, Object> node = nodes.get(nodeName);
@@ -1633,6 +1884,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     Set<String> entityLabelContents = new HashSet<>();
                                     if (!CollectionUtils.isEmpty(entities)){
                                         entityNum = entities.size();
+                                        if (!this.ifNodeInBlackList(nodeName,nodeShowBlackList)){
+                                            entityTotalNum+=entityNum;
+                                        }
                                         List<EntityOrSpanModel> entityModelList = new ArrayList<>();
                                         for (Map<String,Object> entity:entities){
                                             EntityOrSpanModel entityModel = new EntityOrSpanModel();
@@ -1671,6 +1925,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     Set<String> spanLabelContents = new HashSet<>();
                                     if (!CollectionUtils.isEmpty(spans)){
                                         spanNum = spans.size();
+                                        //判断是否在黑名单中,如果不在才统计数量
+                                        if (!this.ifNodeInBlackList(nodeName,nodeShowBlackList)){
+                                            spanTotalNum += spanNum;
+                                        }
                                         List<EntityOrSpanModel> entityModelList = new ArrayList<>();
                                         for (Map<String,Object> span:spans){
                                             EntityOrSpanModel spanModel = new EntityOrSpanModel();
@@ -1706,6 +1964,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                 if (numTable.containsKey("events")){
                                     List<Map<String,Object>> events = (List<Map<String, Object>>) numTable.get("events");
                                     eventNum = events.size();
+                                    if (!this.ifNodeInBlackList(nodeName,nodeShowBlackList)){
+                                        eventTotalNum+=eventNum;
+                                    }
                                     if (events.size()>0){
                                         for (Map<String,Object> event:events){
                                             EventModel eventModel = new EventModel();
@@ -1736,6 +1997,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                     }
                 }
                 showDocModel.setNodeList(nodeList);
+                showDocModel.setEntityTotalNum(entityTotalNum);
+                showDocModel.setSpanTotalNum(spanTotalNum);
+                showDocModel.setEventTotalNum(eventTotalNum);
                 //处理颜色
                 if (!CollectionUtils.isEmpty(labelList)){
                     Map<String,ShowLabelModel> labelMap = new LinkedHashMap<>();
@@ -1756,6 +2020,25 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             docModelList.add(showDocModel);
         }
         return docModelList;
+    }
+
+    /**
+     * 判断节点是否在黑名单中
+     * @param nodeName 待判断的节点
+     * @param nodeShowBlackListStr 黑名单字符串，用逗号隔开
+     * @return
+     */
+    private boolean ifNodeInBlackList(String nodeName, String nodeShowBlackListStr) {
+        if (StringUtils.isBlank(nodeShowBlackListStr)){
+            return false;
+        }
+        String[] split = nodeShowBlackListStr.split(",");
+        for (int i=0;i<split.length;i++){
+            if (nodeName.contains(split[i])){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1927,6 +2210,12 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                             if (order.get("name").equals("项目类别")){
                                                 standingOrderModel.setProjectCategories(order.get("text"));
                                             }
+                                            if (order.get("name").equals("医嘱执行状态")){
+                                                standingOrderModel.setStandingOrderExecuteStatus(order.get("text"));
+                                            }
+                                            if (order.get("name").equals("医嘱状态")){
+                                                standingOrderModel.setStandingOrderStatus(order.get("text"));
+                                            }
                                         }
                                         orderModelList.add(standingOrderModel);
                                     }
@@ -1974,6 +2263,12 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                             if (order.get("name").equals("项目类别")){
                                                 statOrderModel.setProjectCategories(order.get("text"));
                                             }
+                                            if (order.get("name").equals("医嘱执行状态")){
+                                                statOrderModel.setStatOrderExecuteStatus(order.get("text"));
+                                            }
+                                            if (order.get("name").equals("医嘱状态")){
+                                                statOrderModel.setStatOrderStatus(order.get("text"));
+                                            }
                                         }
                                         statOrderModelList.add(statOrderModel);
                                     }
@@ -1988,7 +2283,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 }
             }
             String fileId = (String) docMap.get("fileId");
-            String key = fileId+"&&"+docType;
+            String fileName = (String) docMap.get("fileName");
+            String key = fileId+"&&"+docType+"&&"+fileName;
             if (StringUtils.isNotBlank(key)){
                 result.put(key,resultNodeMap);
             }

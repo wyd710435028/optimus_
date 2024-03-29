@@ -5,6 +5,8 @@
     <el-header style="background-color: #009688;">
       <common-header></common-header>
     </el-header>
+
+    <!-- 主体内容 -->
     <el-main style="border: 2px">
     <el-row class="container">
       <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnHomePage()">返回</el-button>
@@ -28,11 +30,14 @@
 <!--                  <div v-if="item.entityNum>0">-->
                     <label v-html=item.entityHightLighted></label>
 <!--                  </div>-->
-                  <el-row>
+                  <!-- 当entity、span、event中有一个数量大于0时才显示表格 -->
+                  <el-row v-if="item.entityNum>0||item.spanNum>0||item.eventNum>0">
                     <el-table
                         :data="tableData"
+                        :header-cell-style="{background:'#AED6F1',color:'#2E4053'}"
                         border
-                        style="width: 100%;margin:10px;">
+                        style="width: 100%;margin:10px;"
+                    >
                       <el-table-column fixed prop="entityNum" label="entity数量">
                         <template v-slot="{}">
                           <el-link type="text" @click="toDocUnderstandDetail(item.nodeName,item.nodeContent,item.entityHightLighted,item.spanHightLighted,item.eventHightLighted,item.entityLabelList,item.spanLabelList,item.eventList,item.fileId,item.entityList,item.spanList)">{{item.entityNum}}</el-link>
@@ -64,19 +69,28 @@
                   :data="statOrderTableData"
                   border
                   stripe
-                  :header-cell-style="{background:'#eef1f6',color:'#606266'}"
+                  :height="table"
+                  :header-cell-style="{background:'#AED6F1',color:'#2E4053'}"
                   style="width: 100%;margin:10px">
-                <el-table-column fixed prop="unisoundId" label="unisoundId"></el-table-column>
+<!--                <el-table-column fixed prop="unisoundId" label="unisoundId" width="165px"></el-table-column>-->
                 <el-table-column fixed prop="day" label="日期"></el-table-column>
                 <el-table-column prop="time" label="时间"></el-table-column>
-                <el-table-column prop="content" label="医嘱内容"></el-table-column>
+                <el-table-column prop="content" label="医嘱内容">
+                  <template v-slot="scope">
+                    <el-link v-if="ifOrderCanLink(scope.row.yzsProjectType)" type="primary" @click="toEntityLink(scope.row)">{{scope.row.content}}</el-link>
+                    <span v-else>{{scope.row.content}}</span>
+                  </template>
+                </el-table-column>
                 <el-table-column prop="physicianSign" label="医师签名"></el-table-column>
                 <el-table-column prop="executeTime" label="执行时间"></el-table-column>
                 <el-table-column prop="executorSign" label="执行人签名"></el-table-column>
-                <el-table-column prop="yzsProjectType" label="云知声项目类别" :filters="yzsProjectType" :filter-method="filterHandler"></el-table-column>
+                <el-table-column prop="statOrderExecuteStatus" label="医嘱执行状态"></el-table-column>
+                <el-table-column prop="statOrderStatus" label="医嘱状态"></el-table-column>
+                <el-table-column prop="yzsProjectType" label="云知声项目类别" width="150px" :filters="yzsProjectType" :filter-method="filterHandler">
+                </el-table-column>
                 <el-table-column prop="projectCategories" label="项目大类" :filters="projectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="operation" label="操作" width="130px">
-                  <template v-slot="scope">
+                  <template v-slot:default="scope">
                     <el-badge v-if ="scope.row.commentNum>0" :value="scope.row.commentNum" :max="99" class="item">
                       <el-button type="primary" @click="openTheComment(scope.row)">评论</el-button>
                     </el-badge>
@@ -95,18 +109,26 @@
                   :data="standingOrderTableData"
                   border
                   stripe
-                  :header-cell-style="{background:'#eef1f6',color:'#606266'}"
+                  :height="table"
+                  :header-cell-style="{background:'#AED6F1',color:'#2E4053'}"
                   style="width: 100%;margin:10px;">
-                <el-table-column fixed prop="unisoundId" label="unisoundId"></el-table-column>
+<!--                <el-table-column fixed prop="unisoundId" label="unisoundId"></el-table-column>-->
                 <el-table-column fixed prop="openingTime" label="开立时间"></el-table-column>
                 <el-table-column prop="startTime" label="开始时间"></el-table-column>
-                <el-table-column prop="content" label="医嘱内容"></el-table-column>
+                <el-table-column prop="content" label="医嘱内容">
+                  <template v-slot="scope">
+                    <el-link v-if="ifOrderCanLink(scope.row.yzsProjectType)" type="primary" @click="toEntityLink(scope.row)">{{scope.row.content}}</el-link>
+                    <span v-else>{{scope.row.content}}</span>
+                  </template>
+                </el-table-column>
                 <el-table-column prop="openingPhysicianSign" label="开立医师签名"></el-table-column>
                 <el-table-column prop="executeTime" label="执行时间"></el-table-column>
                 <el-table-column prop="executorSign" label="执行人签名"></el-table-column>
                 <el-table-column prop="stopTime" label="停止时间"></el-table-column>
                 <el-table-column prop="stopPhysicianSign" label="停止医师签名"></el-table-column>
                 <el-table-column prop="stopExecutorSign" label="停止执行人签名"></el-table-column>
+                <el-table-column prop="standingOrderExecuteStatus" label="医嘱执行状态"></el-table-column>
+                <el-table-column prop="standingOrderStatus" label="医嘱状态"></el-table-column>
                 <el-table-column prop="yzsProjectType" label="云知声项目类别" :filters="yzsProjectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="projectCategories" label="项目大类" :filters="projectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="operation" label="操作" width="130px">
@@ -149,6 +171,8 @@
       </el-col>
     </el-row>
     </el-main>
+
+    <!-- 实体链接弹窗 -->
     <el-dialog title="实体链接弹窗" v-model="dialogVisible" width="35%">
       <el-card class="box-card">
         <div v-for="(value, key) in encyclopedia" :key="key" class="text item">
@@ -161,89 +185,87 @@
         </div>
       </el-card>
     </el-dialog>
+    <!-- 医嘱理解结果评论弹窗 -->
+    <el-dialog @close="closeOrderCommentDialog" align-center="true" v-model="orderDialogFormVisible" title="评论" width="35%">
+      <div style="align-items: center;margin-left: 25px">
+        <el-row>
+          <strong>FileId: </strong>
+          <span class="orderDialogContentStyle">{{fileId}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>UnisoundId: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.unisoundId}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>日期: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.day}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>时间: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.time}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>医嘱内容: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.content}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>医师签名: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.physicianSign}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>执行时间: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.executeTime}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>执行人签名: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.executorSign}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>云知声项目类别: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.yzsProjectType}}</span>
+        </el-row>
+        <el-row style="margin-top: 10px">
+          <strong>项目大类: </strong>
+          <span class="orderDialogContentStyle">{{orderDialog.projectCategories}}</span>
+        </el-row>
+      </div>
+      <el-divider>★★★</el-divider>
+      <!-- 评论组件 -->
+      <EmojiPanel @ifSendSuccess="handleSend" :file-id="fileId" :order-content="orderDialog.content" :execute-time="orderDialog.executeTime" :executor-sign="orderDialog.executorSign" :unisound-id="orderDialog.unisoundId"></EmojiPanel>
+      <el-divider>★★★</el-divider>
+      <span class="post-btn" @click="commentHistory">历史评论</span>
+      <div v-if="showCmmentHistoryList==true">
+        <el-table :data="commentHistoryTab">
+          <el-table-column prop="content" label="内容" width="180">
+            <!-- 支持html格式 -->
+            <template v-slot="{ row }">
+              <span v-html="row.content"></span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="时间" width="180" />
+          <el-table-column prop="userName" label="评论人" />
+          <el-table-column prop="" label="操作">
+            <template v-slot="scope">
+              <el-switch
+                  inline-prompt
+                  active-text="点击关闭"
+                  inactive-text="点击开启" :value="scope.row.orderCommentStatus==1?true:false" @change="orderCommentStatusChange(scope.row)"/>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-dialog>
   </el-container>
-  <!-- 医嘱理解结果评论弹出框 -->
-  <el-dialog @close="closeOrderCommentDialog" align-center="true" v-model="orderDialogFormVisible" title="评论" width="35%">
-    <div style="align-items: center;margin-left: 25px">
-      <el-row>
-        <strong>FileId: </strong>
-        <span class="orderDialogContentStyle">{{fileId}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>UnisoundId: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.unisoundId}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>日期: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.day}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>时间: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.time}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>医嘱内容: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.content}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>医师签名: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.physicianSign}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>执行时间: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.executeTime}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>执行人签名: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.executorSign}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>云知声项目类别: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.yzsProjectType}}</span>
-      </el-row>
-      <el-row style="margin-top: 10px">
-        <strong>项目大类: </strong>
-        <span class="orderDialogContentStyle">{{orderDialog.projectCategories}}</span>
-      </el-row>
-    </div>
-    <el-divider>★★★</el-divider>
-    <EmojiPanel @ifSendSuccess="handleSend" :file-id="fileId" :order-content="orderDialog.content" :execute-time="orderDialog.executeTime" :executor-sign="orderDialog.executorSign" :unisound-id="orderDialog.unisoundId"></EmojiPanel>
-    <el-divider>★★★</el-divider>
-<!--    <el-button size="small" type="primary" style="float: right;margin-top: 5px" @click="commentHistory">评论历史</el-button>-->
-    <span class="post-btn" @click="commentHistory">历史评论</span>
-    <div v-if="showCmmentHistoryList==true">
-      <el-table :data="commentHistoryTab">
-        <el-table-column prop="content" label="内容" width="180">
-          <!-- 支持html格式 -->
-          <template v-slot="{ row }">
-            <span v-html="row.content"></span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="时间" width="180" />
-        <el-table-column prop="userName" label="评论人" />
-        <el-table-column prop="" label="操作">
-          <template v-slot="scope">
-            <el-switch
-                inline-prompt
-                active-text="点击关闭"
-                inactive-text="点击开启" :value="scope.row.orderCommentStatus==1?true:false" @change="orderCommentStatusChange(scope.row)"/>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-  </el-dialog>
 </template>
 <script>
 import {getOrderCommentHistoryList, getUnderstandResult} from "../apis/get";
 import {getNodeByFileId,updateOrderCommentStatus} from "../apis/post";
-import {transLabelList} from "../apis/post";
 import {getNodeByFileIdWithHighLight} from "../apis/post";
 import {ElMessage} from "element-plus";
-import entitylinkDialog from "./EntityLinkJump"
-import { ref } from 'vue'
+import entitylinkDialog from "./EntityLinkJump";
+import { ref } from 'vue';
 import CommonHeader from "@/views/common/CommonHeader.vue";
 import EmojiPanel from "@/views/emoji/EmojiPanel.vue";
-import KeyWordsOption from "@/views/KeyWordsOption.vue";
 import CommentList from "@/views/CommentList.vue";
 
 const dialogVisible = ref(false);
@@ -274,7 +296,9 @@ export default {
         executeTime:'',
         executorSign:'',
         projectCategories:'',
-        commentNum:''
+        commentNum:'',
+        statOrderExecuteStatus:'',
+        statOrderStatus:''
       }],//临时医嘱
       standingOrderTableData:[{
         openingTime:'',
@@ -287,7 +311,9 @@ export default {
         stopPhysicianSign:'',
         stopExecutorSign:'',
         projectCategories:'',
-        commentNum:''
+        commentNum:'',
+        standingOrderStatus:'',
+        standingOrderExecuteStatus:''
       }],//长期医嘱
       projectType:[
         // { text: '检验', value: '检验' },
@@ -371,6 +397,7 @@ export default {
           orderCommentStatus:1
         }
       ],
+      table:window.innerHeight - 107           //固定表头高度
     }
   },
   methods: {
@@ -679,6 +706,29 @@ export default {
           })
         }
       })
+    },
+    toEntityLink(row){
+      // alert(row.content);
+      let keyWords = row.content;
+      //todo 判断是否在白名单内，如果在白名单内才跳?
+      // window.location.href="http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b";
+      //keywords进行格式化
+      keyWords = keyWords.split(' ').join('');
+      alert(keyWords);
+      //在新的标签页打开
+      window.open("http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b",'_blank');
+    },
+
+    //判断医嘱是否可以跳转实体链接，true:可以；false：不可以
+    ifOrderCanLink(classify){
+      let result = false;
+      // alert(classify);
+      if (classify!=null){
+        if (classify.includes('药品')||classify.includes('手术')||classify.includes('操作')||classify.includes('检查')||classify.includes('检验')){
+          result =true;
+        }
+      }
+      return result;
     }
   },
   mounted(){

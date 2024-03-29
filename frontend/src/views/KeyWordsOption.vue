@@ -125,7 +125,9 @@ export default {
           'sign',
           'medicine',
           'check',
-          'indicator'
+          'indicator',
+          'diagnosis',
+          '诊断'
       ]
     }
   },

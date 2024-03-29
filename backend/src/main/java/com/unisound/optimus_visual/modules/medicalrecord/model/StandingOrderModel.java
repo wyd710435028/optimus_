@@ -28,4 +28,14 @@ public class StandingOrderModel {
      * 评论数量
      */
     Integer commentNum=0;
+
+    /**
+     * 长期医嘱状态
+     */
+    String standingOrderStatus;
+
+    /**
+     * 长期医嘱执行状态
+     */
+    String standingOrderExecuteStatus;
 }

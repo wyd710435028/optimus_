@@ -31,4 +31,8 @@ public interface MedicalRecordService {
     Map<String, Object> hightTextByOneTag(String param);
 
     PageInfo<ShowEventModelVo> eventQueryList(String hospitalId, String admissionId, String stage, String docName, Integer pageSize, Integer pageNum);
+
+    Map<String, Object> queryStatisticsData(String hospitalId, String admissionId, String stage);
+
+    Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanNam);
 }
