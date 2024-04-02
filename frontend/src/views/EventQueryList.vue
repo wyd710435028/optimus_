@@ -16,14 +16,27 @@
             <el-input v-model="eventName" placeholder="请输入事件名称" clearable></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button color="#359894" :dark="isDark" @click="queryList">查询</el-button>
+            <el-button color="#359894" :dark="isDark" @click="queryList">
+              <el-icon>
+                <Search/>
+              </el-icon>
+              <span>查询</span>
+            </el-button>
           </el-form-item>
         </el-form>
+      </el-row>
+      <el-row class="container">
+        <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnHomePage()">
+          <el-icon>
+            <Back/>
+          </el-icon>
+          <span>返回</span>
+        </el-button>
       </el-row>
 
       <!-- 表格内容 -->
       <el-row>
-        <el-table border :data="tableData" :default-sort="{ prop: 'createTime', order: 'descending' }" stripe style="width: 100%">
+        <el-table border :data="tableData" :default-sort="{ prop: 'createTime', order: 'descending' }" stripe style="width: 100%;margin-top: 15px">
           <el-table-column type="index" label="序号" :index="true" width="55"/>
           <el-table-column label="id" prop="id"/>
           <el-table-column label="事件名称" prop="eventName" show-overflow-tooltip="true"/>
@@ -58,8 +71,9 @@
 import {docQueryList, eventQueryList} from "../apis/get";
 import {ElMessage} from "element-plus";
 import CommonHeader from "@/views/common/CommonHeader.vue";
+import {Back, Search} from "@element-plus/icons-vue";
 export default {
-  components: {CommonHeader},
+  components: {Search, Back, CommonHeader},
   data(){
     return{
       tableData : [
@@ -151,6 +165,12 @@ export default {
     },
     returnIndex(){
       this.$router.push('/');
+    },
+    returnHomePage(){
+      // let pageSize = this.$route.params.pageSize;
+      // let currentPage = this.$route.params.currentPage;
+      let hospitalId = this.$route.params.hospitalId;
+      this.$router.push('/MedicalRecordList/'+hospitalId);
     }
   },
   mounted(){

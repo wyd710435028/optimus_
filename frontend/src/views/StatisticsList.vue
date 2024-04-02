@@ -7,7 +7,12 @@
     </el-header>
     <el-main>
       <el-row class="container">
-        <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnMedicalRecordStatisticsChartPage()">返回</el-button>
+        <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnMedicalRecordStatisticsChartPage()">
+          <el-icon>
+            <Back/>
+          </el-icon>
+          <span>返回</span>
+        </el-button>
       </el-row>
       <el-tabs v-model="activeName" type="card" style="margin-top: 20px" @tab-click="handleTabClick">
 <!--        <el-tab-pane label="Entity" name="entity">-->
@@ -32,7 +37,20 @@
                 <el-input v-model="spanName" placeholder="请输入Span标签名称" clearable></el-input>
               </el-form-item>
               <el-form-item>
-                <el-button color="#009688" @click="showSpanList">查询</el-button>
+                <el-button color="#009688" @click="showSpanList">
+                  <el-icon>
+                    <Search/>
+                  </el-icon>
+                  <span>查询</span>
+                </el-button>
+              </el-form-item>
+              <el-form-item>
+                <el-button color="#009688" @click="exportSpanListToXlsx">
+                  <el-icon>
+                    <Download/>
+                  </el-icon>
+                  <span>导出到Excel</span>
+                </el-button>
               </el-form-item>
             </el-form>
           </el-row>
@@ -85,9 +103,12 @@
 
 <script>
 import CommonHeader from "@/views/common/CommonHeader.vue";
-import {getSpanListInMedicRecord} from "@/apis/get";
+import {exportSpanToXlsx, getSpanListInMedicRecord} from "@/apis/get";
+import {Back, Download, Link, Search} from "@element-plus/icons-vue";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 export default {
-  components: {CommonHeader},
+  components: {Back, Download, Link, Search, CommonHeader},
   //变量
   data() {
     return {
@@ -120,7 +141,8 @@ export default {
         currentPage: 1,
         pageSize: 10,
         total: 0
-      }
+      },
+      selectedDocGroupName:''
     }
   },
 
@@ -198,6 +220,52 @@ export default {
       let admissionId = _this.admissionId;
       let activeName = _this.activeName;
       this.$router.push('/MedicalRecordStatisticsChart/'+hospitalId+'/'+hospitalName+'/'+admissionId+'/'+activeName);
+    },
+    //导出span到xlsx格式
+    exportSpanListToXlsx(){
+      let _this = this;
+      let spanName = _this.spanName;
+      let hospitalId = _this.hospitalId;
+      let hospitalName = _this.hospitalName;
+      let admissionId = _this.admissionId;
+      let stage = _this.stage;
+      let selectedDocGroupName = _this.selectedDocGroupName;
+      // alert(spanName);
+      // alert(hospitalId);
+      // alert(hospitalName);
+      // alert(admissionId);
+      // alert(stage);
+      exportSpanToXlsx(hospitalId,admissionId,stage,selectedDocGroupName,spanName).then(function (response){
+        // console.log(response.data);
+        // console.log(response.data.spanStatisticsList);
+        const headers = {
+          "A1":"EMR号",
+          "B1":"文书名称",
+          "C1":"所在节点",
+          "D1":"节点内容",
+          "E1":"span文本片段",
+          "F1":"span标签"
+        };
+        // 假设数据是一个数组，每个元素是一个对象
+        const worksheet = XLSX.utils.json_to_sheet(response.data.data.spanStatisticsList);
+
+        // 自定义表头
+        Object.keys(headers).forEach(key => {
+          const cell = headers[key];
+          // console.log(cell);
+          const cellRef = XLSX.utils.encode_cell({c: key.charCodeAt(0) - 65, r: 0});
+          // console.log(cellRef);
+          worksheet[cellRef].v = cell;
+        });
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+        // 生成Excel文件并导出
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const dataBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+        saveAs(dataBlob, 'Span列表.xlsx');
+      })
     }
   },
 

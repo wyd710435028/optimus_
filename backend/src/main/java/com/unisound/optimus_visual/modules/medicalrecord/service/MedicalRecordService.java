@@ -5,6 +5,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.global.pagination.PageInfo;
 import com.unisound.optimus_visual.modules.medicalrecord.model.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
@@ -34,5 +37,7 @@ public interface MedicalRecordService {
 
     Map<String, Object> queryStatisticsData(String hospitalId, String admissionId, String stage);
 
-    Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanNam);
+    Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanNam,Boolean paginationOrNot);
+
+    Map<String, Object> exportSpanToXlsx(/*HttpServletResponse response,*/String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException;
 }

@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -193,7 +195,20 @@ public class MedicalRecordController {
     @RequestMapping("getSpanListInMedicRecord")
     public CommonResult getSpanListInMedicRecord(String hospitalId,String admissionId,String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanName) throws JsonProcessingException {
         //查询es中的病历理解数据
-        Map<String,Object> result = medicalRecordService .getSpanListInMedicRecord(hospitalId,admissionId,stage,docGroupName,pageSize,pageNum,spanName);
+        Map<String,Object> result = medicalRecordService .getSpanListInMedicRecord(hospitalId,admissionId,stage,docGroupName,pageSize,pageNum,spanName,true);
+        return new CommonResult(result);
+    }
+
+    /**
+     * 导出span为xlsx格式
+     * @param spanName span名称
+     * @return
+     * @throws JsonProcessingException
+     */
+    @RequestMapping("exportSpanToXlsx")
+    public CommonResult exportSpanToXlsx(/*HttpServletResponse response,*/String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException {
+        //查询es中的病历理解数据
+        Map<String,Object> result = medicalRecordService .exportSpanToXlsx(/*response,*/hospitalId,admissionId,stage,selectedDocGroupName,spanName);
         return new CommonResult(result);
     }
 

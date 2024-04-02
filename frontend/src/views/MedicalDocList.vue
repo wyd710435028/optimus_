@@ -9,12 +9,26 @@
     <!-- 主体内容 -->
     <el-main style="border: 2px">
     <el-row class="container">
-      <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnHomePage()">返回</el-button>
+      <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnHomePage()">
+        <el-icon>
+          <Back/>
+        </el-icon>
+        <span>返回</span>
+      </el-button>
     </el-row>
     <el-row>
       <el-col :span="4">
         <el-aside class="layout_col">
-            <el-tree class="flow-tree" :data="treeData" :props="defaultProps" :highlight-current="true"  @node-click="getDocByFileId" style="font-size: 18px"></el-tree>
+            <el-tree
+              class="flow-tree"
+              :data="treeData"
+              :props="defaultProps"
+              :highlight-current="true"
+              :render-content="renderContent"
+              @node-click="getDocByFileId"
+              style="font-size: 18px"
+            >
+            </el-tree>
         </el-aside>
       </el-col>
       <el-col :span="16">
@@ -157,9 +171,29 @@
       <el-col v-if="showContent=='statOrder'||showContent=='standingOrder'" :span="4">
         <el-aside class="layout_col" style="margin-left: 10px">
 <!--          <CommentList></CommentList>-->
-          <el-row>
+<!--          <el-divider>整份医嘱操作👇</el-divider>-->
+<!--          标记/取消标记-->
+<!--          <el-row>-->
+<!--            <div class="dialog-footer" style="width: 96%;margin-top:12px;margin-left:2%">-->
+<!--              <el-row>-->
+<!--                <el-text style="color: indianred" size="large">点击按钮标记/取消标记</el-text>-->
+<!--              </el-row>-->
+<!--              <el-row style="margin-top: 15px">-->
+<!--                <el-button type="primary" @click="dialogVisible = false">-->
+<!--                  <el-icon>-->
+<!--                    <EditPen/>-->
+<!--                  </el-icon>-->
+<!--                  <span>标记</span>-->
+<!--                </el-button>-->
+<!--                <el-button type="danger" @click="dialogVisible = false">-->
+<!--                  <el-icon><Delete/></el-icon>-->
+<!--                  <span>取消标记</span>-->
+<!--                </el-button>-->
+<!--              </el-row>-->
+<!--            </div>-->
 <!--            <el-text style="margin-top: 18px;margin-left: 15px; font-weight: bold;color: #529b2e;" tag="ins" class="mx-1" size="large" type="warning">操作日志</el-text>-->
-          </el-row>
+<!--          </el-row>-->
+<!--          <el-divider>医嘱评论</el-divider>-->
 <!--          <el-row>-->
 <!--            <el-table>-->
 <!--              <el-table-column prop="content" label="操作人"></el-table-column>-->
@@ -257,7 +291,28 @@
     </el-dialog>
   </el-container>
 </template>
-<script>
+<script setup lang="jsx">
+import {Back, CircleClose, Delete, EditPen, Search} from "@element-plus/icons-vue";
+
+const renderContent = (h, { node, data }) => {
+  console.log('====node====');
+  console.log(node);
+  console.log('====data====');
+  console.log(data);
+  if (node.label =='医嘱'){
+    return (
+      <span>
+        <el-tag type="danger" effect="dark" size="small">已标记</el-tag>
+        {node.label}
+      </span>
+    );
+  }else {
+    return (node.label);
+  }
+};
+
+</script>
+<script lang="jsx">
 import {getOrderCommentHistoryList, getUnderstandResult} from "../apis/get";
 import {getNodeByFileId,updateOrderCommentStatus} from "../apis/post";
 import {getNodeByFileIdWithHighLight} from "../apis/post";
@@ -269,6 +324,7 @@ import EmojiPanel from "@/views/emoji/EmojiPanel.vue";
 import CommentList from "@/views/CommentList.vue";
 
 const dialogVisible = ref(false);
+
 export default {
   components:{
     CommentList,
@@ -734,6 +790,14 @@ export default {
   mounted(){
     //todo 加载初始化操作
     this.getAllDoc();
+    const renderContent = (h, { node, data }) => {
+      return (
+          <span>
+        {node.label}
+            <el-tag type="success" effect="dark" size="small">标签</el-tag>
+    </span>
+      );
+    };
   }
 };
 </script>

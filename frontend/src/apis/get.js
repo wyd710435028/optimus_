@@ -141,5 +141,19 @@ export function getSpanListInMedicRecord(hospitalId,admissionId,stage,docGroupNa
     })
 }
 
+export function exportSpanToXlsx(hospitalId,admissionId,stage,selectedDocGroupName,spanName) {
+    return service.get('/medicalrecord/exportSpanToXlsx', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            hospitalId:hospitalId,
+            admissionId:admissionId,
+            stage:stage,
+            selectedDocGroupName:selectedDocGroupName,
+            spanName:spanName
+        },
+        // responseType:"blob"
+    })
+}
+
 
 
