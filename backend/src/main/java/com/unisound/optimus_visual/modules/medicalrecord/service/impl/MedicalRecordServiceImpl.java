@@ -1,10 +1,12 @@
 package com.unisound.optimus_visual.modules.medicalrecord.service.impl;
 
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.base.ResourceLoad;
 import com.unisound.optimus_visual.elasticsearch.dao.IndexDataFetcher;
 import com.unisound.optimus_visual.elasticsearch.dao.PatientDataFetcher;
@@ -26,8 +28,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.sql.Wrapper;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -1385,7 +1389,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanNam) {
+    public Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanName,Boolean paginationOrNot) {
         Map<String,Object> result = new LinkedHashMap<>();
         Map<String, Object> understandResult = this.getUnderstandResult(hospitalId, admissionId, stage);
         //对文书内容分组
@@ -1430,17 +1434,47 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         }
         List<EntityOrSpanStatisticsModel> resultList = spanStatisticsList;
         //对返回结果做查询筛选以及分类处理
-        if (StringUtils.isNotBlank(spanNam)){
-            spanStatisticsList = resultList.stream().filter(span->span.getSpanLabel().contains(spanNam)).collect(Collectors.toList());
-            resultList = spanStatisticsList.stream().skip(pageSize*(pageNum-1)).limit(pageSize).collect(Collectors.toList());
+        if (StringUtils.isNotBlank(spanName)){
+            //如果分页
+            if (paginationOrNot){
+                spanStatisticsList = resultList.stream().filter(span->span.getSpanLabel().contains(spanName)).collect(Collectors.toList());
+                resultList = spanStatisticsList.stream().skip(pageSize*(pageNum-1)).limit(pageSize).collect(Collectors.toList());
+            }else {
+                //不分页
+                resultList = resultList.stream().filter(span->span.getSpanLabel().contains(spanName)).collect(Collectors.toList());
+            }
         }else {
-            resultList = resultList.stream().skip(pageSize*(pageNum-1)).limit(pageSize).collect(Collectors.toList());
+            if (paginationOrNot){
+                resultList = resultList.stream().skip(pageSize*(pageNum-1)).limit(pageSize).collect(Collectors.toList());
+            }
         }
-        result.put("spanStatisticsList",resultList);
-        result.put("size",pageSize);
-        result.put("current",pageNum);
-        result.put("total",spanStatisticsList.size());
+        if (paginationOrNot){
+            result.put("spanStatisticsList",resultList);
+            result.put("size",pageSize);
+            result.put("current",pageNum);
+            result.put("total",spanStatisticsList.size());
+        }else {
+            result.put("spanStatisticsList",resultList);
+        }
         return result;
+    }
+
+    /**
+     * 导出span为xlsx格式
+     * @param spanName span名称
+     * @return
+     * @throws JsonProcessingException
+     */
+    @Override
+    public Map<String, Object> exportSpanToXlsx(/*HttpServletResponse response,*/String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException {
+        Map<String, Object> spanListInMedicRecord = this.getSpanListInMedicRecord(hospitalId, admissionId, stage, selectedDocGroupName, null, null, spanName, false);
+        List<EntityOrSpanStatisticsModel> spanStatisticsList = (List<EntityOrSpanStatisticsModel>) spanListInMedicRecord.get("spanStatisticsList");
+//        //返回输出流_excel格式
+//        response.setContentType("application/octet-stream");
+//        String fileName = "Span列表";
+//        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+//        EasyExcel.write(response.getOutputStream(), EntityOrSpanStatisticsModel.class).autoCloseStream(Boolean.FALSE).sheet("Span列表").doWrite(spanStatisticsList);
+        return spanListInMedicRecord;
     }
 
 

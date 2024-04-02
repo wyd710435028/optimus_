@@ -24,7 +24,12 @@
             <el-input v-model="admissionId" placeholder="请输入流水号" clearable></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button color="#009688" @click="queryList">查询</el-button>
+            <el-button color="#009688" @click="queryList">
+              <el-icon>
+                <Search/>
+              </el-icon>
+              <span>查询</span>
+            </el-button>
           </el-form-item>
         </el-form>
       </el-row>
@@ -102,9 +107,10 @@
   import {ElMessage} from "element-plus";
   import CommentList from "@/views/CommentList.vue";
   import CommonHeader from "@/views/common/CommonHeader.vue";
+  import {Search} from "@element-plus/icons-vue";
   // import {} from "../apis/post";
   export default {
-    components: {CommentList,CommonHeader},
+    components: {Search, CommentList,CommonHeader},
     data() {
       return {
         tableData: [],

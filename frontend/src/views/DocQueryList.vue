@@ -19,12 +19,22 @@
             <el-input v-model="tags" placeholder="请输入Tags" clearable></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button color="#359894" :dark="isDark" @click="queryList">查询</el-button>
+            <el-button color="#359894" :dark="isDark" @click="queryList">
+              <el-icon>
+                <Search/>
+              </el-icon>
+              <span>查询</span>
+            </el-button>
           </el-form-item>
         </el-form>
       </el-row>
       <el-row class="container">
-        <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnHomePage()">返回</el-button>
+        <el-button color="#359894" :dark="isDark" style="margin-right: 10px" @click="returnHomePage()">
+          <el-icon>
+            <Back/>
+          </el-icon>
+          <span>返回</span>
+        </el-button>
       </el-row>
       <el-row>
         <el-table border :data="tableData" :default-sort="{ prop: 'createTime', order: 'descending' }" stripe style="width: 100%;margin-top: 15px">
@@ -82,8 +92,9 @@
 <script>
 import {docQueryList} from "../apis/get"
 import CommonHeader from "@/views/common/CommonHeader.vue";
+import {Back, Search} from "@element-plus/icons-vue";
 export default {
-  components: {CommonHeader},
+  components: {Search, Back, CommonHeader},
   data(){
     return{
       tableData : [],
