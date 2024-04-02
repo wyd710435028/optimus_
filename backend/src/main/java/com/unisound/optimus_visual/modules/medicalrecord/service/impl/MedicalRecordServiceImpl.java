@@ -1466,16 +1466,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
      * @throws JsonProcessingException
      */
     @Override
-    public Map<String, Object> exportSpanToXlsx(/*HttpServletResponse response,*/String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException {
-        Map<String, Object> spanListInMedicRecord = this.getSpanListInMedicRecord(hospitalId, admissionId, stage, selectedDocGroupName, null, null, spanName, false);
-        List<EntityOrSpanStatisticsModel> spanStatisticsList = (List<EntityOrSpanStatisticsModel>) spanListInMedicRecord.get("spanStatisticsList");
-//        //返回输出流_excel格式
-//        response.setContentType("application/octet-stream");
-//        String fileName = "Span列表";
-//        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-//        EasyExcel.write(response.getOutputStream(), EntityOrSpanStatisticsModel.class).autoCloseStream(Boolean.FALSE).sheet("Span列表").doWrite(spanStatisticsList);
-        return spanListInMedicRecord;
-    }
+public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException {
+    return this.getSpanListInMedicRecord(hospitalId, admissionId, stage, selectedDocGroupName, null, null, spanName, false);
+}
 
 
     private List<EntityOrSpanStatisticsModel> getEntityOrSpanStatisticsInOneDocModel(ShowDocModel docModel) {

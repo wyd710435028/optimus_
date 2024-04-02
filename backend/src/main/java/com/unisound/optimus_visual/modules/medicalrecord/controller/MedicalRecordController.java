@@ -206,9 +206,9 @@ public class MedicalRecordController {
      * @throws JsonProcessingException
      */
     @RequestMapping("exportSpanToXlsx")
-    public CommonResult exportSpanToXlsx(/*HttpServletResponse response,*/String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException {
+    public CommonResult exportSpanToXlsx(String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException {
         //查询es中的病历理解数据
-        Map<String,Object> result = medicalRecordService .exportSpanToXlsx(/*response,*/hospitalId,admissionId,stage,selectedDocGroupName,spanName);
+        Map<String,Object> result = medicalRecordService .exportSpanToXlsx(hospitalId,admissionId,stage,selectedDocGroupName,spanName);
         return new CommonResult(result);
     }
 
