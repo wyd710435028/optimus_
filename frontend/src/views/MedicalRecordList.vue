@@ -58,6 +58,21 @@
               label="病历理解时间">
           </el-table-column>
           <el-table-column
+              prop="orderMarkedFlag"
+              label="医嘱标记状态">
+            <template #default="scope">
+              <span v-if="scope.row.orderMarkedFlag == true">
+                <el-text style="color: #529b2e">【已标记】</el-text>
+                <el-text>,有</el-text>
+                <el-text style="color: #529b2e">【{{scope.row.remarkNum}}】</el-text>
+                <el-text>条备注信息</el-text>
+              </span>
+              <el-text style="color: indianred" v-else>未标记</el-text>
+              <!--              <el-tag type="success" v-if="scope.row.orderMarkedFlag == true">已标记</el-tag>-->
+              <!--              <el-tag type="danger" v-else>未标记</el-tag>-->
+            </template>
+          </el-table-column>
+          <el-table-column
               fixed="right"
               label="操作"
               width="500px">
@@ -83,7 +98,9 @@
             layout="->,total, sizes, prev, pager, next, jumper"
             :total="pagination.total"
             :page-sizes="[10,50,100,200,300,500]"
-            @size-change="handleSizeChange">
+            @size-change="handleSizeChange"
+            :background="true"
+        >
         </el-pagination>
       </div>
     </el-footer>

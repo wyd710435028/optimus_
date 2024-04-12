@@ -62,6 +62,7 @@
             :total="pagination.total"
             :page-sizes="[10, 20, 50, 100]"
             @size-change="handleSizeChange"
+            :background="true"
         />
       </div>
     </el-footer>

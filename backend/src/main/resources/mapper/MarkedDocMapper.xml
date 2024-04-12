@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisound.optimus_visual.modules.medicalrecord.dao.MarkedDocMapper">
+
+    <select id="getByFileIdWithDeleteFlagCondition" resultType="com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedDoc">
+        select * from tb_marked_doc where file_id = #{fileId} and delete_flag=0
+    </select>
+
+    <select id="getAllByFileId" resultType="com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedDoc">
+        select * from tb_marked_doc where file_id = #{fileId}
+    </select>
+
+    <select id="getByHospitalAndAdmissionId" resultType="com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedDoc">
+        select * from tb_marked_doc where hospital_no = #{hospitalId} and admission_no= #{admissionId} and delete_flag=0
+    </select>
+</mapper>
+

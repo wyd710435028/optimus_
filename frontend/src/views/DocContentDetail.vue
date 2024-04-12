@@ -7,7 +7,14 @@
 <!--      <el-text style="cursor: pointer;color: #ffffff;font-size: 20px" @click="returnIndex()">Optimus可视化系统</el-text>-->
     </el-header>
     <el-row class="container">
-      <el-button color="#359894" :dark="isDark" style="margin-top: 15px;margin-right: 20px" @click="returnDocQueryList()">返回</el-button>
+      <el-button color="#359894" :dark="isDark" style="margin-top: 15px;margin-right: 20px" @click="returnDocQueryList()">
+        <el-icon>
+          <Back/>
+        </el-icon>
+        <span>返回</span>
+      </el-button>
+      <el-row>
+      </el-row>
     </el-row>
     <el-row>
 <!--      <el-col :span="4">-->
@@ -91,8 +98,14 @@
 <script>
 import {docContentDetail, getUnderstandResult} from "../apis/get"
 import CommonHeader from "@/views/common/CommonHeader.vue";
+import {ArrowRight, Back} from "@element-plus/icons-vue";
 export default {
-  components: {CommonHeader},
+  computed: {
+    ArrowRight() {
+      return ArrowRight
+    }
+  },
+  components: {Back, CommonHeader},
   data(){
     return{
       showContent:'',//有三个选项: 1.normal->正常文书,2.statOrder->临时医嘱,3.standingOrder->长期医嘱

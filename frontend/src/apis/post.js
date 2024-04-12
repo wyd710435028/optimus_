@@ -114,5 +114,29 @@ export function updateOrderCommentStatus(id,orderCommentStatus){
         }
     })
 }
+export function markDoc(hospitalId,admissionId,stage,fileId){
+    return service.post('/medicalrecord/markDoc', {
+        headers: { 'Content-Type': 'application/json' },
+        params:{
+            hospitalId:hospitalId,
+            admissionId:admissionId,
+            stage:stage,
+            fileId: fileId
+        }
+    })
+}
+
+export function addMarkedRemark(hospitalId,admissionId,stage,fileId,remarkContent){
+    return service.post('/medicalrecord/addMarkedRemark', {
+        headers: { 'Content-Type': 'application/json' },
+        params:{
+            hospitalId:hospitalId,
+            admissionId:admissionId,
+            stage:stage,
+            fileId: fileId,
+            remarkContent: remarkContent
+        }
+    })
+}
 
 

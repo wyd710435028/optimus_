@@ -32,4 +32,14 @@ public class MedicalRecordVo {
      * 病历理解时间
      */
     public String timeStamp;
+
+    /**
+     * 标记状态
+     */
+    public Boolean orderMarkedFlag =false;
+
+    /**
+     * 备注信息条数
+     */
+    public Integer remarkNum = 0;
 }

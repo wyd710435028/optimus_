@@ -155,5 +155,16 @@ export function exportSpanToXlsx(hospitalId,admissionId,stage,selectedDocGroupNa
     })
 }
 
+export function getRemarkByFileId(fileId,pageSize,pageNum) {
+    return service.get('/medicalrecord/getRemarkByFileId', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            fileId:fileId,
+            pageSize:pageSize,
+            pageNum:pageNum
+        }
+    })
+}
+
 
 

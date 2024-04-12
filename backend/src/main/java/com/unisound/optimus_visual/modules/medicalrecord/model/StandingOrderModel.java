@@ -38,4 +38,9 @@ public class StandingOrderModel {
      * 长期医嘱执行状态
      */
     String standingOrderExecuteStatus;
+
+    /**
+     * 是否已标记
+     */
+    Boolean marked;
 }
