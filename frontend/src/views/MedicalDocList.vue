@@ -16,11 +16,11 @@
         <span>返回</span>
       </el-button>
     </el-row>
-    <el-row>
-      <el-breadcrumb :separator-icon="ArrowRight">
-        <el-breadcrumb-item :to="{ path: '/' }"><el-text size="large" style="color: #4682B4">首页</el-text></el-breadcrumb-item>
-      </el-breadcrumb>
-    </el-row>
+<!--    <el-row>-->
+<!--      <el-breadcrumb :separator-icon="ArrowRight">-->
+<!--        <el-breadcrumb-item :to="{ path: '/' }"><el-text size="large" style="color: #4682B4">首页</el-text></el-breadcrumb-item>-->
+<!--      </el-breadcrumb>-->
+<!--    </el-row>-->
     <el-row>
       <el-col :span="4">
         <el-aside class="layout_col">
