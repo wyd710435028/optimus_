@@ -16,6 +16,11 @@
         <span>返回</span>
       </el-button>
     </el-row>
+<!--    <el-row>-->
+<!--      <el-breadcrumb :separator-icon="ArrowRight">-->
+<!--        <el-breadcrumb-item :to="{ path: '/' }"><el-text size="large" style="color: #4682B4">首页</el-text></el-breadcrumb-item>-->
+<!--      </el-breadcrumb>-->
+<!--    </el-row>-->
     <el-row>
       <el-col :span="4">
         <el-aside class="layout_col">
@@ -36,13 +41,17 @@
           <div v-if="showContent=='normal'">
             <div v-for="item in nodeList" :key="item">
               <el-row>
-                <el-col :span="4"><strong style="color: indianred;font-size: 16px">{{item.nodeName}}</strong></el-col>
+                <el-col :span="4">
+                  <el-text style="color: indianred;font-size: 16px">{{item.nodeName}}</el-text>
+<!--                  <strong style="color: indianred;font-size: 16px">{{item.nodeName}}</strong>-->
+                </el-col>
                 <el-col :span="20">
 <!--                  <div v-if="item.entityNum==0">-->
 <!--                    <label>{{item.nodeContent}}</label>-->
 <!--                  </div>-->
 <!--                  <div v-if="item.entityNum>0">-->
-                    <label v-html=item.entityHightLighted></label>
+                    <el-text v-html=item.entityHightLighted></el-text>
+<!--                    <label v-html=item.entityHightLighted></label>-->
 <!--                  </div>-->
                   <!-- 当entity、span、event中有一个数量大于0时才显示表格 -->
                   <el-row v-if="item.entityNum>0||item.spanNum>0||item.eventNum>0">
@@ -87,6 +96,7 @@
                   :header-cell-style="{background:'#AED6F1',color:'#2E4053'}"
                   style="width: 100%;margin:10px">
 <!--                <el-table-column fixed prop="unisoundId" label="unisoundId" width="165px"></el-table-column>-->
+                <el-table-column fixed type="index" label="序号" width="60"></el-table-column>
                 <el-table-column fixed prop="day" label="日期"></el-table-column>
                 <el-table-column prop="time" label="时间"></el-table-column>
                 <el-table-column prop="content" label="医嘱内容">
@@ -98,10 +108,9 @@
                 <el-table-column prop="physicianSign" label="医师签名"></el-table-column>
                 <el-table-column prop="executeTime" label="执行时间"></el-table-column>
                 <el-table-column prop="executorSign" label="执行人签名"></el-table-column>
-                <el-table-column prop="statOrderExecuteStatus" label="医嘱执行状态"></el-table-column>
-                <el-table-column prop="statOrderStatus" label="医嘱状态"></el-table-column>
-                <el-table-column prop="yzsProjectType" label="云知声项目类别" width="150px" :filters="yzsProjectType" :filter-method="filterHandler">
-                </el-table-column>
+                <el-table-column prop="statOrderExecuteStatus" label="医嘱执行状态" :filters="statOrderExecuteStatusCategories" :filter-method="filterHandler"></el-table-column>
+                <el-table-column prop="statOrderStatus" label="医嘱状态" :filters="statOrderStatusCategories" :filter-method="filterHandler"></el-table-column>
+                <el-table-column prop="yzsProjectType" label="云知声项目类别" width="150px" :filters="yzsProjectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="projectCategories" label="项目大类" :filters="projectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="operation" label="操作" width="130px">
                   <template v-slot:default="scope">
@@ -126,6 +135,7 @@
                   :height="table"
                   :header-cell-style="{background:'#AED6F1',color:'#2E4053'}"
                   style="width: 100%;margin:10px;">
+                <el-table-column fixed type="index" label="序号" width="60"></el-table-column>
 <!--                <el-table-column fixed prop="unisoundId" label="unisoundId"></el-table-column>-->
                 <el-table-column fixed prop="openingTime" label="开立时间"></el-table-column>
                 <el-table-column prop="startTime" label="开始时间"></el-table-column>
@@ -141,8 +151,8 @@
                 <el-table-column prop="stopTime" label="停止时间"></el-table-column>
                 <el-table-column prop="stopPhysicianSign" label="停止医师签名"></el-table-column>
                 <el-table-column prop="stopExecutorSign" label="停止执行人签名"></el-table-column>
-                <el-table-column prop="standingOrderExecuteStatus" label="医嘱执行状态"></el-table-column>
-                <el-table-column prop="standingOrderStatus" label="医嘱状态"></el-table-column>
+                <el-table-column prop="standingOrderExecuteStatus" label="医嘱执行状态" :filters="statOrderExecuteStatusCategories" :filter-method="filterHandler"></el-table-column>
+                <el-table-column prop="standingOrderStatus" label="医嘱状态" :filters="statOrderStatusCategories" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="yzsProjectType" label="云知声项目类别" :filters="yzsProjectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="projectCategories" label="项目大类" :filters="projectType" :filter-method="filterHandler"></el-table-column>
                 <el-table-column prop="operation" label="操作" width="130px">
@@ -170,37 +180,68 @@
       <!-- 临时/长期医嘱时显示 -->
       <el-col v-if="showContent=='statOrder'||showContent=='standingOrder'" :span="4">
         <el-aside class="layout_col" style="margin-left: 10px">
-<!--          <CommentList></CommentList>-->
-<!--          <el-divider>整份医嘱操作👇</el-divider>-->
-<!--          标记/取消标记-->
-<!--          <el-row>-->
-<!--            <div class="dialog-footer" style="width: 96%;margin-top:12px;margin-left:2%">-->
-<!--              <el-row>-->
-<!--                <el-text style="color: indianred" size="large">点击按钮标记/取消标记</el-text>-->
-<!--              </el-row>-->
-<!--              <el-row style="margin-top: 15px">-->
-<!--                <el-button type="primary" @click="dialogVisible = false">-->
-<!--                  <el-icon>-->
-<!--                    <EditPen/>-->
-<!--                  </el-icon>-->
-<!--                  <span>标记</span>-->
-<!--                </el-button>-->
-<!--                <el-button type="danger" @click="dialogVisible = false">-->
-<!--                  <el-icon><Delete/></el-icon>-->
-<!--                  <span>取消标记</span>-->
-<!--                </el-button>-->
-<!--              </el-row>-->
-<!--            </div>-->
-<!--            <el-text style="margin-top: 18px;margin-left: 15px; font-weight: bold;color: #529b2e;" tag="ins" class="mx-1" size="large" type="warning">操作日志</el-text>-->
-<!--          </el-row>-->
-<!--          <el-divider>医嘱评论</el-divider>-->
-<!--          <el-row>-->
-<!--            <el-table>-->
-<!--              <el-table-column prop="content" label="操作人"></el-table-column>-->
-<!--              <el-table-column prop="content" label="操作人"></el-table-column>-->
-<!--              <el-table-column prop="content" label="操作人"></el-table-column>-->
-<!--            </el-table>-->
-<!--          </el-row>-->
+          <el-card shadow="hover" header="标记">
+            <el-descriptions title="" column="1">
+              <el-descriptions-item label="状态:">
+                <el-tag v-if="marked" size="default" type="success" effect="dark">已阅</el-tag>
+                <el-tag v-else size="default" type="error" effect="dark">未标记</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="操作:">
+                <el-button v-if="!marked" type="primary" size="small" @click="markedOrCancelMarkDoc">
+                  <el-icon><EditPen/></el-icon>
+                  <span>标记为已阅</span>
+                </el-button>
+                <el-button v-else type="primary" size="small" @click="markedOrCancelMarkDoc">
+                  <el-icon><Delete/></el-icon>
+                  <span>取消标记</span>
+                </el-button>
+                <el-button v-if="marked" type="primary" size="small" @click="remarkDialogFormVisible = true">
+                  <el-icon><Edit/></el-icon>
+                  <span>添加备注</span>
+                </el-button>
+              </el-descriptions-item>
+            </el-descriptions>
+<!--            <el-descriptions title="备注列表" size="small" column="2" border>\-->
+<!--              <div v-for="(item,index) in remarkContentTableData" :key="index">-->
+<!--                <el-descriptions-item :label="index+1">-->
+<!--                  <el-text>{{item.remarkContent}}</el-text>-->
+<!--                  <el-text>{{item.createTime}}</el-text>-->
+<!--                </el-descriptions-item>-->
+<!--              </div>-->
+<!--            </el-descriptions>-->
+          </el-card>
+          <!--表格形式-->
+          <el-card shadow="hover" header="备注列表" style="margin-top: 10px">
+            <el-table
+                :data="remarkContentTableData"
+                style="width: 100%;"
+            >
+              <el-table-column fixed type="index" label="序号" width="55"></el-table-column>
+              <el-table-column prop="remarkContent" label="备注内容" show-overflow-tooltip="true"></el-table-column>
+              <el-table-column prop="createTime" label="创建时间" show-overflow-tooltip="true"></el-table-column>
+            </el-table>
+            <el-row style="margin-top:10px;margin-bottom:10px;float: right">
+              <el-pagination
+                  small
+                  @current-change="handleCurrentChange"
+                  :current-page="pagination.currentPage"
+                  :page-size="pagination.pageSize"
+                  layout="->,total, prev, pager, next"
+                  :total="pagination.total"
+                  @size-change="handleSizeChange"
+                  :background="true"
+              />
+            </el-row>
+          </el-card>
+
+              <!--操作日志-->
+<!--          <el-card shadow="hover" header="操作日志" style="margin-top: 10px">-->
+<!--            <el-descriptions title="" column="1">-->
+<!--              <el-descriptions-item label="1.">-->
+<!--                <el-text style="color: #529b2e">张三在xxx时间取消了标记.</el-text>-->
+<!--              </el-descriptions-item>-->
+<!--            </el-descriptions>-->
+<!--          </el-card>-->
         </el-aside>
       </el-col>
     </el-row>
@@ -289,32 +330,86 @@
         </el-table>
       </div>
     </el-dialog>
+
+    <!-- 添加备注弹出框 -->
+    <el-dialog v-model="remarkDialogFormVisible" title="添加备注" width="500">
+      <el-form>
+        <el-form-item label="备注:">
+          <el-input v-model="remarkContent" maxlength="300" placeholder="请在此输入备注..." type="textarea" show-word-limit style="width: 100%;height: 100%"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="remarkDialogFormVisible = false">取消</el-button>
+          <el-button type="primary" @click="addRemark">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </el-container>
 </template>
 <script setup lang="jsx">
-import {Back, CircleClose, Delete, EditPen, Search} from "@element-plus/icons-vue";
+import {
+  Back,
+  Check,
+  CircleClose, Close, CloseBold,
+  Delete,
+  Edit,
+  EditPen,
+  Hide,
+  Search, Select,
+  SemiSelect,
+  SuccessFilled,
+  Notebook,
+  List,
+  Document, DArrowRight, ArrowRight
+} from "@element-plus/icons-vue";
 
 const renderContent = (h, { node, data }) => {
-  console.log('====node====');
-  console.log(node);
-  console.log('====data====');
-  console.log(data);
-  if (node.label =='医嘱'){
+    // console.log('====node====');
+    // console.log(node);
+    // console.log('====data====');
+    // console.log(data);
+    // console.log(data.marked);
+    // console.log(node.children);
+    // if (data.marked){
+    //   return (
+    //     <span>
+    //       <el-tag type="danger" effect="dark" size="small">已阅</el-tag>
+    //       <el-icon><Notebook /></el-icon>
+    //       {node.label}
+    //     </span>
+    //   );
+    // }else {
+    //   return (
+    //     <span>
+    //       <el-icon><List /></el-icon>
+    //       {node.label}
+    //     </span>
+    //   )
+    // }
+  if (data.children==null){
     return (
-      <span>
-        <el-tag type="danger" effect="dark" size="small">已标记</el-tag>
-        {node.label}
-      </span>
-    );
+        <span>
+          <el-icon size="large" style="position:relative;top:3px" ><Document /> </el-icon>
+          <el-text size="large">{node.label}</el-text>
+        </span>
+    )
   }else {
-    return (node.label);
+    return (
+          <el-row>
+            <el-icon size="large"><Notebook /></el-icon>
+            <el-text size="large">{node.label}</el-text>
+          </el-row>
+    )
   }
 };
 
 </script>
 <script lang="jsx">
-import {getOrderCommentHistoryList, getUnderstandResult} from "../apis/get";
-import {getNodeByFileId,updateOrderCommentStatus} from "../apis/post";
+import {getOrderCommentHistoryList, getRemarkByFileId, getUnderstandResult} from "../apis/get";
+import {addMarkedRemark, getNodeByFileId, markDoc, updateOrderCommentStatus} from "../apis/post";
 import {getNodeByFileIdWithHighLight} from "../apis/post";
 import {ElMessage} from "element-plus";
 import entitylinkDialog from "./EntityLinkJump";
@@ -323,138 +418,12 @@ import CommonHeader from "@/views/common/CommonHeader.vue";
 import EmojiPanel from "@/views/emoji/EmojiPanel.vue";
 import CommentList from "@/views/CommentList.vue";
 
-const dialogVisible = ref(false);
-
 export default {
   components:{
     CommentList,
     EmojiPanel,
     CommonHeader,
     entitylinkDialog
-  },
-  data() {
-    return {
-      //左侧树结构
-      treeData: [
-      ],
-      defaultProps: {
-        children: 'children',
-        label: 'label',
-        fileId:'fileId',
-        docType:'docType'
-      },
-      showContent:'',//有三个选项: 1.normal->正常文书,2.statOrder->临时医嘱,3.standingOrder->长期医嘱
-      statOrderTableData:[{
-        day:'',
-        time:'',
-        content:'',
-        physicianSign:'',
-        executeTime:'',
-        executorSign:'',
-        projectCategories:'',
-        commentNum:'',
-        statOrderExecuteStatus:'',
-        statOrderStatus:''
-      }],//临时医嘱
-      standingOrderTableData:[{
-        openingTime:'',
-        startTime:'',
-        content:'',
-        openingPhysicianSign:'',
-        executeTime:'',
-        executorSign:'',
-        stopTime:'',
-        stopPhysicianSign:'',
-        stopExecutorSign:'',
-        projectCategories:'',
-        commentNum:'',
-        standingOrderStatus:'',
-        standingOrderExecuteStatus:''
-      }],//长期医嘱
-      projectType:[
-        // { text: '检验', value: '检验' },
-        // { text: '2016-05-02', value: '2016-05-02' },
-        // { text: '2016-05-03', value: '2016-05-03' },
-      ],
-      yzsProjectType:[
-        // { text: '检验', value: '检验' },
-        // { text: '2016-05-02', value: '2016-05-02' },
-        // { text: '2016-05-03', value: '2016-05-03' },
-      ],
-      //数量表格数据
-      tableData: [{
-        entityNum: '3',
-        eventNum: '2',
-        spanNum: '3',
-      }],
-      selectNodeName:"",
-      formatedDocMap:{},
-      nodeList:[
-        // {
-        //   "nodeName":"一般情况/aa",
-        //   "nodeContent":"asdjasdasdasdasdasdasa",
-        //   "entityNum":36,
-        //   "eventNum":4,
-        //   "spanNum":3
-        // }
-      ],
-      //右侧总标签数据
-      allEntityLabelList:[
-        // {
-        //   "labelColor":"#b3e19d",
-        //   "labelContent":"标签一"
-        // },
-        // {
-        //   "labelColor":"#eebe77",
-        //   "labelContent":"标签二"
-        // },
-        // {
-        //   "labelColor":"#f89898",
-        //   "labelContent":"标签三"
-        // }
-      ],
-      allSpanLabelList:[],
-      hightLight:'',
-      docDetail:{},
-      entityLabelList:[],
-      spanLabelList:[],
-      docType:'',
-      fileId:'',
-      Visiable:false,
-      detailVisible:false,
-      orderDialogFormVisible:false,
-      orderDialog:[
-        {
-          day:'',
-          time:'',
-          content:'',
-          physicianSign:'',
-          executeTime:'',
-          executorSign:'',
-          yzsProjectType:'',
-          projectCategories:'',
-          unisoundId:''
-        }
-      ],
-      showCmmentHistoryList:false,
-      commentHistoryTab:[
-        {
-          id:1,
-          content: '2016-05-03',
-          userName: 'Tom',
-          createTime: 'No. 189, Grove St, Los Angeles',
-          orderCommentStatus:1
-        },
-        {
-          id:2,
-          content: '2016-05-03',
-          userName: 'Tom',
-          createTime: 'No. 189, Grove St, Los Angeles',
-          orderCommentStatus:1
-        }
-      ],
-      table:window.innerHeight - 107           //固定表头高度
-    }
   },
   methods: {
     //获取病历下所有文书
@@ -536,18 +505,45 @@ export default {
             _this.standingOrderTableData = response.data.data.standingOrderList;
             _this.projectType = response.data.data.projectCategoriesList;
             _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+            _this.remarkContentTableData = response.data.data.remarkList;
+            let fileId = _this.fileId;
+            let pageSize = _this.pagination.pageSize;
+            let pageNum = _this.pagination.currentPage;
+            _this.statOrderExecuteStatusCategories = response.data.data.statOrderExecuteStatusListMap;
+            _this.statOrderStatusCategories = response.data.data.statOrderStatusListMap;
+            getRemarkByFileId(fileId,pageSize,pageNum).then(function (res){
+              _this.pagination.pageSize = res.data.data.size;
+              _this.pagination.currentPage = res.data.data.current;
+              _this.pagination.total = res.data.data.total;
+              _this.remarkContentTableData = res.data.data.remarkList;
+            });
           }else if (docType=='EMR110002'){
             //临时医嘱
             _this.showContent = 'statOrder';
             _this.statOrderTableData = response.data.data.statOrderList;
             _this.projectType = response.data.data.projectCategoriesList;
             _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+            _this.remarkContentTableData = response.data.data.remarkList;
+            let fileId = _this.fileId;
+            let pageSize = _this.pagination.pageSize;
+            let pageNum = _this.pagination.currentPage;
+            _this.statOrderExecuteStatusCategories = response.data.data.statOrderExecuteStatusListMap;
+            _this.statOrderStatusCategories = response.data.data.statOrderStatusListMap;
+            getRemarkByFileId(fileId,pageSize,pageNum).then(function (res){
+              _this.pagination.pageSize = res.data.data.size;
+              _this.pagination.currentPage = res.data.data.current;
+              _this.pagination.total = res.data.data.total;
+              _this.remarkContentTableData = res.data.data.remarkList;
+            });
           }else {
             //正常文书
             _this.showContent = 'normal';
             _this.nodeList = response.data.data.nodeList;
             _this.allEntityLabelList = response.data.data.labelList;
           }
+          _this.marked = response.data.data.marked;
+          // console.log("是否已标记?");
+          // console.log(_this.marked);
         })
       } else {
         return;
@@ -605,7 +601,7 @@ export default {
               stage:stage,
               fileId:fileId
             }
-        });
+          });
     },
     filterHandler(value, row, column) {const property = column["property"];return row[property] === value;},
     returnHomePage(){
@@ -785,19 +781,297 @@ export default {
         }
       }
       return result;
+    },
+    markedOrCancelMarkDoc(){
+      let _this = this;
+      let hospitalId = _this.$route.params.hospitalId;
+      let admissionId = _this.$route.params.admissionId;
+      let stage = _this.$route.params.stage;
+      let fileId = _this.fileId;
+      let docType= _this.docType;
+      // alert(hospitalId);
+      // alert(admissionId);
+      // alert(stage);
+      // alert(fileId);
+      markDoc(hospitalId,admissionId,stage,fileId).then(function (response){
+        console.log(response);
+        if (response.status=='200'){
+          ElMessage({
+            showClose: true,
+            message: '操作成功!',
+            type: 'success',
+            duration: 3 * 1000
+          })
+        }else {
+          ElMessage({
+            showClose: true,
+            message: '操作失败',
+            type: 'error',
+            duration: 3 * 1000
+          })
+        }
+      });
+      getNodeByFileId(fileId, JSON.stringify(_this.nodeMap)).then(function (response) {
+        if (docType=='EMR110001'){
+          //长期医嘱
+          _this.showContent = 'standingOrder';
+          _this.standingOrderTableData = response.data.data.standingOrderList;
+          _this.projectType = response.data.data.projectCategoriesList;
+          _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+          let fileId = _this.fileId;
+          let pageSize = _this.pagination.pageSize;
+          let pageNum = _this.pagination.currentPage;
+          getRemarkByFileId(fileId,pageSize,pageNum).then(function (res){
+            _this.pagination.pageSize = res.data.data.size;
+            _this.pagination.currentPage = res.data.data.current;
+            _this.pagination.total = res.data.data.total;
+            _this.remarkContentTableData = res.data.data.remarkList;
+          });
+        }else if (docType=='EMR110002'){
+          //临时医嘱
+          _this.showContent = 'statOrder';
+          _this.statOrderTableData = response.data.data.statOrderList;
+          _this.projectType = response.data.data.projectCategoriesList;
+          _this.yzsProjectType = response.data.data.yzsProjectTypeList;
+          let fileId = _this.fileId;
+          let pageSize = _this.pagination.pageSize;
+          let pageNum = _this.pagination.currentPage;
+          getRemarkByFileId(fileId,pageSize,pageNum).then(function (res){
+            _this.pagination.pageSize = res.data.data.size;
+            _this.pagination.currentPage = res.data.data.current;
+            _this.pagination.total = res.data.data.total;
+            _this.remarkContentTableData = res.data.data.remarkList;
+          });
+        }else {
+          //正常文书
+          _this.showContent = 'normal';
+          _this.nodeList = response.data.data.nodeList;
+          _this.allEntityLabelList = response.data.data.labelList;
+        }
+        _this.marked = response.data.data.marked;
+        // console.log("是否已标记?");
+        // console.log(_this.marked);
+      })
+    },
+    addRemark(){
+      // alert('添加备注.');
+      let _this = this;
+      let remarkContent = _this.remarkContent;
+      let hospitalId = _this.$route.params.hospitalId;
+      let admissionId = _this.$route.params.admissionId;
+      let stage = _this.$route.params.stage;
+      let fileId = _this.fileId;
+      let docType= _this.docType;
+      let pageSize = _this.pagination.pageSize;
+      let pageNum = _this.pagination.currentPage;
+      // alert(hospitalId);
+      // alert(admissionId);
+      // alert(stage);
+      // alert(fileId);
+      // alert(docType);
+      // alert(remarkContent);
+      addMarkedRemark(hospitalId,admissionId,stage,fileId,remarkContent).then(function(response){
+        console.log(response);
+        if (response.status=='200'){
+          ElMessage({
+            showClose: true,
+            message: '操作成功!',
+            type: 'success',
+            duration: 3 * 1000
+          });
+          //获取最新remark列表
+          getRemarkByFileId(fileId,pageSize,pageNum).then(function (res){
+            _this.pagination.pageSize = res.data.data.size;
+            _this.pagination.currentPage = res.data.data.current;
+            _this.pagination.total = res.data.data.total;
+            _this.remarkContentTableData = res.data.data.remarkList;
+          });
+
+        }else {
+          ElMessage({
+            showClose: true,
+            message: '操作失败',
+            type: 'error',
+            duration: 3 * 1000
+          })
+        }
+      });
+      _this.remarkDialogFormVisible = false
+    },
+    //切换当前页
+    handleCurrentChange(val) {
+      let _this = this;
+      _this.pagination.currentPage = val;
+      let fileId = _this.fileId;
+      let pageSize = _this.pagination.pageSize;
+      let pageNum = _this.pagination.currentPage;
+      getRemarkByFileId(fileId,pageSize,pageNum).then(function (res){
+        _this.pagination.pageSize = res.data.data.size;
+        _this.pagination.currentPage = res.data.data.current;
+        _this.pagination.total = res.data.data.total;
+        _this.remarkContentTableData = res.data.data.remarkList;
+      });
+    },
+    //切换每页显示条数
+    handleSizeChange(val) {
+      let _this = this;
+      _this.pagination.pageSize = val;
+      let fileId = _this.fileId;
+      let pageSize = _this.pagination.pageSize;
+      let pageNum = _this.pagination.currentPage;
+      getRemarkByFileId(fileId,pageSize,pageNum).then(function (res){
+        _this.pagination.pageSize = res.data.data.size;
+        _this.pagination.currentPage = res.data.data.current;
+        _this.pagination.total = res.data.data.total;
+        _this.remarkContentTableData = res.data.data.remarkList;
+      });
+    },
+
+  },
+  data() {
+    return {
+      //左侧树结构
+      treeData: [
+      ],
+      defaultProps: {
+        children: 'children',
+        label: 'label',
+        fileId:'fileId',
+        docType:'docType',
+        marked:false
+      },
+      showContent:'',//有三个选项: 1.normal->正常文书,2.statOrder->临时医嘱,3.standingOrder->长期医嘱
+      statOrderTableData:[{
+        day:'',
+        time:'',
+        content:'',
+        physicianSign:'',
+        executeTime:'',
+        executorSign:'',
+        projectCategories:'',
+        commentNum:'',
+        statOrderExecuteStatus:'',
+        statOrderStatus:''
+      }],//临时医嘱
+      standingOrderTableData:[{
+        openingTime:'',
+        startTime:'',
+        content:'',
+        openingPhysicianSign:'',
+        executeTime:'',
+        executorSign:'',
+        stopTime:'',
+        stopPhysicianSign:'',
+        stopExecutorSign:'',
+        projectCategories:'',
+        commentNum:'',
+        standingOrderStatus:'',
+        standingOrderExecuteStatus:''
+      }],//长期医嘱
+      projectType:[
+        // { text: '检验', value: '检验' },
+        // { text: '2016-05-02', value: '2016-05-02' },
+        // { text: '2016-05-03', value: '2016-05-03' },
+      ],
+      yzsProjectType:[
+        // { text: '检验', value: '检验' },
+        // { text: '2016-05-02', value: '2016-05-02' },
+        // { text: '2016-05-03', value: '2016-05-03' },
+      ],
+      statOrderExecuteStatusCategories:[],
+      statOrderStatusCategories:[],
+      //数量表格数据
+      tableData: [{
+        entityNum: '3',
+        eventNum: '2',
+        spanNum: '3',
+      }],
+      selectNodeName:"",
+      formatedDocMap:{},
+      nodeList:[
+        // {
+        //   "nodeName":"一般情况/aa",
+        //   "nodeContent":"asdjasdasdasdasdasdasa",
+        //   "entityNum":36,
+        //   "eventNum":4,
+        //   "spanNum":3
+        // }
+      ],
+      //右侧总标签数据
+      allEntityLabelList:[
+        // {
+        //   "labelColor":"#b3e19d",
+        //   "labelContent":"标签一"
+        // },
+        // {
+        //   "labelColor":"#eebe77",
+        //   "labelContent":"标签二"
+        // },
+        // {
+        //   "labelColor":"#f89898",
+        //   "labelContent":"标签三"
+        // }
+      ],
+      allSpanLabelList:[],
+      hightLight:'',
+      docDetail:{},
+      entityLabelList:[],
+      spanLabelList:[],
+      docType:'',
+      fileId:'',
+      Visiable:false,
+      detailVisible:false,
+      orderDialogFormVisible:false,
+      orderDialog:[
+        {
+          day:'',
+          time:'',
+          content:'',
+          physicianSign:'',
+          executeTime:'',
+          executorSign:'',
+          yzsProjectType:'',
+          projectCategories:'',
+          unisoundId:''
+        }
+      ],
+      showCmmentHistoryList:false,
+      commentHistoryTab:[
+        {
+          id:1,
+          content: '2016-05-03',
+          userName: 'Tom',
+          createTime: 'No. 189, Grove St, Los Angeles',
+          orderCommentStatus:1
+        },
+        {
+          id:2,
+          content: '2016-05-03',
+          userName: 'Tom',
+          createTime: 'No. 189, Grove St, Los Angeles',
+          orderCommentStatus:1
+        }
+      ],
+      table:window.innerHeight - 107,           //固定表头高度
+      marked:false,
+      remarkDialogFormVisible : false,
+      remarkContent:'',
+      remarkContentTableData:[
+        {
+          remarkContent:'',
+          createTime:''
+        }
+      ],
+      pagination: {
+        currentPage: 1,
+        pageSize: 5,
+        total: 0
+      },
     }
   },
   mounted(){
     //todo 加载初始化操作
     this.getAllDoc();
-    const renderContent = (h, { node, data }) => {
-      return (
-          <span>
-        {node.label}
-            <el-tag type="success" effect="dark" size="small">标签</el-tag>
-    </span>
-      );
-    };
   }
 };
 </script>
@@ -836,5 +1110,12 @@ export default {
   .item {
     margin-top: 10px;
     margin-right: 40px;
+  }
+
+  .tree-style{
+    div{
+      display: flex;
+      align-items: center;
+    }
   }
 </style>

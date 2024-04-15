@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisound.optimus_visual.modules.medicalrecord.dao.MarkedRemarkMapper">
+
+    <select id="getByFileId" resultType="com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedRemark">
+        select * from tb_marked_remark where file_id=#{fileId} order by create_time desc
+    </select>
+    <select id="getByHospitalAndAdmissionId"
+            resultType="com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedRemark">
+        select * from tb_marked_remark where hospital_no = #{hospitalId} and admission_no= #{admissionId}
+    </select>
+</mapper>
+

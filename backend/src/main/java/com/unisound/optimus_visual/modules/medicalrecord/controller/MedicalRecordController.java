@@ -212,6 +212,25 @@ public class MedicalRecordController {
         return new CommonResult(result);
     }
 
+    @RequestMapping("markDoc")
+    public CommonResult markDoc(@RequestBody String param){
+        Map<String,Object> result = medicalRecordService.markDoc(param);
+        return new CommonResult(result);
+    }
+
+    @RequestMapping("addMarkedRemark")
+    public CommonResult addMarkedRemark(@RequestBody String param){
+        Map<String,Object> result = medicalRecordService.addMarkedRemark(param);
+        return new CommonResult(result);
+    }
+
+    @RequestMapping("getRemarkByFileId")
+    public CommonResult exportSpanToXlsx(String fileId,Integer pageSize,Integer pageNum) {
+        //查询es中的病历理解数据
+        Map<String,Object> result = medicalRecordService .getRemarkByFileId(fileId,pageSize,pageNum);
+        return new CommonResult(result);
+    }
+
     /**
      * 生成指定格式的json(每一行表示一条json)
      * @param hospitalId 医院id

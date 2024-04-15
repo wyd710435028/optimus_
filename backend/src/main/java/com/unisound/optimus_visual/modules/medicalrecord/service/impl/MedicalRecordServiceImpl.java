@@ -1,11 +1,9 @@
 package com.unisound.optimus_visual.modules.medicalrecord.service.impl;
 
-import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.base.ResourceLoad;
 import com.unisound.optimus_visual.elasticsearch.dao.IndexDataFetcher;
@@ -14,25 +12,26 @@ import com.unisound.optimus_visual.global.enums.emrNoConstant;
 import com.unisound.optimus_visual.global.pagination.PageInfo;
 import com.unisound.optimus_visual.modules.comment.dao.OrderCommentMapper;
 import com.unisound.optimus_visual.modules.comment.entity.OrderComment;
+import com.unisound.optimus_visual.modules.medicalrecord.dao.MarkedDocMapper;
+import com.unisound.optimus_visual.modules.medicalrecord.dao.MarkedRemarkMapper;
+import com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedDoc;
+import com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedRemark;
 import com.unisound.optimus_visual.modules.medicalrecord.model.*;
 import com.unisound.optimus_visual.modules.medicalrecord.service.MedicalRecordService;
 import com.unisound.optimus_visual.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.sql.Wrapper;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,6 +64,14 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     @Autowired
     OrderCommentMapper orderCommentMapper;
 
+    @Autowired
+    MarkedDocMapper markedDocMapper;
+
+    @Autowired
+    MarkedRemarkMapper markedRemarkMapper;
+
+
+
     /**
      * 查询病历列表
      * @param hospitalId 查询条件:所属医院id
@@ -95,6 +102,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                         }
                     }
                 }
+                this.queryMarkedFlag(vosByAdId);
                 return pageInfo(vosByAdId,pageSize,pageNum,total);
             }
 
@@ -109,6 +117,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 }
                 vosByhoId = (List<MedicalRecordVo>) resultMap.get("admissionIdList");
                 Integer total = (Integer) resultMap.get("total");
+                this.queryMarkedFlag(vosByhoId);
                 return pageInfo(vosByhoId,pageSize,pageNum,total);
             }
 
@@ -125,6 +134,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                         vosByAdId.addAll(voList);
                     }
                 }
+                this.queryMarkedFlag(vosByAdId);
                 return pageInfo(vosByAdId,pageSize,pageNum,total);
             }
             //查询所有
@@ -138,6 +148,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 //                Collections.sort(voList,Comparator.comparing(MedicalRecordVo::getTimeStamp).reversed());
                 Integer subTotal = (Integer) resultMap.get("total");
                 total+=subTotal;
+                this.queryMarkedFlag(voList);
                 if (!CollectionUtils.isEmpty(voList)){
                     medicalRecordVoList.addAll(voList);
                 }
@@ -149,7 +160,28 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         }
     }
 
+    /**
+     * queryMarkedFlag病历医嘱标记状态并赋值给orderMarkedFlag属性
+     * @param medicalRecordVoList
+     */
+    private void queryMarkedFlag(List<MedicalRecordVo> medicalRecordVoList){
+        if (CollectionUtils.isEmpty(medicalRecordVoList)){
+            return;
+        }
+        for (MedicalRecordVo vo:medicalRecordVoList){
+            String hospitalId = vo.getHospitalId();
+            String admissionId = vo.getAdmissionId();
+            List<MarkedDoc> markedDocList = markedDocMapper.getByHospitalAndAdmissionId(hospitalId,admissionId);
+            if (!CollectionUtils.isEmpty(markedDocList)){
+                vo.setOrderMarkedFlag(true);
+            }
+            List<MarkedRemark> markedRemarkList = markedRemarkMapper.getByHospitalAndAdmissionId(hospitalId,admissionId);
+            if (!CollectionUtils.isEmpty(markedRemarkList)){
+                vo.setRemarkNum(markedRemarkList.size());
+            }
 
+        }
+    }
     /**
      * 根据医院和流水号信息查询
      * @param hospital
@@ -414,6 +446,14 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                         if (fileId.equals(docModel.getFileId())){
                             if (docModel.getDocType().equals("EMR110001")){
                                 //长期医嘱
+                                //判断是否已被标记
+                                List<MarkedDoc> markedDocList = markedDocMapper.getByFileIdWithDeleteFlagCondition(fileId);
+                                List<String> markedFileIdList = markedDocList.stream().map(MarkedDoc::getFileId).collect(Collectors.toList());
+                                if (markedFileIdList.contains(docModel.getFileId())){
+                                    result.put("marked",true);
+                                }else {
+                                    result.put("marked",false);
+                                }
                                 if (!CollectionUtils.isEmpty(docModel.getStandingOrderList())){
                                     List<StandingOrderModel> standingOrderModels = docModel.getStandingOrderList();
                                     if (!CollectionUtils.isEmpty(standingOrderModels)){
@@ -428,8 +468,19 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     }
                                     standingOrderModelList.addAll(standingOrderModels);
                                 }
+                                //查备注信息
+                                List<MarkedRemark> remarkList = markedRemarkMapper.getByFileId(fileId);
+                                result.put("remarkList",remarkList);
                             } else if (docModel.getDocType().equals("EMR110002")){
                                 //临时医嘱
+                                //判断是否已被标记
+                                List<MarkedDoc> markedDocList = markedDocMapper.getByFileIdWithDeleteFlagCondition(fileId);
+                                List<String> markedFileIdList = markedDocList.stream().map(MarkedDoc::getFileId).collect(Collectors.toList());
+                                if (markedFileIdList.contains(docModel.getFileId())){
+                                    result.put("marked",true);
+                                }else {
+                                    result.put("marked",false);
+                                }
                                 if (!CollectionUtils.isEmpty(docModel.getStatOrderList())){
                                     List<StatOrderModel> statOrderModels = docModel.getStatOrderList();
                                     if (!CollectionUtils.isEmpty(statOrderModels)){
@@ -444,6 +495,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     }
                                     statOrderModelList.addAll(statOrderModels);
                                 }
+                                //查备注信息
+                                List<MarkedRemark> remarkList = markedRemarkMapper.getByFileId(fileId);
+                                result.put("remarkList",remarkList);
                             }else {
                                 nodeModelList =  docModel.getNodeList();
                                 labelModelList = docModel.getLabelList();
@@ -468,6 +522,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     List<EventModel> eventList = nodeModel.getEventList();
                                     nodeModel.setEventHightLighted(nodeContent);
                                 }
+                                result.put("marked",false);
                             }
                         }
                     }
@@ -476,8 +531,15 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         }
         List<Map<String,String>> yzsProjectTypeList = new ArrayList<>();
         List<Map<String,String>> projectCategoriesList = new ArrayList<>();
+        List<Map<String,String>> statOrderExecuteStatusListMap = new ArrayList<>();
+        List<Map<String,String>> statOrderStatusListMap = new ArrayList<>();
         List<String> yzsProjectTypes = new ArrayList<>();
         List<String> projectCategories = new ArrayList<>();
+        List<String> statOrderExecuteStatusList = new ArrayList<>();
+        List<String> statOrderStatusList = new ArrayList<>();
+        List<StatOrderModel> effectiveStatOrder = new ArrayList<>();
+        List<StandingOrderModel> effectiveStandingOrder = new ArrayList<>();
+        String voidKeyWords = "未执行作废取消废弃";
         if (!CollectionUtils.isEmpty(statOrderModelList)){
             //临时医嘱
             for (StatOrderModel statOrderModel:statOrderModelList){
@@ -491,6 +553,20 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                         projectCategories.add(statOrderModel.getProjectCategories());
                     }
                 }
+                if (StringUtils.isNotBlank(statOrderModel.getStatOrderExecuteStatus())){
+                    if (!statOrderExecuteStatusList.contains(statOrderModel.getStatOrderExecuteStatus())){
+                        statOrderExecuteStatusList.add(statOrderModel.getStatOrderExecuteStatus());
+                    }
+                }
+                if (StringUtils.isNotBlank(statOrderModel.getStatOrderStatus())){
+                    if (!statOrderStatusList.contains(statOrderModel.getStatOrderStatus())){
+                        statOrderStatusList.add(statOrderModel.getStatOrderStatus());
+                    }
+                }
+//                //判断是否是有效医嘱
+//                if (!voidKeyWords.contains(statOrderModel.getStatOrderStatus())&&!voidKeyWords.contains(statOrderModel.getStatOrderExecuteStatus())){
+//                    effectiveStatOrder.add(statOrderModel);
+//                }
             }
         } else if (!CollectionUtils.isEmpty(standingOrderModelList)){
             //长期医嘱
@@ -505,6 +581,20 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                         projectCategories.add(standingOrderModel.getProjectCategories());
                     }
                 }
+                if (StringUtils.isNotBlank(standingOrderModel.getStandingOrderExecuteStatus())){
+                    if (!statOrderExecuteStatusList.contains(standingOrderModel.getStandingOrderExecuteStatus())){
+                        statOrderExecuteStatusList.add(standingOrderModel.getStandingOrderExecuteStatus());
+                    }
+                }
+                if (StringUtils.isNotBlank(standingOrderModel.getStandingOrderStatus())){
+                    if (!statOrderStatusList.contains(standingOrderModel.getStandingOrderStatus())){
+                        statOrderStatusList.add(standingOrderModel.getStandingOrderStatus());
+                    }
+                }
+//                //判断是否是有效医嘱
+//                if (!voidKeyWords.contains(standingOrderModel.getStandingOrderStatus())&&!voidKeyWords.contains(standingOrderModel.getStandingOrderExecuteStatus())){
+//                    effectiveStandingOrder.add(standingOrderModel);
+//                }
             }
         }
 
@@ -516,6 +606,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 yzsProjectTypeList.add(yzsMap);
             }
         }
+
         if (!CollectionUtils.isEmpty(projectCategories)){
             for (String pro:projectCategories){
                 Map<String,String> map = new LinkedHashMap<>();
@@ -525,12 +616,34 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             }
         }
 
+        if (!CollectionUtils.isEmpty(statOrderExecuteStatusList)){
+            for (String statOrderExecuteStatus:statOrderExecuteStatusList){
+                Map<String,String> map = new LinkedHashMap<>();
+                map.put("text",statOrderExecuteStatus);
+                map.put("value",statOrderExecuteStatus);
+                statOrderExecuteStatusListMap.add(map);
+            }
+        }
+
+        if (!CollectionUtils.isEmpty(statOrderStatusList)){
+            for (String statOrderStatus:statOrderStatusList){
+                Map<String,String> map = new LinkedHashMap<>();
+                map.put("text",statOrderStatus);
+                map.put("value",statOrderStatus);
+                statOrderStatusListMap.add(map);
+            }
+        }
+
         result.put("nodeList",nodeModelList);
         result.put("labelList",labelModelList);
+//        result.put("statOrderList",effectiveStatOrder);
+//        result.put("standingOrderList",effectiveStandingOrder);
         result.put("statOrderList",statOrderModelList);
         result.put("standingOrderList",standingOrderModelList);
         result.put("yzsProjectTypeList",yzsProjectTypeList);
         result.put("projectCategoriesList",projectCategoriesList);
+        result.put("statOrderExecuteStatusListMap",statOrderExecuteStatusListMap);
+        result.put("statOrderStatusListMap",statOrderStatusListMap);
         return result;
     }
 
@@ -1470,6 +1583,99 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
     return this.getSpanListInMedicRecord(hospitalId, admissionId, stage, selectedDocGroupName, null, null, spanName, false);
 }
 
+    /**
+     * 标记文书
+     * @param param
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public Map<String, Object> markDoc(String param) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        String hospitalId = jsonObject.getString("hospitalId");
+        String admissionId = jsonObject.getString("admissionId");
+        String fileId = jsonObject.getString("fileId");
+        //参数校验
+        if (StringUtils.isBlank(fileId)){
+            return result;
+        }
+        List<MarkedDoc> byFileId = markedDocMapper.getAllByFileId(fileId);
+        if (CollectionUtils.isEmpty(byFileId)){
+            //新增
+            MarkedDoc markedDoc = new MarkedDoc();
+            markedDoc.setHospitalNo(hospitalId);
+            markedDoc.setAdmissionNo(admissionId);
+            markedDoc.setFileId(fileId);
+            markedDoc.setDeleteFlag(0l);
+            int insert = markedDocMapper.insert(markedDoc);
+            if (insert>0){
+                result.put("标记成功",markedDoc);
+            }else {
+                result.put("标记失败",markedDoc);
+            }
+        }else {
+            //更新
+            MarkedDoc markedDoc = byFileId.get(0);
+            if (markedDoc.getDeleteFlag()==0l) {
+                markedDoc.setDeleteFlag(1l);
+            } else {
+                markedDoc.setDeleteFlag(0l);
+            }
+//            markedDoc.setDeleteFlag(1l);
+            int update = markedDocMapper.updateById(markedDoc);
+            if (update>0){
+                result.put("删除标记成功",markedDoc);
+            }else {
+                result.put("删除标记失败",markedDoc);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> addMarkedRemark(String param) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        String hospitalId = jsonObject.getString("hospitalId");
+        String admissionId = jsonObject.getString("admissionId");
+        String stage = jsonObject.getString("stage");
+        String fileId = jsonObject.getString("fileId");
+        String remarkContent = jsonObject.getString("remarkContent");
+        //参数校验
+        if (StringUtils.isBlank(fileId)||StringUtils.isBlank(remarkContent)){
+            return result;
+        }
+        MarkedRemark markedRemark = new MarkedRemark();
+        markedRemark.setHospitalNo(hospitalId);
+        markedRemark.setAdmissionNo(admissionId);
+        markedRemark.setFileId(fileId);
+        markedRemark.setRemarkContent(remarkContent);
+        markedRemark.setCreateTime(new Date());
+        int insert = markedRemarkMapper.insert(markedRemark);
+        if (insert>0){
+            result.put("添加备注成功",markedRemark);
+        }else {
+            result.put("添加备注失败",markedRemark);
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getRemarkByFileId(String fileId,Integer pageSize,Integer pageNum) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        if (StringUtils.isBlank(fileId)){
+            return result;
+        }
+        List<MarkedRemark> byFileId = markedRemarkMapper.getByFileId(fileId);
+        List<MarkedRemark> remarkList = byFileId.stream().skip(pageSize*(pageNum-1)).limit(pageSize).collect(Collectors.toList());
+        result.put("remarkList",remarkList);
+        result.put("size",pageSize);
+        result.put("current",pageNum);
+        result.put("total",byFileId.size());
+        return result;
+    }
+
 
     private List<EntityOrSpanStatisticsModel> getEntityOrSpanStatisticsInOneDocModel(ShowDocModel docModel) {
         //todo
@@ -2395,7 +2601,7 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
         Map<String,List> referMap = new LinkedHashMap<>();
         //对docList排序
         List<Map<String, Object>> sortedDocList = docList.stream().sorted((o1, o2) -> ChineseComparator.compareString(o1.get("createTime")+"",o2.get("createTime")+"")).collect(Collectors.toList());
-        for (Map<String,Object> doc:sortedDocList){
+    for (Map<String,Object> doc:sortedDocList){
             String emrNo = (String) doc.get("docType");
             if (StringUtils.isNotBlank(emrNo)){
                 //查询对应的分组
@@ -2415,6 +2621,14 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
                         leafMap.put("children",null);
                         leafMap.put("fileId",doc.get("fileId"));
                         leafMap.put("docType",doc.get("docType"));
+                        String fileId = doc.get("fileId").toString();
+                        List<MarkedDoc> markedDoc = markedDocMapper.getAllByFileId(fileId);
+                        List<String> markedFileIdList = markedDoc.stream().map(MarkedDoc::getFileId).collect(Collectors.toList());
+                        if (markedFileIdList.contains(fileId)){
+                            leafMap.put("marked",true);
+                        }else {
+                            leafMap.put("marked",false);
+                        }
                         if (referMap.containsKey(treeKey)){
                             referMap.get(treeKey).add(leafMap);
                         }else {

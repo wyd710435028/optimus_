@@ -40,4 +40,10 @@ public interface MedicalRecordService {
     Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanNam,Boolean paginationOrNot);
 
     Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException;
+
+    Map<String, Object> markDoc(String param);
+
+    Map<String, Object> addMarkedRemark(String param);
+
+    Map<String, Object> getRemarkByFileId(String fileId,Integer pageSize,Integer pageNum);
 }
