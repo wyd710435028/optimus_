@@ -3,6 +3,7 @@ package com.unisound.optimus_visual.modules.medicalrecord.service;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.global.pagination.PageInfo;
+import com.unisound.optimus_visual.modules.medicalrecord.entity.SpanErrorMarked;
 import com.unisound.optimus_visual.modules.medicalrecord.model.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +38,7 @@ public interface MedicalRecordService {
 
     Map<String, Object> queryStatisticsData(String hospitalId, String admissionId, String stage);
 
-    Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanNam,Boolean paginationOrNot);
+    Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanNam,Boolean paginationOrNot) throws UnsupportedEncodingException;
 
     Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionId, String stage, String selectedDocGroupName, String spanName) throws IOException;
 
@@ -46,4 +47,12 @@ public interface MedicalRecordService {
     Map<String, Object> addMarkedRemark(String param);
 
     Map<String, Object> getRemarkByFileId(String fileId,Integer pageSize,Integer pageNum);
+
+    Map<String, Object> markSpanError(String param);
+
+    Map<String, Object> cancelSpanMark(String param);
+
+    PageInfo<SpanErrorMarked> queryMarkedSpanList(String conditionAdmissionId, Integer pageSize, Integer pageNum);
+
+    Map<String, Object> deleteMarkedSpanById(Long id);
 }

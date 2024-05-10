@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.base.ResourceLoad;
 import com.unisound.optimus_visual.elasticsearch.dao.IndexDataFetcher;
@@ -14,8 +17,10 @@ import com.unisound.optimus_visual.modules.comment.dao.OrderCommentMapper;
 import com.unisound.optimus_visual.modules.comment.entity.OrderComment;
 import com.unisound.optimus_visual.modules.medicalrecord.dao.MarkedDocMapper;
 import com.unisound.optimus_visual.modules.medicalrecord.dao.MarkedRemarkMapper;
+import com.unisound.optimus_visual.modules.medicalrecord.dao.SpanErrorMarkedMapper;
 import com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedDoc;
 import com.unisound.optimus_visual.modules.medicalrecord.entity.MarkedRemark;
+import com.unisound.optimus_visual.modules.medicalrecord.entity.SpanErrorMarked;
 import com.unisound.optimus_visual.modules.medicalrecord.model.*;
 import com.unisound.optimus_visual.modules.medicalrecord.service.MedicalRecordService;
 import com.unisound.optimus_visual.utils.*;
@@ -32,6 +37,9 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.sql.Wrapper;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,6 +78,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     @Autowired
     MarkedRemarkMapper markedRemarkMapper;
 
+    @Autowired
+    SpanErrorMarkedMapper spanErrorMarkedMapper;
 
 
     /**
@@ -1502,7 +1512,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanName,Boolean paginationOrNot) {
+    public Map<String,Object> getSpanListInMedicRecord(String hospitalId, String admissionId, String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanName,Boolean paginationOrNot) throws UnsupportedEncodingException {
         Map<String,Object> result = new LinkedHashMap<>();
         Map<String, Object> understandResult = this.getUnderstandResult(hospitalId, admissionId, stage);
         //对文书内容分组
@@ -1546,15 +1556,18 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             }
         }
         List<EntityOrSpanStatisticsModel> resultList = spanStatisticsList;
+        //更新标记信息
+        updateMarkedStatus(hospitalId,admissionId,resultList);
         //对返回结果做查询筛选以及分类处理
         if (StringUtils.isNotBlank(spanName)){
+            String decodedSpanName = URLDecoder.decode(spanName, StandardCharsets.UTF_8.name());
             //如果分页
             if (paginationOrNot){
-                spanStatisticsList = resultList.stream().filter(span->span.getSpanLabel().contains(spanName)).collect(Collectors.toList());
+                spanStatisticsList = resultList.stream().filter(span->span.getSpanLabel().contains(decodedSpanName)).collect(Collectors.toList());
                 resultList = spanStatisticsList.stream().skip(pageSize*(pageNum-1)).limit(pageSize).collect(Collectors.toList());
             }else {
                 //不分页
-                resultList = resultList.stream().filter(span->span.getSpanLabel().contains(spanName)).collect(Collectors.toList());
+                resultList = resultList.stream().filter(span->span.getSpanLabel().contains(decodedSpanName)).collect(Collectors.toList());
             }
         }else {
             if (paginationOrNot){
@@ -1570,6 +1583,25 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             result.put("spanStatisticsList",resultList);
         }
         return result;
+    }
+
+    private void updateMarkedStatus(String hospitalId,String admissionId,List<EntityOrSpanStatisticsModel> resultList) {
+        if (CollectionUtils.isEmpty(resultList)||StringUtils.isBlank(hospitalId)||StringUtils.isBlank(admissionId)){
+            return;
+        }
+        for (EntityOrSpanStatisticsModel entityOrSpanStatisticsModel:resultList){
+            String emrNo = entityOrSpanStatisticsModel.getEmrNo();
+            String docName = entityOrSpanStatisticsModel.getDocName();
+            String nodeName = entityOrSpanStatisticsModel.getNodeName();
+            String spanTextContent = entityOrSpanStatisticsModel.getSpanTextContent();
+            String spanLabel = entityOrSpanStatisticsModel.getSpanLabel();
+            SpanErrorMarked one = spanErrorMarkedMapper.getOne(hospitalId, admissionId, emrNo, docName, nodeName, spanTextContent, spanLabel);
+            if (Objects.isNull(one)){
+                entityOrSpanStatisticsModel.setIsRemark(false);
+            }else {
+                entityOrSpanStatisticsModel.setIsRemark(true);
+            }
+        }
     }
 
     /**
@@ -1673,6 +1705,123 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
         result.put("size",pageSize);
         result.put("current",pageNum);
         result.put("total",byFileId.size());
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> markSpanError(String param) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        String hospitalId = jsonObject.getString("hospitalId");
+        String admissionId = jsonObject.getString("admissionId");
+        String emrNo = jsonObject.getString("emrNo");
+        String docName = jsonObject.getString("docName");
+        String nodeName = jsonObject.getString("nodeName");
+        String spanTextContent = jsonObject.getString("spanTextContent");
+        String spanLabel = jsonObject.getString("spanLabel");
+        //参数校验
+        if (StringUtils.isBlank(hospitalId)||StringUtils.isBlank(admissionId)){
+            return result;
+        }
+        SpanErrorMarked spanErrorMarked = new SpanErrorMarked();
+        spanErrorMarked.setHospitalId(hospitalId);
+        spanErrorMarked.setAdmissionId(admissionId);
+        spanErrorMarked.setEmrNo(emrNo);
+        spanErrorMarked.setDocName(docName);
+        spanErrorMarked.setNodeName(nodeName);
+        spanErrorMarked.setSpanTextContent(spanTextContent);
+        spanErrorMarked.setSpanLabel(spanLabel);
+        SpanErrorMarked errorMarked = spanErrorMarkedMapper.getOne(hospitalId,admissionId,emrNo,docName,nodeName,spanTextContent,spanLabel);
+        if (Objects.isNull(errorMarked)){
+            //新增
+            spanErrorMarked.setCreateTime(new Date());
+            int insert = spanErrorMarkedMapper.insert(spanErrorMarked);
+            if (insert>0){
+                result.put("result","Span标记成功");
+            }else {
+                result.put("result","Span标记失败");
+            }
+        }else {
+            //更新
+            spanErrorMarked.setUpdateTime(new Date());
+            int i = spanErrorMarkedMapper.updateById(spanErrorMarked);
+            if (i>0){
+                result.put("result","Span标记成功");
+            }else {
+                result.put("result","Span标记失败");
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 取消Span标记
+     * @param param
+     * @return
+     */
+    @Override
+    public Map<String, Object> cancelSpanMark(String param) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        String hospitalId = jsonObject.getString("hospitalId");
+        String admissionId = jsonObject.getString("admissionId");
+        String emrNo = jsonObject.getString("emrNo");
+        String docName = jsonObject.getString("docName");
+        String nodeName = jsonObject.getString("nodeName");
+        String spanTextContent = jsonObject.getString("spanTextContent");
+        String spanLabel = jsonObject.getString("spanLabel");
+        //参数校验
+        if (StringUtils.isBlank(hospitalId)||StringUtils.isBlank(admissionId)){
+            return result;
+        }
+        SpanErrorMarked errorMarked = spanErrorMarkedMapper.getOne(hospitalId,admissionId,emrNo,docName,nodeName,spanTextContent,spanLabel);
+        if (Objects.nonNull(errorMarked)){
+            int i = spanErrorMarkedMapper.deleteById(errorMarked.getId());
+            if (i>0){
+                result.put("result","取消标记成功");
+            }else {
+                result.put("result","取消标记失败");
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public PageInfo<SpanErrorMarked> queryMarkedSpanList(String conditionAdmissionId , Integer pageSize, Integer pageNum) {
+        pageSize = pageSize == null?10:pageSize;
+        pageNum = pageNum == null?1:pageNum;
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.orderByDesc("create_time");
+        //查询条件:流水号
+        if (StringUtils.isNotBlank(conditionAdmissionId)){
+            wrapper.like("admission_id",conditionAdmissionId);
+        }
+        List<SpanErrorMarked> list = spanErrorMarkedMapper.selectList(wrapper);
+        List<SpanErrorMarked> collect = list.stream()
+                .skip(pageSize * (pageNum - 1))
+                .limit(pageSize)
+                .collect(Collectors.toList());
+        PageInfo pageInfo = new PageInfo();
+        pageInfo.setRecords(collect);
+        pageInfo.setTotal(list.size());
+        pageInfo.setCurrent(pageNum);
+        pageInfo.setSize(pageSize);
+        return pageInfo;
+    }
+
+    @Override
+    public Map<String, Object> deleteMarkedSpanById(Long id) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        if (Objects.isNull(id)){
+            return result;
+        }
+        int i = spanErrorMarkedMapper.deleteById(id);
+        if (i>0){
+            result.put("result","删除成功");
+        }else {
+            result.put("result","删除失败");
+        }
         return result;
     }
 

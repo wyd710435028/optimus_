@@ -139,4 +139,34 @@ export function addMarkedRemark(hospitalId,admissionId,stage,fileId,remarkConten
     })
 }
 
+export function markSpanError(hospitalId,admissionId,emrNo,docName,nodeName,spanTextContent,spanLabel){
+    return service.post('/medicalrecord/markSpanError', {
+        headers: { 'Content-Type': 'application/json' },
+        params:{
+            hospitalId: hospitalId,
+            admissionId: admissionId,
+            emrNo:emrNo,
+            docName:docName,
+            nodeName:nodeName,
+            spanTextContent:spanTextContent,
+            spanLabel:spanLabel
+        }
+    })
+}
+
+export function cancelSpanMark(hospitalId,admissionId,emrNo,docName,nodeName,spanTextContent,spanLabel){
+    return service.post('/medicalrecord/cancelSpanMark', {
+        headers: { 'Content-Type': 'application/json' },
+        params:{
+            hospitalId: hospitalId,
+            admissionId: admissionId,
+            emrNo:emrNo,
+            docName:docName,
+            nodeName:nodeName,
+            spanTextContent:spanTextContent,
+            spanLabel:spanLabel
+        }
+    })
+}
+
 

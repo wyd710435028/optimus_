@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.elasticsearch.dao.IndexDataFetcher;
 import com.unisound.optimus_visual.global.pagination.PageInfo;
 import com.unisound.optimus_visual.global.result.CommonResult;
+import com.unisound.optimus_visual.modules.medicalrecord.entity.SpanErrorMarked;
 import com.unisound.optimus_visual.modules.medicalrecord.model.*;
 import com.unisound.optimus_visual.modules.medicalrecord.service.MedicalRecordService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -193,7 +195,7 @@ public class MedicalRecordController {
      * @throws JsonProcessingException
      */
     @RequestMapping("getSpanListInMedicRecord")
-    public CommonResult getSpanListInMedicRecord(String hospitalId,String admissionId,String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanName) throws JsonProcessingException {
+    public CommonResult getSpanListInMedicRecord(String hospitalId,String admissionId,String stage,String docGroupName,Integer pageSize,Integer pageNum,String spanName) throws JsonProcessingException, UnsupportedEncodingException {
         //查询es中的病历理解数据
         Map<String,Object> result = medicalRecordService .getSpanListInMedicRecord(hospitalId,admissionId,stage,docGroupName,pageSize,pageNum,spanName,true);
         return new CommonResult(result);
@@ -223,7 +225,6 @@ public class MedicalRecordController {
         Map<String,Object> result = medicalRecordService.addMarkedRemark(param);
         return new CommonResult(result);
     }
-
     @RequestMapping("getRemarkByFileId")
     public CommonResult exportSpanToXlsx(String fileId,Integer pageSize,Integer pageNum) {
         //查询es中的病历理解数据
@@ -263,4 +264,27 @@ public class MedicalRecordController {
         medicalRecordService.combineTheLastTwoColumnsInTxt(inputTxtUrl);
     }
 
+    @RequestMapping("markSpanError")
+    public CommonResult markSpanError(@RequestBody String param){
+        Map<String,Object> result = medicalRecordService.markSpanError(param);
+        return new CommonResult(result);
+    }
+
+    @RequestMapping("cancelSpanMark")
+    public CommonResult cancelSpanMark(@RequestBody String param){
+        Map<String,Object> result = medicalRecordService.cancelSpanMark(param);
+        return new CommonResult(result);
+    }
+
+    @RequestMapping("queryMarkedSpanList")
+    public CommonResult queryMarkedSpanList(String conditionAdmissionId,Integer pageSize, Integer pageNum){
+        PageInfo<SpanErrorMarked> result = medicalRecordService.queryMarkedSpanList(conditionAdmissionId,pageSize,pageNum);
+        return new CommonResult(result);
+    }
+
+    @RequestMapping("deleteMarkedSpanById")
+    public CommonResult deleteMarkedSpanById(Long id){
+        Map<String,Object> result = medicalRecordService.deleteMarkedSpanById(id);
+        return new CommonResult(result);
+    }
 }

@@ -30,6 +30,12 @@
               </el-icon>
               <span>查询</span>
             </el-button>
+            <el-button color="#009688" @click="toMarkedSpanList">
+              <el-icon>
+                <List/>
+              </el-icon>
+              <span>标记的Span列表</span>
+            </el-button>
           </el-form-item>
         </el-form>
       </el-row>
@@ -122,10 +128,10 @@
   import {ElMessage} from "element-plus";
   import CommentList from "@/views/CommentList.vue";
   import CommonHeader from "@/views/common/CommonHeader.vue";
-  import {Search} from "@element-plus/icons-vue";
+  import {List, Right, Search} from "@element-plus/icons-vue";
   // import {} from "../apis/post";
   export default {
-    components: {Search, CommentList,CommonHeader},
+    components: {List, Right, Search, CommentList,CommonHeader},
     data() {
       return {
         tableData: [],
@@ -153,7 +159,7 @@
       },
       //查询列表
       queryList(){
-        var _this = this;
+        let _this = this;
         // alert('ho:'+this.hospitalNo);
         // alert('ad:'+this.admissionId);
         getRecordList(_this.hospitalNo,_this.admissionId,_this.pagination.pageSize,_this.pagination.currentPage).then(function (response){
@@ -247,6 +253,9 @@
         let hospitalId = row.hospitalId;
         let admissionId = row.admissionId;
         this.$router.push('/MedicalRecordStatisticsChart/'+row.hospitalId+'/'+row.hospitalName+'/'+row.admissionId+'/'+'span');
+      },
+      toMarkedSpanList(){
+        this.$router.push('/MarkedSpanList');
       }
     },
     mounted() {

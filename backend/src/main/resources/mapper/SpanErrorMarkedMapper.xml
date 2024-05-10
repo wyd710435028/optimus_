@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisound.optimus_visual.modules.medicalrecord.dao.SpanErrorMarkedMapper">
+
+    <select id="getOne" resultType="com.unisound.optimus_visual.modules.medicalrecord.entity.SpanErrorMarked">
+        SELECT
+            *
+        FROM
+            tb_span_error_marked
+        WHERE
+            hospital_id = #{hospitalId}
+          AND admission_id = #{admissionId}
+          AND emr_no = #{emrNo}
+          AND doc_name = #{docName}
+          AND node_name = #{nodeName}
+          AND span_text_content = #{spanTextContent}
+          AND span_label = #{spanLabel}
+    </select>
+</mapper>
+
