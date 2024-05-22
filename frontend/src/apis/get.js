@@ -166,5 +166,24 @@ export function getRemarkByFileId(fileId,pageSize,pageNum) {
     })
 }
 
+export function queryMarkedSpanList(conditionAdmissionId,pageSize,pageNum) {
+    return service.get('/medicalrecord/queryMarkedSpanList', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            conditionAdmissionId:conditionAdmissionId,
+            pageSize:pageSize,
+            pageNum:pageNum
+        }
+    })
+}
+
+export function deleteMarkedSpanById(id) {
+    return service.get('/medicalrecord/deleteMarkedSpanById', {
+        headers: { 'Content-Type': 'application/json' },
+        params: {
+            id:id
+        }
+    })
+}
 
 
