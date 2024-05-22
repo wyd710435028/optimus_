@@ -81,6 +81,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     @Autowired
     SpanErrorMarkedMapper spanErrorMarkedMapper;
 
+    @Value("${BaseResourceUrl:}")
+    String baseResourceUrl;
+
 
     /**
      * 查询病历列表
@@ -1823,6 +1826,36 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
             result.put("result","删除失败");
         }
         return result;
+    }
+
+
+    @Override
+    public Map<String, Object> addHospital(String param) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        JSONObject jsonObject = ParamUtils.getCommonParams(param);
+        String hospitalNo = jsonObject.getString("hospitalNo");
+        String hospitalName = jsonObject.getString("hospitalName");
+        if (StringUtils.isBlank(hospitalNo)||StringUtils.isBlank(hospitalName)){
+            //不添加
+        }
+        //获取已有的医院列表
+        if (globalHospitaiMap.containsKey(hospitalNo)){
+            //不添加
+        }else {
+            //添加到map,并更新txt
+            globalHospitaiMap.put(hospitalNo,hospitalName);
+            //更新txt文件
+            //获取文件路径
+            String url = baseResourceUrl + File.separator + "hospital.txt";
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(url,true))){
+                writer.newLine();
+                writer.write(hospitalNo+"\t"+hospitalName);
+                log.info("成功增加了一条医院信息,医院编号为:{},医院名称为:{}",hospitalNo,hospitalName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
 

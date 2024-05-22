@@ -169,4 +169,14 @@ export function cancelSpanMark(hospitalId,admissionId,emrNo,docName,nodeName,spa
     })
 }
 
+export function addHospital(hospitalNo,hospitalName){
+    return service.post('/medicalrecord/addHospital', {
+        headers: { 'Content-Type': 'application/json' },
+        params:{
+            hospitalNo: hospitalNo,
+            hospitalName: hospitalName
+        }
+    })
+}
+
 

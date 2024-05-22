@@ -276,6 +276,12 @@ public class MedicalRecordController {
         return new CommonResult(result);
     }
 
+    @RequestMapping("addHospital")
+    public CommonResult addHospital(@RequestBody String param){
+        Map<String,Object> result = medicalRecordService.addHospital(param);
+        return new CommonResult(result);
+    }
+
     @RequestMapping("queryMarkedSpanList")
     public CommonResult queryMarkedSpanList(String conditionAdmissionId,Integer pageSize, Integer pageNum){
         PageInfo<SpanErrorMarked> result = medicalRecordService.queryMarkedSpanList(conditionAdmissionId,pageSize,pageNum);

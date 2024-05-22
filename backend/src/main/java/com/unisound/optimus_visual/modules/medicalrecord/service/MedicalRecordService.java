@@ -55,4 +55,6 @@ public interface MedicalRecordService {
     PageInfo<SpanErrorMarked> queryMarkedSpanList(String conditionAdmissionId, Integer pageSize, Integer pageNum);
 
     Map<String, Object> deleteMarkedSpanById(Long id);
+
+    Map<String, Object> addHospital(String param);
 }
