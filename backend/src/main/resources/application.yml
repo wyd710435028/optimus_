@@ -17,7 +17,7 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://10.128.1.57:3306/optimus_visual?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
+      url: jdbc:mysql://10.128.3.29:3306/optimus_visual?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
       username: root
       password: Unisound@123
       initial-size: 3

@@ -142,7 +142,7 @@ export default {
       //EntityLinkJump/:entityName/:labelName
       // _this.$router.push('/EntityLinkJump/'+keyWords+'/'+labelName);
       if (_this.entityLinkWhiteList.includes(labelName)){
-        window.location.href="http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b";
+        window.location.href="http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=bfc7e01d59ad462fbfbfc98f2c9c47f9";
       }else {
         //提示错误
         ElMessage({

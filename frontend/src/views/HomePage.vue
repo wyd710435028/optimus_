@@ -13,6 +13,7 @@
                 filterable
                 allow-create
                 default-first-option
+                style="width: 150px"
                 placeholder="请选择医院编号">
               <el-option v-for="item in options"
                          :key="item.value"
