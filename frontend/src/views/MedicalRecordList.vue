@@ -16,12 +16,52 @@
                 filterable
                 allow-create
                 default-first-option
-                placeholder="请选择医院编号">
+                placeholder="请选择医院编号"
+                style="width: 240px"
+                @visible-change="visibleChange">
               <el-option v-for="item in options"
                          :key="item.value"
                          :label="item.label"
                          :value="item.value">
               </el-option>
+              <template #footer>
+                <el-button v-if="!isAdding" type="text" bg size="small" @click="onAddOption">
+                  添加医院
+                </el-button>
+                <template v-else>
+                  <el-form
+                      ref="addHospitalFormRef"
+                      :model="addHospitalForm"
+                      :rules="addHospitalFormRules"
+                      status-icon
+                      :label-position="'left'">
+                    <el-form-item label="医院编号:" prop="optionHospitalNo">
+                      <el-input
+                          v-model.number="addHospitalForm.optionHospitalNo"
+                          clearable
+                          class="option-input"
+                          placeholder="请输入医院编号"
+                          size="small"
+                      />
+                    </el-form-item>
+                    <el-form-item label="医院名称:" prop="optionHospitalName">
+                      <el-input
+                          v-model="addHospitalForm.optionHospitalName"
+                          clearable
+                          class="option-input"
+                          placeholder="请输入医院名称"
+                          size="small"
+                      />
+                    </el-form-item>
+                  </el-form>
+                  <el-button type="primary" size="small" style="margin-top: 10px" @click="onConfirm">
+                    <span>确定</span>
+                  </el-button>
+                  <el-button size="small" @click="clear" style="margin-top: 10px">
+                    <span>取消</span>
+                  </el-button>
+                </template>
+              </template>
             </el-select>
           </el-form-item>
           <el-form-item label="流水号">
@@ -107,15 +147,36 @@
   </el-container>
 </template>
 <script>
+import {addHospital} from "../apis/post"
 import {getRecordList} from "../apis/get";
 import {getHospitalDropDown} from "../apis/get"
 import axios from "axios";
 import {ElMessage} from "element-plus";
 import CommonHeader from "@/views/common/CommonHeader.vue";
 import {Search} from "@element-plus/icons-vue";
+import {reactive} from "vue";
 // import {} from "../apis/post";
 export default {
   components: {Search, CommonHeader},
+  setup(){
+    const addHospitalForm = reactive({
+      optionHospitalNo:'',
+      optionHospitalName:''
+    });
+    const addHospitalFormRules = {
+      optionHospitalNo:[
+        { required: true, message: '医院编号不能为空', trigger: 'blur' },
+        { type: 'number', message: '医院编号必须为数字' }
+      ],
+      optionHospitalName:[
+        { required: true, message: '医院名称不能为空', trigger: 'blur' },
+      ]
+    };
+    return {
+      addHospitalForm,
+      addHospitalFormRules
+    };
+  },
   data() {
     return {
       tableData: [],
@@ -128,7 +189,8 @@ export default {
         total: null
       },
       currentPageJudge:1, //0表示用户自己选的,1表示返回的
-      understandStatus:''
+      understandStatus:'',
+      isAdding:false
     }
   },
   methods:{
@@ -139,6 +201,55 @@ export default {
         console.log(response);
         _this.options=response.data.data;
       })
+    },
+    onConfirm(){
+      var _this = this;
+      //表单校验
+      const validate = _this.$refs.addHospitalFormRef.validate();
+      if (validate) {
+        // 表单验证通过，这里可以进行提交操作
+        console.log('表单提交', this.addDefectForm);
+        let hospitalNo = _this.addHospitalForm.optionHospitalNo;
+        let hospitalName = _this.addHospitalForm.optionHospitalName;
+        addHospital(hospitalNo,hospitalName).then(function (response){
+          //todo 添加医院信息逻辑
+          getHospitalDropDown().then(function (response){
+            console.log(response);
+            _this.options=response.data.data;
+            _this.isAdding = false;
+          })
+        })
+      } else {
+        console.log('表单验证失败');
+      }
+    },
+    /**
+     * 点击 "添加医院" 按钮
+     */
+    onAddOption(){
+      var _this = this;
+      _this.isAdding = true;
+      // _this.addHospitalForm.optionHospitalNo='';
+      // _this.addHospitalForm.optionHospitalName='';
+    },
+
+    /**
+     * 选择框关闭触发的事件，用于保证每次打开时都显示"添加医院"
+     * @param isVisible
+     */
+    visibleChange(isVisible){
+      var  _this = this;
+      if (!isVisible){
+        _this.isAdding = false;
+      }
+    },
+
+    /**
+     * 取消添加医院功能
+     */
+    clear(){
+      var _this = this;
+      _this.isAdding = false;
     },
     //查询列表
     queryList(){

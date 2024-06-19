@@ -21,4 +21,6 @@ public class EntityOrSpanStatisticsModel {
     String spanTextContent;
     @ExcelProperty(value = "span标签",index = 5)
     String spanLabel;
+    @ExcelProperty(value = "纠错标记",index = 6)
+    Boolean isRemark;
 }

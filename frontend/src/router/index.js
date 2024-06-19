@@ -14,6 +14,7 @@ import CommonHeader from "@/views/common/CommonHeader.vue";
 import KeyWordsOption from "@/views/KeyWordsOption.vue";
 import MedicalRecordStatisticsChart from "@/views/MedicalRecordStatisticsChart.vue";
 import StatisticsList from "@/views/StatisticsList.vue";
+import MarkedSpanList from "@/views/MarkedSpanList.vue";
 
 const routes = [
   {
@@ -118,6 +119,14 @@ const routes = [
     path: '/StatisticsList/:hospitalId/:admissionId/:hospitalName/:statisticstype',
     name: 'StatisticsList',
     component: StatisticsList,
+    meta: {
+      keepAlive: true
+    }
+  },
+  {
+    path: '/MarkedSpanList/',
+    name: 'MarkedSpanList',
+    component: MarkedSpanList,
     meta: {
       keepAlive: true
     }

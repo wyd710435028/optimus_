@@ -52,6 +52,14 @@
                   <span>导出到Excel</span>
                 </el-button>
               </el-form-item>
+              <el-form-item>
+                <el-button color="#009688" @click="toMarkedSpanList">
+                  <span>标记的Span列表</span>
+                  <el-icon>
+                    <Right/>
+                  </el-icon>
+                </el-button>
+              </el-form-item>
             </el-form>
           </el-row>
           <el-row>
@@ -66,6 +74,12 @@
               <el-table-column prop="nodeContent" label="节点内容"/>
               <el-table-column prop="spanTextContent" label="span文本片段"/>
               <el-table-column width="120px"  prop="spanLabel" label="span标签"/>
+              <el-table-column width="240px" prop="isRemark" label="操作">
+                <template #default="scope">
+                  <el-button v-if="scope.row.isRemark == false" @click="markAsAnError(scope.row)" type="primary">标记为错误</el-button>
+                  <el-button v-if="scope.row.isRemark == true" @click="cancelMark(scope.row)" type="success">取消标记</el-button>
+                </template>
+              </el-table-column>
             </el-table>
           </el-row>
           <el-row style="margin-top: 25px;float: right">
@@ -104,11 +118,13 @@
 <script>
 import CommonHeader from "@/views/common/CommonHeader.vue";
 import {exportSpanToXlsx, getSpanListInMedicRecord} from "@/apis/get";
-import {Back, Download, Link, Search} from "@element-plus/icons-vue";
+import {markSpanError,cancelSpanMark} from "@/apis/post";
+import {Back, Download, Link, List, Right, Search} from "@element-plus/icons-vue";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import {ElMessage} from "element-plus";
 export default {
-  components: {Back, Download, Link, Search, CommonHeader},
+  components: {Right, List, Back, Download, Link, Search, CommonHeader},
   //变量
   data() {
     return {
@@ -266,6 +282,80 @@ export default {
         const dataBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
         saveAs(dataBlob, 'Span列表.xlsx');
       })
+    },
+    /**
+     * 标记为错误
+     * @param row
+     */
+    markAsAnError(row){
+      console.log(row);
+      //开始处理,执行保存/更新逻辑
+      let _this = this;
+      let hospitalId = _this.hospitalId;
+      let admissionId = _this.admissionId;
+      let emrNo = row.emrNo;
+      let docName = row.docName;
+      let nodeName = row.nodeName;
+      let nodeContent = row.nodeContent;
+      let spanTextContent = row.spanTextContent;
+      let spanLabel = row.spanLabel;
+      markSpanError(hospitalId,admissionId,emrNo,docName,nodeName,spanTextContent,spanLabel).then(function(response){
+        console.log(response);
+        if (response.status=='200'){
+          ElMessage({
+            showClose: true,
+            message: response.data.data.result,
+            type: 'success',
+            duration: 3 * 1000
+          })
+        }else {
+          ElMessage({
+            showClose: true,
+            message: response.data.data.result,
+            type: 'error',
+            duration: 3 * 1000
+          })
+        }
+      });
+      _this.showSpanList();
+    },
+    /**
+     * 取消标记
+     */
+    cancelMark(row){
+      console.log(row);
+      //开始处理,执行保存/更新逻辑
+      let _this = this;
+      let hospitalId = _this.hospitalId;
+      let admissionId = _this.admissionId;
+      let emrNo = row.emrNo;
+      let docName = row.docName;
+      let nodeName = row.nodeName;
+      let nodeContent = row.nodeContent;
+      let spanTextContent = row.spanTextContent;
+      let spanLabel = row.spanLabel;
+      cancelSpanMark(hospitalId,admissionId,emrNo,docName,nodeName,spanTextContent,spanLabel).then(function(response){
+        console.log(response);
+        if (response.status=='200'){
+          ElMessage({
+            showClose: true,
+            message: response.data.data.result,
+            type: 'success',
+            duration: 3 * 1000
+          })
+        }else {
+          ElMessage({
+            showClose: true,
+            message: response.data.data.result,
+            type: 'error',
+            duration: 3 * 1000
+          })
+        }
+      });
+      _this.showSpanList();
+    },
+    toMarkedSpanList(){
+      this.$router.push('/MarkedSpanList');
     }
   },
 
