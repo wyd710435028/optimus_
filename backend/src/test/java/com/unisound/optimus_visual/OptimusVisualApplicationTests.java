@@ -7,8 +7,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 class OptimusVisualApplicationTests {
@@ -44,6 +49,46 @@ class OptimusVisualApplicationTests {
 		Matcher matcher = Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS).matcher(text);
 		while (matcher.find()) {
 			System.out.println(matcher.group());
+		}
+	}
+
+	@Test
+	public void testPermutations(){
+		List<String> chars = new ArrayList<>();
+		chars.addAll(Arrays.asList("同上、否认、无异常、无特殊、看结果、同前、病史同前、病情同前、复查，同初诊".split("、")));
+		List<String> permutations = new ArrayList<>();
+		generatePermutations(chars, 0, "", permutations);
+		permutations.remove("");
+		List<String> collect = permutations.stream().distinct().collect(Collectors.toList());
+		System.out.println(collect);
+
+	}
+
+	private static void generatePermutations(List<String> chars, int index, String current, List<String> result) {
+		if (index == chars.size()) {
+			result.add(current);
+			return;
+		}
+
+		// 选择当前字符，然后递归调用生成剩余字符的所有排列
+		generatePermutations(chars, index + 1, current + chars.get(index), result);
+
+		// 不选择当前字符，相当于跳过这个字符，直接处理下一个字符
+		generatePermutations(chars, index + 1, current, result);
+	}
+
+	private static void permute(List<String> strings, int start, List<List<String>> result) {
+		if (start == strings.size() - 1) {
+			// 当到达最后一个元素时，添加当前排列到结果列表
+			result.add(new ArrayList<>(strings));
+		} else {
+			for (int i = start; i < strings.size(); i++) {
+				// 交换位置以生成新的排列
+				Collections.swap(strings, start, i);
+				permute(strings, start + 1, result);
+				// 回溯，恢复原始顺序
+				Collections.swap(strings, start, i);
+			}
 		}
 	}
 

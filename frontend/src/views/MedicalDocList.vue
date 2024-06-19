@@ -768,7 +768,7 @@ export default {
       keyWords = keyWords.split(' ').join('');
       alert(keyWords);
       //在新的标签页打开
-      window.open("http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=ee12d7ee74a7484e90f736c5eba65e5b",'_blank');
+      window.open("http://10.128.1.114:8019/graph/view/entity?s="+keyWords+"&knowledgeId=bfc7e01d59ad462fbfbfc98f2c9c47f9",'_blank');
     },
 
     //判断医嘱是否可以跳转实体链接，true:可以；false：不可以
