@@ -233,6 +233,31 @@
               />
             </el-row>
           </el-card>
+          <el-card shadow="hover" header="关键词汇总" style="margin-top: 10px">
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">药品</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">化疗药</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">抗生素</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">抗凝药</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">镇痛药</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">激素</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">检查</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">CT检查</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">MRI</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">病理</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">心电</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">超声检查</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">细菌培养</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">检验</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">手术或操作</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">放疗</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">植入物</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">会诊</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">护理</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">输血</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">死亡</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">出院</el-tag>
+            <el-tag type="primary" style="margin-left: 5px;margin-top: 5px">转科</el-tag>
+          </el-card>
 
               <!--操作日志-->
 <!--          <el-card shadow="hover" header="操作日志" style="margin-top: 10px">-->
@@ -319,14 +344,16 @@
           </el-table-column>
           <el-table-column prop="createTime" label="时间" width="180" />
           <el-table-column prop="userName" label="评论人" />
-          <el-table-column prop="" label="操作">
-            <template v-slot="scope">
-              <el-switch
-                  inline-prompt
-                  active-text="点击关闭"
-                  inactive-text="点击开启" :value="scope.row.orderCommentStatus==1?true:false" @change="orderCommentStatusChange(scope.row)"/>
-            </template>
-          </el-table-column>
+<!--待调试-->
+<!--          <el-table-column prop="" label="操作">-->
+<!--            <template v-slot="scope">-->
+<!--              <el-switch-->
+<!--                  inline-prompt-->
+<!--                  active-text="点击关闭"-->
+<!--                  inactive-text="点击开启"-->
+<!--                  :value="scope.row.orderCommentStatus==1?true:false" @change="orderCommentStatusChange(scope.row)"/>-->
+<!--            </template>-->
+<!--          </el-table-column>-->
         </el-table>
       </div>
     </el-dialog>
