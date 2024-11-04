@@ -90,4 +90,9 @@ public class OrderComment implements Serializable {
      */
     private Integer orderCommentStatus;
 
+    /**
+     * 云知声项目大类
+     */
+    private String yzsProjectType;
+
 }

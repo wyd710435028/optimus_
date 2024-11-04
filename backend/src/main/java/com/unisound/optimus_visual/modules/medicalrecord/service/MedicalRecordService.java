@@ -57,4 +57,6 @@ public interface MedicalRecordService {
     Map<String, Object> deleteMarkedSpanById(Long id);
 
     Map<String, Object> addHospital(String param);
+
+    List<ExportFormatedOrder> downLoadOrderByHospitalIdAndAdmissionIds(HttpServletResponse response,String hospitalId, String admissionIds, String stage) throws IOException;
 }

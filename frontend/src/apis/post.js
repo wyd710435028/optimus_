@@ -88,7 +88,7 @@ export function createNewResultComment(rootCommentContent,userId,keyWords,fileId
 }
 
 
-export function createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign,unisoundId,admissionNo,hospitalNo){
+export function createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign,unisoundId,admissionNo,hospitalNo,yzsProjectType){
     return service.post('/comment/createNewOrderComment', {
         headers: { 'Content-Type': 'application/json' },
         params: {
@@ -100,7 +100,8 @@ export function createNewOrderComment(rootCommentContent,userId,fileId,orderCont
             executorSign:executorSign,
             unisoundId:unisoundId,
             admissionNo:admissionNo,
-            hospitalNo:hospitalNo
+            hospitalNo:hospitalNo,
+            yzsProjectType:yzsProjectType
         }
     })
 }

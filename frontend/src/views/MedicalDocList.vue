@@ -331,7 +331,7 @@
       </div>
       <el-divider>★★★</el-divider>
       <!-- 评论组件 -->
-      <EmojiPanel @ifSendSuccess="handleSend" :file-id="fileId" :order-content="orderDialog.content" :execute-time="orderDialog.executeTime" :executor-sign="orderDialog.executorSign" :unisound-id="orderDialog.unisoundId"></EmojiPanel>
+      <EmojiPanel @ifSendSuccess="handleSend" :file-id="fileId" :order-content="orderDialog.content" :execute-time="orderDialog.executeTime" :executor-sign="orderDialog.executorSign" :unisound-id="orderDialog.unisoundId" :yzs-project-type="orderDialog.yzsProjectType"></EmojiPanel>
       <el-divider>★★★</el-divider>
       <span class="post-btn" @click="commentHistory">历史评论</span>
       <div v-if="showCmmentHistoryList==true">

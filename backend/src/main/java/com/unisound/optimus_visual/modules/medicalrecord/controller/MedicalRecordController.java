@@ -100,6 +100,18 @@ public class MedicalRecordController {
         return new CommonResult(result);
     }
 
+    /**
+     * 获取病历理解结果
+     * @param hospitalId 医院id
+     * @param stage 病历所属阶段
+     * @return
+     */
+    @RequestMapping("downLoadOrderByHospitalIdAndAdmissionIds")
+    public void downLoadOrderByHospitalIdAndAdmissionIds(HttpServletResponse response,String hospitalId,String admissionIds,String stage) throws IOException {
+        //查询es中的病历理解数据
+        List<ExportFormatedOrder> result = medicalRecordService.downLoadOrderByHospitalIdAndAdmissionIds(response,hospitalId,admissionIds,stage);
+    }
+
     @RequestMapping("getNodeByFileId")
     public CommonResult getNodeByFileId(@RequestBody String param){
         Map<String,Object> result = medicalRecordService.getNodeByFileId(param);

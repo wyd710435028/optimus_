@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
@@ -1856,6 +1857,95 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
             }
         }
         return null;
+    }
+
+    @Override
+    public List<ExportFormatedOrder> downLoadOrderByHospitalIdAndAdmissionIds(HttpServletResponse response,String hospitalId, String admissionIds, String stage) throws IOException {
+        List<ExportFormatedOrder> results = new ArrayList<>();
+        if (StringUtils.isBlank(hospitalId)||StringUtils.isBlank(admissionIds)||StringUtils.isBlank(stage)){
+            return results;
+        }
+        String[] split = admissionIds.split(",");
+        if (split.length<=0){
+            return results;
+        }
+        for (String admissionId : split) {
+            String understandResultStr = this.getUnderstandResultStr(hospitalId, admissionId, stage);
+            if (StringUtils.isNotBlank(understandResultStr)){
+                //格式化理解结果,便于前端展示
+                Map<String,Object> formatedRes = this.formatResultStr(understandResultStr);
+                //筛选医嘱记录
+                List<ExportFormatedOrder> oederList = this.filterOrderInMedicRecord(admissionId,formatedRes);
+                if (!oederList.isEmpty()){
+                    results.addAll(oederList);
+                }
+            }
+        }
+        //将results导出到excel
+        FileUtils.exportToExcel(response,results, "output.xlsx");
+        return results;
+    }
+
+    /**
+     * 筛选病历中的医嘱
+     * @param formatedRes 病历内容
+     * @return 筛选后的医嘱
+     */
+    private List<ExportFormatedOrder> filterOrderInMedicRecord(String admissionId,Map<String, Object> formatedRes) {
+
+        //筛选结果
+        List<ExportFormatedOrder> result = new ArrayList<>();
+        if (formatedRes.isEmpty()||StringUtils.isBlank(admissionId)){
+            return result;
+        }
+        if (!formatedRes.containsKey("docList")){
+            return result;
+        }
+        List<ShowDocModel> docList = (List<ShowDocModel>) formatedRes.get("docList");
+        if (CollectionUtils.isEmpty(docList)){
+            return result;
+        }
+        for (ShowDocModel docModel : docList){
+            //获取EMR编号
+            String docType = docModel.getDocType();
+            if (StringUtils.isBlank(docType)){
+                continue;
+            }
+            if(docType.equals("EMR110001")){
+                //获取长期医嘱列表
+                List<StandingOrderModel> standingOrderList = docModel.getStandingOrderList();
+                if (CollectionUtils.isEmpty(standingOrderList)){
+                    continue;
+                }
+                for (StandingOrderModel standingOrderModel:standingOrderList){
+                    ExportFormatedOrder exportFormatedOrder = new ExportFormatedOrder();
+                    exportFormatedOrder.setAdmissionId(admissionId);
+                    exportFormatedOrder.setOrderType("长期医嘱");
+                    exportFormatedOrder.setOrderId(standingOrderModel.getUnisoundId());
+                    exportFormatedOrder.setOrderContent(standingOrderModel.getContent());
+                    exportFormatedOrder.setYzsProjectType(standingOrderModel.getYzsProjectType());
+                    exportFormatedOrder.setProjectCategories(standingOrderModel.getProjectCategories());
+                    result.add(exportFormatedOrder);
+                }
+            }else if(docType.equals("EMR110002")){
+                //获取临时医嘱列表
+                List<StatOrderModel> statOrderModelList =  docModel.getStatOrderList();
+                if (CollectionUtils.isEmpty(statOrderModelList)){
+                    continue;
+                }
+                for (StatOrderModel statOrderModel:statOrderModelList){
+                    ExportFormatedOrder exportFormatedOrder = new ExportFormatedOrder();
+                    exportFormatedOrder.setAdmissionId(admissionId);
+                    exportFormatedOrder.setOrderType("临时医嘱");
+                    exportFormatedOrder.setOrderId(statOrderModel.getUnisoundId());
+                    exportFormatedOrder.setOrderContent(statOrderModel.getContent());
+                    exportFormatedOrder.setYzsProjectType(statOrderModel.getYzsProjectType());
+                    exportFormatedOrder.setProjectCategories(statOrderModel.getProjectCategories());
+                    result.add(exportFormatedOrder);
+                }
+            }
+        }
+        return result;
     }
 
 

@@ -3,13 +3,15 @@
   <!-- 顶部带表情大的输入框和表情选择面板 -->
   <div class="mo-yu-container">
     <div class="input-part">
-      <div class="input-panel" id="msgInputContainer" ref="msgInputContainer"
-           placeholder="请在此输入内容"
-           contenteditable="true" spellcheck="true">
-      </div>
+<!--      <div class="input-panel" id="msgInputContainer" ref="msgInputContainer"-->
+<!--           placeholder="请在此输入内容"-->
+<!--           contenteditable="true" spellcheck="true">-->
+<!--      </div>-->
+      <input class="input-panel" id="msgInputContainer" ref="msgInputContainer" placeholder="请在此输入内容">
       <div class="action-bar" id="input-action-bar">
-        <span class="emoji-btn" @click="handleEmojiPanelVisibility"><IconFaceSmileFill/></span>
-        <span class="post-btn" @click="createResultComment(50)">发布</span>
+        <!-- 支持表情输入打开下边一行并去掉下边第二行span中的style="margin-left: 88.5%" -->
+<!--        <span class="emoji-btn" @click="handleEmojiPanelVisibility"><IconFaceSmileFill/></span>-->
+        <span style="margin-left: 88.5%" class="post-btn" @click="createResultComment(50)">发布</span>
       </div>
     </div>
     <!-- 表情面板 -->
@@ -112,7 +114,8 @@ export default {
     orderContent:String,
     executeTime:String,
     executorSign:String,
-    unisoundId:String
+    unisoundId:String,
+    yzsProjectType:String
   },
   //数据
   data(){
@@ -254,8 +257,9 @@ export default {
     //创建新评论(根评论)
     createResultComment(userId){
       // alert(document.getElementById('inputContent').innerHTML);
-      let rootCommentContent = document.getElementById('msgInputContainer').innerHTML;
-
+      /*支持表情/格式输入打开下边一行关闭下边第二行*/
+      // let rootCommentContent = document.getElementById('msgInputContainer').innerHTML;
+      let rootCommentContent = document.getElementById('msgInputContainer').value;
       // alert(document.getElementById('inputContent').textContent);
       // alert(rootCommentContent);
       let  _this = this;
@@ -278,9 +282,10 @@ export default {
           let unisoundId = _this.unisoundId;
           let admissionNo = _this.$route.params.admissionId;
           let hospitalNo = _this.$route.params.hospitalId;
+          let yzsProjectType = _this.yzsProjectType;
           // alert(admissionNo);
           // alert(hospitalNo);
-          createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign,unisoundId,admissionNo,hospitalNo).then(function (response){
+          createNewOrderComment(rootCommentContent,userId,fileId,orderContent,executeTime,executorSign,unisoundId,admissionNo,hospitalNo,yzsProjectType).then(function (response){
             if (response.status=='200'){
               // _this.$message.success({content:'发表成功',closable: true,duration:3000});
               ElMessage({

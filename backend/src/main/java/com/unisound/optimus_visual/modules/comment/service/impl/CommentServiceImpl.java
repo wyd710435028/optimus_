@@ -203,6 +203,7 @@ public class CommentServiceImpl implements CommentService {
         String executorSign = jsonObject.getString("executorSign");
         String fileId = jsonObject.getString("fileId");
         String unisoundId = jsonObject.getString("unisoundId");
+        String yzsProjectType = jsonObject.getString("yzsProjectType");
         if (Objects.isNull(userId)||StringUtils.isBlank(rootCommentContent)){
             return result;
         }
@@ -217,6 +218,7 @@ public class CommentServiceImpl implements CommentService {
         orderComment.setUserId(userId);
         orderComment.setCreateTime(new Date());
         orderComment.setUnisoundId(unisoundId);
+        orderComment.setYzsProjectType(yzsProjectType);
         orderCommentMapper.insert(orderComment);
         return result;
     }
