@@ -56,11 +56,13 @@ public class ResourceLoad {
                 new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
             String line;
             while ((line = br.readLine()) != null) {
-                if(line.startsWith("#")) {
+                if(line.startsWith("#")||StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = line.split("\t");
-                globalHospitaiMap.put(columns[0],columns[1]);
+                if (columns.length == 2){
+                    globalHospitaiMap.put(columns[0],columns[1]);
+                }
             }
             log.info("加载了{}个医院的编号信息",globalHospitaiMap.size());
         } catch (IOException e) {
