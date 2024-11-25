@@ -62,6 +62,13 @@ public class FileUtils {
         }
     }
 
+    /**
+     * 导出医嘱到Excel
+     * @param response
+     * @param orders
+     * @param fileName
+     * @throws IOException
+     */
     public static void exportToExcel(HttpServletResponse response, List<ExportFormatedOrder> orders, String fileName) throws IOException {
         // 创建一个新的工作簿
         Workbook workbook = new XSSFWorkbook();
@@ -98,17 +105,26 @@ public class FileUtils {
         response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName +"\"");
         workbook.write(response.getOutputStream());
         workbook.close();
-        // 写入文件
-//        try (FileOutputStream fileOut = new FileOutputStream(fileName)) {
-//            workbook.write(fileOut);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            try {
-//                workbook.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
+    }
+
+    /**
+     * 读取txt文件(分行读取)
+     * @param inputStream txt文件输入流
+     * @return
+     */
+    public static String reedTxtFile(InputStream inputStream){
+        StringBuffer sb = new StringBuffer();
+        if (inputStream==null){
+            return "";
+        }
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
     }
 }

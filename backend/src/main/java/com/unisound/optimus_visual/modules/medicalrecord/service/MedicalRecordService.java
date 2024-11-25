@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unisound.optimus_visual.global.pagination.PageInfo;
 import com.unisound.optimus_visual.modules.medicalrecord.entity.SpanErrorMarked;
 import com.unisound.optimus_visual.modules.medicalrecord.model.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public interface MedicalRecordService {
 
-    PageInfo<MedicalRecordVo> getMedicalRecordList(String hospitalId, String admissionId, Integer pageSize, Integer pageNum);
+    PageInfo<MedicalRecordVo> getMedicalRecordList(String hospitalId, String admissionId, Integer pageSize, Integer pageNum) throws IOException;
 
     Map<String, Object> getUnderstandResult(String hospitalId, String admissionId, String stage) throws JsonProcessingException;
 
@@ -26,7 +27,7 @@ public interface MedicalRecordService {
 
     Map<String, Object> getDocContentDetail(String hospitalId, String admissionId, String stage, String fileId);
 
-    String generateSpecificFormatJsonByEmrNo(String hospitalId, String scene,String emrNo, Integer size, String keysStr,String preCondition);
+    String generateSpecificFormatJsonByEmrNo(String hospitalId, String scene,String emrNo, Integer size, String keysStr,String preCondition) throws IOException;
 
     String appendNodeContentByFile(String fileUrl);
 
@@ -59,4 +60,6 @@ public interface MedicalRecordService {
     Map<String, Object> addHospital(String param);
 
     List<ExportFormatedOrder> downLoadOrderByHospitalIdAndAdmissionIds(HttpServletResponse response,String hospitalId, String admissionIds, String stage) throws IOException;
+
+    List<ExportFormatedOrder> downLoadOrderByHospitalIdAndAdmissionIdsFile(HttpServletResponse response, MultipartFile file, String hospitalId, String stage) throws IOException;
 }

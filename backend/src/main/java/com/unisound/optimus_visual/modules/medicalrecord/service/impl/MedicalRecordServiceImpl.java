@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -93,9 +94,15 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
      * @return 病历列表对象
      */
     @Override
-    public PageInfo<MedicalRecordVo> getMedicalRecordList(String hospitalId, String admissionId, Integer pageSize, Integer pageNum) {
+    public PageInfo<MedicalRecordVo> getMedicalRecordList(String hospitalId, String admissionId, Integer pageSize, Integer pageNum) throws IOException {
         Map<String,Object> resultMap = new LinkedHashMap<>();
         List<MedicalRecordVo> medicalRecordVoList = new ArrayList<>();
+        if (pageNum==null){
+            pageNum = 1;
+        }
+        if(pageSize == null){
+            pageSize = 10;
+        }
         //查询所有的医院
         List<Hospital> hospitalList = indexDataFetcher.getHospitalsEntity();
         if (!CollectionUtils.isEmpty(hospitalList)){
@@ -1105,7 +1112,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
      * @return 生成的json结果(包含多条)
      */
     @Override
-    public String generateSpecificFormatJsonByEmrNo(String hospitalId, String scene, String emrNo, Integer size, String keysStr,String preCondition) {
+    public String generateSpecificFormatJsonByEmrNo(String hospitalId, String scene, String emrNo, Integer size, String keysStr,String preCondition) throws IOException {
         Hospital hospital = new Hospital();
         hospital.setHospitalId(hospitalId);
         hospital.setScene(scene);
@@ -1866,6 +1873,44 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
             return results;
         }
         String[] split = admissionIds.split(",");
+        if (split.length<=0){
+            return results;
+        }
+        for (String admissionId : split) {
+            String understandResultStr = this.getUnderstandResultStr(hospitalId, admissionId, stage);
+            if (StringUtils.isNotBlank(understandResultStr)){
+                //格式化理解结果,便于前端展示
+                Map<String,Object> formatedRes = this.formatResultStr(understandResultStr);
+                //筛选医嘱记录
+                List<ExportFormatedOrder> oederList = this.filterOrderInMedicRecord(admissionId,formatedRes);
+                if (!oederList.isEmpty()){
+                    results.addAll(oederList);
+                }
+            }
+        }
+        //将results导出到excel
+        FileUtils.exportToExcel(response,results, "output.xlsx");
+        return results;
+    }
+
+    @Override
+    public List<ExportFormatedOrder> downLoadOrderByHospitalIdAndAdmissionIdsFile(HttpServletResponse response, MultipartFile file, String hospitalId, String stage) throws IOException {
+        List<ExportFormatedOrder> results = new ArrayList<>();
+        if (StringUtils.isBlank(hospitalId)||StringUtils.isBlank(stage)){
+            return results;
+        }
+        if (file == null || file.isEmpty()){
+            return results;
+        }
+        if (!file.getOriginalFilename().endsWith(".txt")){
+            log.info("文件名为{},不合规,请上传txt文件:{}",file.getOriginalFilename(), file.getOriginalFilename());
+            return results;
+        }
+        String fileContent = FileUtils.reedTxtFile(file.getInputStream());
+        if (StringUtils.isBlank(fileContent)){
+            return results;
+        }
+        String[] split = fileContent.split(",");
         if (split.length<=0){
             return results;
         }
@@ -2942,7 +2987,7 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
      * @param hospital
      * @return
      */
-    public Map<String,Object> queryByHospital(Hospital hospital,Integer pageNum,Integer pageSize){
+    public Map<String,Object> queryByHospital(Hospital hospital,Integer pageNum,Integer pageSize) throws IOException {
         Map<String,Object> result = new LinkedHashMap<>();
         List<MedicalRecordVo> medicalRecordVoList = new ArrayList<>();
         //获取医院id
@@ -2951,19 +2996,32 @@ public Map<String, Object> exportSpanToXlsx(String hospitalId, String admissionI
             return null;
         }
         String index = id+"_"+hospital.getScene();
-        Map<String,Object> admissionMap = patientDataFetcher.getAdmissionNoInHospital(index,pageNum,pageSize);
-        //查询医院下的病历
-//        String url = "http://10.128.3.122:8083/recordCache?hospitalId="+id+"&scene="+hospital.getScene();
-//        String url = "http://10.128.3.122:9200/optimus_data_"+id+"_"+hospital.getScene()+"/_search";
-//        Map<String,Object> requestBody = new LinkedHashMap<>();
-//        Map<String,Object> match_all = new LinkedHashMap<>();
-//        match_all.put("match_all",match_all);
-//        requestBody.put("query",match_all);
-//        requestBody.put("size",10);
-//        requestBody.put("_source",false);
-//        String httpGet = HttpUtils.httpPost(url,requestBody);
-//        String admissionIdsStr = httpGet.replaceAll("\\[|\\]|\"","");
-//        List<String> admissionIdList = Arrays.asList(admissionIdsStr.split(","));
+        String matchIp = "10.128.1.217";
+        String matchPort = "9916";
+        // 拿流水号
+        String medicalJSONStr = HttpUtils.httpGet("http://" + matchIp + ":" + matchPort
+                + "/app_wheeljack_match/standardMedicalRecord/queryAllAdmissionList?hospitalId=" + id
+                + "&dataScope=all&sendKafka=0");
+        JSONObject jsonObject = JSON.parseObject(medicalJSONStr);
+        List<MatchMedicalRecordModel> recordList = new ArrayList<>();
+        if (jsonObject.containsKey("data")){
+            JSONArray jsonArray = (JSONArray) jsonObject.get("data");
+            //遍历jsonArray
+            for(int i=0;i<jsonArray.size();i++){
+                Object o = jsonArray.get(i);
+                if (o instanceof JSONObject){
+                    JSONObject parseObject = (JSONObject) o;
+                    String admissionId = parseObject.getString("admissionId");
+                    String optTime = parseObject.getString("optTime");
+                    String dataHospitalId = parseObject.getString("dataHospitalId");
+                    String leaveTime = parseObject.getString("leaveTime");
+                    MatchMedicalRecordModel model = new MatchMedicalRecordModel(admissionId,dataHospitalId,optTime,leaveTime);
+                    recordList.add(model);
+                }
+            }
+        }
+
+        Map<String,Object> admissionMap = patientDataFetcher.getAdmissionNoInHospitalWithoutPage(index,recordList,pageNum,pageSize);
         if (admissionMap.containsKey("admissionIdList")&&admissionMap.containsKey("timestampList")){
             List<String> admissionIdList = (List<String>) admissionMap.get("admissionIdList");
             List<String> timestampList = (List<String>) admissionMap.get("timestampList");

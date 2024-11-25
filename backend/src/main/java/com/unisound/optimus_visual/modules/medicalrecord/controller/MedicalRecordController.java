@@ -14,6 +14,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class MedicalRecordController {
      * @return
      */
     @RequestMapping("getMedicalRecordList")
-    public CommonResult getMedicalRecordList(@Param("hospitalId") String hospitalId,@Param("admissionId") String admissionId,@Param("pageSize")Integer pageSize,@Param("pageNum") Integer pageNum){
+    public CommonResult getMedicalRecordList(@Param("hospitalId") String hospitalId,@Param("admissionId") String admissionId,@Param("pageSize")Integer pageSize,@Param("pageNum") Integer pageNum) throws IOException {
         log.info("查询的页码为{},查询条件为医院编号:{},流水号:{}",pageNum,hospitalId,admissionId);
         PageInfo<MedicalRecordVo> medicalRecordVoList = medicalRecordService.getMedicalRecordList(hospitalId,admissionId,pageSize,pageNum);
         log.info("查询病历列表结束...");
@@ -101,7 +102,7 @@ public class MedicalRecordController {
     }
 
     /**
-     * 获取病历理解结果
+     * 下载单个医院下指定流水号下的医嘱内容
      * @param hospitalId 医院id
      * @param stage 病历所属阶段
      * @return
@@ -110,6 +111,18 @@ public class MedicalRecordController {
     public void downLoadOrderByHospitalIdAndAdmissionIds(HttpServletResponse response,String hospitalId,String admissionIds,String stage) throws IOException {
         //查询es中的病历理解数据
         List<ExportFormatedOrder> result = medicalRecordService.downLoadOrderByHospitalIdAndAdmissionIds(response,hospitalId,admissionIds,stage);
+    }
+
+    /**
+     * 下载单个医院下指定流水号下的医嘱内容
+     * @param hospitalId 医院id
+     * @param stage 病历所属阶段
+     * @return
+     */
+    @RequestMapping("downLoadOrderByHospitalIdAndAdmissionIdsFile")
+    public void downLoadOrderByHospitalIdAndAdmissionIdsFile(HttpServletResponse response, @RequestParam("file") MultipartFile file,String hospitalId, String stage) throws IOException {
+        //查询es中的病历理解数据
+        List<ExportFormatedOrder> result = medicalRecordService.downLoadOrderByHospitalIdAndAdmissionIdsFile(response,file,hospitalId,stage);
     }
 
     @RequestMapping("getNodeByFileId")
@@ -255,7 +268,7 @@ public class MedicalRecordController {
      * @return 生成的json结果(包含多条)
      */
     @RequestMapping("generateSpecificFormatJsonByEmrNo")
-    public String generateSpecificFormatJsonByEmrNo(String hospitalId,String scene,String emrNo,Integer size,String keysStr,String preCondition){
+    public String generateSpecificFormatJsonByEmrNo(String hospitalId,String scene,String emrNo,Integer size,String keysStr,String preCondition) throws IOException {
         String result = medicalRecordService.generateSpecificFormatJsonByEmrNo(hospitalId,scene,emrNo,size,keysStr,preCondition);
         return result;
     }

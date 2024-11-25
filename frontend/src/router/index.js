@@ -1,4 +1,4 @@
-import {createRouter, createWebHashHistory, createWebHistory} from 'vue-router';
+import {createRouter, createWebHashHistory} from 'vue-router';
 import HomePage from "../views/HomePage.vue";
 import MedicalDocList from '../views/MedicalDocList.vue';
 import MedicalRecordList from "../views/MedicalRecordList.vue";

@@ -170,7 +170,7 @@
   import {ElMessage} from "element-plus";
   import CommentList from "@/views/CommentList.vue";
   import CommonHeader from "@/views/common/CommonHeader.vue";
-  import {Search} from "@element-plus/icons-vue";
+  import {List, Right, Search} from "@element-plus/icons-vue";
   // import {} from "../apis/post";
   export default {
     components: {List, Right, Search, CommentList,CommonHeader},

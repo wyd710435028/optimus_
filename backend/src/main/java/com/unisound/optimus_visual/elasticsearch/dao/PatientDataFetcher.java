@@ -1,17 +1,18 @@
 package com.unisound.optimus_visual.elasticsearch.dao;
 
+import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.unisound.optimus_visual.modules.medicalrecord.model.Hospital;
 import com.unisound.optimus_visual.modules.medicalrecord.model.EventVo;
+import com.unisound.optimus_visual.modules.medicalrecord.model.MatchMedicalRecordModel;
 import com.unisound.optimus_visual.modules.medicalrecord.model.MedicalVo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PatientDataFetcher {
@@ -519,6 +521,62 @@ public class PatientDataFetcher {
 		return result;
 	}
 
+	public Map<String,Object> getAdmissionNoInHospitalWithoutPage(String index, List<MatchMedicalRecordModel> recordModelList,Integer pageNum,Integer pageSize) throws IOException {
+		Map<String,Object> result = new LinkedHashMap<>();
+		if (CollectionUtils.isEmpty(recordModelList)){
+			return new HashMap<>();
+		}
+		List<String> referAdmissionIds = recordModelList.stream().map(recordModel -> recordModel.getAdmissionId()).collect(Collectors.toList());
+		//查询es的逻辑
+//		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+//		searchSourceBuilder.trackTotalHits(true);
+//		searchSourceBuilder.fetchSource(false);
+//		searchSourceBuilder.sort(new FieldSortBuilder("@timestamp").order(SortOrder.DESC));
+////		searchSourceBuilder.from((pageNum-1)*pageSize);
+////		searchSourceBuilder.size(pageSize);
+//		searchSourceBuilder.size(50000);
+//		SearchRequest searchRequest = new SearchRequest(index_pre + index);
+//		searchRequest.source(searchSourceBuilder);
+//		SearchResponse search;
+//		try {
+//			search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+//		} catch (Exception e) {
+//			 e.printStackTrace();
+//			return new HashMap<>();
+//		}
+//		SearchHits searchHits = search.getHits();
+//		SearchHit[] hits = searchHits.getHits();
+//		List<String> admissionIdList = new ArrayList<>();
+//		List<String> timestampList = new ArrayList<>();
+//		String timestamp = "";
+//		if (hits!=null&&hits.length>0){
+//			for (int i =0;i<hits.length;i++){
+//				SearchHit searchHit = hits[i];
+//				String id = searchHit.getId();
+//				if (referAdmissionIds.contains(id)){
+//					admissionIdList.add(id);
+//				}
+//			}
+//		}
+		String timestamp = "";
+		List<String> timestampList = new ArrayList<>();
+		//手动分页
+		//计算起始和结束索引
+		int fromIndex = (pageNum-1)*pageSize;
+		int toIndex = Math.min(fromIndex + pageSize, referAdmissionIds.size());
+		List<String> pagedAdmissionIds = referAdmissionIds.stream().skip(fromIndex).limit(toIndex - fromIndex).collect(Collectors.toList());
+		//查询timestampList
+		if (!pagedAdmissionIds.isEmpty()){
+			timestampList = this.getTimestampsByAdmissionIds(index, pagedAdmissionIds);
+		}
+		result.put("admissionIdList",pagedAdmissionIds);
+		//总量
+		int size = recordModelList.size();
+		result.put("total",size);
+		result.put("timestampList",timestampList);
+		return result;
+	}
+
 	public Map<String, Object> getByAdmissionId(String index,String admissionId) {
 		Map<String,Object> result = new LinkedHashMap<>();
 		GetRequest getquRequest = new GetRequest(index_pre + index);
@@ -558,6 +616,32 @@ public class PatientDataFetcher {
 		result.put("total",snList.size());
 		result.put("timestamp",timestamp);
 		return result;
+	}
+
+	public List<String> getTimestampsByAdmissionIds(String index,List<String> admissionIds) throws IOException {
+		List<String> result = new ArrayList<>();
+		if (admissionIds.isEmpty()) {
+            return result;
+        }
+		String timestamp = "";
+        MultiGetRequest multiGetRequest = new MultiGetRequest();
+        for (String id : admissionIds) {
+            multiGetRequest.add(new MultiGetRequest.Item(index_pre + index, id));
+        }
+
+        MultiGetResponse multiGetResponse = restHighLevelClient.mget(multiGetRequest, RequestOptions.DEFAULT);
+
+        for (MultiGetItemResponse itemResponse : multiGetResponse.getResponses()) {
+            if (itemResponse.isFailed()) {
+                continue; // 或者记录错误
+            }
+            Map<String, Object> sourceAsMap = itemResponse.getResponse().getSourceAsMap();
+            if (sourceAsMap.containsKey("@timestamp")) {
+                timestamp = (String) sourceAsMap.get("@timestamp");
+                result.add(timestamp);
+            }
+        }
+        return result;
 	}
 
     public static void main(String[] args) {
